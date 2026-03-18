@@ -184,6 +184,132 @@ rag = RAGLibrary(ocr="anthropic_vision", anthropic_api_key="...")
 
 ---
 
+## 🎬 Multimodal RAG (Experimental)
+
+raglib includes an experimental `raglib.multimodal` subpackage for Image, Video, and Audio RAG using multimodal embedders.
+
+### Multimodal Embedders
+
+| Key | Class | Dims | Modalities | Install |
+|---|---|---|---|---|
+| CLIP | `CLIPEmbedder` | 512/768 | Image + Text | `pip install raglib[clip]` |
+| SigLIP | `SigLIPEmbedder` | 768/1024 | Image + Text | `pip install raglib[siglip]` |
+| ImageBind | `ImageBindEmbedder` | 1024 | Image + Text + Audio + Video | See [ImageBind](https://github.com/facebookresearch/ImageBind) |
+| BLIP-2 | `BLIP2Embedder` | 256 | Image → Caption | `pip install raglib[blip2]` |
+
+### Image RAG
+
+```python
+from raglib.multimodal import ImageIngestionPipeline, ImageRetriever
+from raglib.multimodal.embedders import CLIPEmbedder
+from raglib.multimodal.stores import ChromaMultimodalStore
+
+embedder = CLIPEmbedder()
+store = ChromaMultimodalStore()
+
+# Ingest images
+pipeline = ImageIngestionPipeline(embedder=embedder, store=store)
+pipeline.ingest("photo.jpg")
+pipeline.ingest_batch(["img1.png", "img2.jpg"])
+
+# Text-to-image retrieval
+retriever = ImageRetriever(embedder=embedder, store=store)
+results = retriever.retrieve("a dog playing in a park", top_k=5)
+for r in results:
+    print(r.chunk_id, r.score, r.metadata.get("caption"))
+```
+
+### Video RAG
+
+```python
+from raglib.multimodal import VideoIngestionPipeline, VideoRetriever
+from raglib.multimodal.embedders import CLIPEmbedder
+from raglib.multimodal.transcribers import WhisperLocalTranscriber
+from raglib.multimodal.stores import ChromaMultimodalStore
+
+embedder = CLIPEmbedder()
+transcriber = WhisperLocalTranscriber(model_size="base")
+store = ChromaMultimodalStore()
+
+# Ingest video (extracts frames + transcribes audio)
+pipeline = VideoIngestionPipeline(
+    embedder=embedder,
+    store=store,
+    transcriber=transcriber,
+)
+pipeline.ingest("lecture.mp4")
+
+# Retrieve relevant video segments with timestamps
+retriever = VideoRetriever(embedder=embedder, store=store)
+results = retriever.retrieve("neural networks training process")
+for r in results:
+    chunk = r.video_chunk
+    print(f"At {chunk.start_ms//1000}s – {chunk.end_ms//1000}s: {chunk.transcript[:100]}")
+```
+
+### Audio RAG
+
+```python
+from raglib.multimodal import AudioIngestionPipeline, AudioRetriever
+from raglib.multimodal.transcribers import WhisperLocalTranscriber
+from raglib.multimodal.stores import ChromaMultimodalStore
+from raglib.embedders import GeminiEmbedder
+
+transcriber = WhisperLocalTranscriber(model_size="small")
+store = ChromaMultimodalStore()
+text_embedder = GeminiEmbedder(api_key="...")
+
+pipeline = AudioIngestionPipeline(
+    transcriber=transcriber,
+    store=store,
+    text_embedder=text_embedder,
+)
+pipeline.ingest("podcast.mp3")
+
+retriever = AudioRetriever(embedder=None, store=store, text_embedder=text_embedder)
+results = retriever.retrieve("discussion about machine learning")
+```
+
+### Cross-Modal Retrieval (ImageBind)
+
+```python
+from raglib.multimodal.retrievers import CrossModalRetriever
+from raglib.multimodal.embedders import ImageBindEmbedder
+
+# Query with text → find relevant images, video clips, AND audio segments
+retriever = CrossModalRetriever(
+    embedder=ImageBindEmbedder(),
+    store=store,
+    search_modalities=["image", "video", "audio"],
+)
+results = retriever.retrieve("product launch announcement")
+# Returns mixed: ImageChunks, VideoChunks, AudioChunks unified by score
+```
+
+### Transcription Providers
+
+| Provider | Class | Install |
+|---|---|---|
+| Whisper (local) | `WhisperLocalTranscriber` | `pip install raglib[whisper]` |
+| OpenAI Whisper API | `WhisperAPITranscriber` | `pip install openai` |
+| Google Speech-to-Text | `GoogleSTTTranscriber` | `pip install google-cloud-speech` |
+| AWS Transcribe | `AWSTranscribeTranscriber` | `pip install boto3` |
+
+### Install
+
+```bash
+pip install raglib[clip]          # Image RAG with CLIP
+pip install raglib[siglip]        # Image RAG with SigLIP (higher quality)
+pip install raglib[video]         # Video support (frame extraction, scene detection)
+pip install raglib[audio]         # Audio loading
+pip install raglib[whisper]       # Local Whisper transcription
+pip install raglib[multimodal]    # Everything above
+```
+
+> **Note:** ImageBind requires manual installation. See the [ImageBind GitHub](https://github.com/facebookresearch/ImageBind) for instructions.
+
+---
+
 ## RAG Methodologies
 
 | Method | Description | When to Use |

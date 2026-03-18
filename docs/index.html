@@ -400,6 +400,7 @@
       <a href="#pipeline">Pipeline</a>
       <a href="#api">API</a>
       <a href="#install">Install</a>
+      <a href="#multimodal">Multimodal</a>
       <a href="https://github.com/yourname/graph-rag" class="nav-github">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
@@ -1044,6 +1045,266 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
   </div>
 </section>
 
+<!-- ── MULTIMODAL ─────────────────────────────────────────────────────────── -->
+<section id="multimodal">
+  <div class="container">
+    <div class="section-label">Multimodal RAG</div>
+    <h2>🎬 Multimodal RAG <span style="font-size:18px;font-weight:500;color:var(--text-muted)">(Experimental)</span></h2>
+
+    <!-- Warning banner -->
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:var(--radius-sm);background:rgba(255,166,87,.08);border:1px solid rgba(255,166,87,.35);color:var(--accent-5);font-size:13px;font-weight:500;margin-bottom:28px">
+      <span style="font-size:16px">⚠️</span>
+      <span>Experimental API &mdash; may change between versions</span>
+    </div>
+
+    <p class="section-sub" style="margin-bottom:40px">
+      Extend raglib beyond text: ingest images, videos, and audio files using multimodal embedding models and
+      transcription providers. This module is in active development and ships as an optional add-on that must
+      be installed separately. Feedback and bug reports are welcome.
+    </p>
+
+    <!-- 3-column modality cards -->
+    <div class="features-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-bottom:48px">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1)">🖼️</div>
+        <h3>Image RAG</h3>
+        <p>Embed images with CLIP, SigLIP, or BLIP-2 alongside your text corpus. Query with natural language to retrieve semantically relevant images and mixed image-text results.</p>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge badge-blue">CLIP</span>
+          <span class="badge badge-purple">SigLIP</span>
+          <span class="badge badge-blue">BLIP-2</span>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(63,185,80,.1)">🎥</div>
+        <h3>Video RAG</h3>
+        <p>Extract keyframes for visual embeddings and transcribe speech with Whisper. Retrieve specific moments with timestamp-level precision. Supports MP4, MOV, AVI, and more.</p>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge badge-green">Whisper</span>
+          <span class="badge badge-blue">CLIP Frames</span>
+          <span class="badge badge-orange">Timestamps</span>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1)">🎧</div>
+        <h3>Audio RAG</h3>
+        <p>Transcribe audio files locally with Whisper or via cloud APIs. Chunked transcripts are embedded and retrievable just like text documents. Supports MP3, WAV, FLAC, and OGG.</p>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge badge-purple">Whisper Local</span>
+          <span class="badge badge-blue">AssemblyAI</span>
+          <span class="badge badge-green">Deepgram</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code example tab switcher -->
+    <div class="section-label" style="margin-bottom:12px">Code Examples</div>
+    <div class="tabs" id="mm-tabs">
+      <button class="tab active" onclick="switchMMTab('image')">🖼️ Image</button>
+      <button class="tab" onclick="switchMMTab('video')">🎥 Video</button>
+      <button class="tab" onclick="switchMMTab('audio')">🎧 Audio</button>
+    </div>
+
+    <div id="mm-image" class="tab-panel active" style="margin-bottom:48px">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python — Image RAG</span>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.embedders.clip <span class="kw">import</span> <span class="cl">CLIPEmbedder</span>
+<span class="kw">from</span> raglib.stores.vector.chroma_multimodal <span class="kw">import</span> <span class="cl">ChromaMultimodalStore</span>
+<span class="kw">from</span> raglib.pipeline.image <span class="kw">import</span> <span class="cl">ImageIngestionPipeline</span>
+<span class="kw">from</span> raglib.retrievers.multimodal <span class="kw">import</span> <span class="cl">ImageRetriever</span>
+
+<span class="cm"># Set up multimodal components</span>
+<span class="nm">embedder</span> = <span class="cl">CLIPEmbedder</span>(<span class="nm">model</span>=<span class="st">"openai/clip-vit-base-patch32"</span>)
+<span class="nm">store</span>    = <span class="cl">ChromaMultimodalStore</span>(<span class="nm">collection</span>=<span class="st">"images"</span>)
+
+<span class="cm"># Ingest images</span>
+<span class="nm">pipeline</span> = <span class="cl">ImageIngestionPipeline</span>(<span class="nm">embedder</span>=<span class="nm">embedder</span>, <span class="nm">store</span>=<span class="nm">store</span>)
+<span class="nm">pipeline</span>.<span class="fn">ingest</span>(<span class="st">"product_photo.jpg"</span>)
+<span class="nm">pipeline</span>.<span class="fn">ingest_dir</span>(<span class="st">"./images/"</span>)
+
+<span class="cm"># Retrieve with natural language</span>
+<span class="nm">retriever</span> = <span class="cl">ImageRetriever</span>(<span class="nm">embedder</span>=<span class="nm">embedder</span>, <span class="nm">store</span>=<span class="nm">store</span>)
+<span class="nm">results</span>   = <span class="nm">retriever</span>.<span class="fn">retrieve</span>(<span class="st">"a red sports car parked outdoors"</span>, <span class="nm">top_k</span>=<span class="nb">5</span>)
+<span class="kw">for</span> <span class="nm">r</span> <span class="kw">in</span> <span class="nm">results</span>:
+    <span class="fn">print</span>(<span class="nm">r</span>.<span class="nm">source_path</span>, <span class="nm">r</span>.<span class="nm">score</span>)</code></pre>
+      </div>
+    </div>
+
+    <div id="mm-video" class="tab-panel" style="margin-bottom:48px">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python — Video RAG</span>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.embedders.clip <span class="kw">import</span> <span class="cl">CLIPEmbedder</span>
+<span class="kw">from</span> raglib.ocr.whisper_local <span class="kw">import</span> <span class="cl">WhisperLocalTranscriber</span>
+<span class="kw">from</span> raglib.pipeline.video <span class="kw">import</span> <span class="cl">VideoIngestionPipeline</span>
+<span class="kw">from</span> raglib.retrievers.video <span class="kw">import</span> <span class="cl">VideoRetriever</span>
+
+<span class="cm"># Extract keyframes (visual) + transcribe speech</span>
+<span class="nm">embedder</span>     = <span class="cl">CLIPEmbedder</span>(<span class="nm">model</span>=<span class="st">"openai/clip-vit-large-patch14"</span>)
+<span class="nm">transcriber</span>  = <span class="cl">WhisperLocalTranscriber</span>(<span class="nm">model_size</span>=<span class="st">"medium"</span>)
+
+<span class="nm">pipeline</span> = <span class="cl">VideoIngestionPipeline</span>(
+    <span class="nm">embedder</span>    =<span class="nm">embedder</span>,
+    <span class="nm">transcriber</span> =<span class="nm">transcriber</span>,
+    <span class="nm">frame_interval</span>=<span class="nb">2</span>,   <span class="cm"># extract 1 keyframe every 2 seconds</span>
+)
+<span class="nm">pipeline</span>.<span class="fn">ingest</span>(<span class="st">"product_demo.mp4"</span>)
+
+<span class="cm"># Retrieve with timestamp-level precision</span>
+<span class="nm">retriever</span> = <span class="cl">VideoRetriever</span>(<span class="nm">embedder</span>=<span class="nm">embedder</span>, <span class="nm">transcriber</span>=<span class="nm">transcriber</span>)
+<span class="nm">results</span>   = <span class="nm">retriever</span>.<span class="fn">retrieve</span>(<span class="st">"product unboxing scene"</span>, <span class="nm">top_k</span>=<span class="nb">3</span>)
+<span class="kw">for</span> <span class="nm">r</span> <span class="kw">in</span> <span class="nm">results</span>:
+    <span class="fn">print</span>(<span class="nb">f</span><span class="st">"[{r.timestamp_start:.1f}s – {r.timestamp_end:.1f}s] {r.transcript_snippet}"</span>)</code></pre>
+      </div>
+    </div>
+
+    <div id="mm-audio" class="tab-panel" style="margin-bottom:48px">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python — Audio RAG</span>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.ocr.whisper_local <span class="kw">import</span> <span class="cl">WhisperLocalTranscriber</span>
+<span class="kw">from</span> raglib.pipeline.audio <span class="kw">import</span> <span class="cl">AudioIngestionPipeline</span>
+<span class="kw">from</span> raglib.retrievers.audio <span class="kw">import</span> <span class="cl">AudioRetriever</span>
+
+<span class="cm"># Transcribe audio locally — no API keys required</span>
+<span class="nm">transcriber</span> = <span class="cl">WhisperLocalTranscriber</span>(<span class="nm">model_size</span>=<span class="st">"large-v3"</span>, <span class="nm">language</span>=<span class="st">"en"</span>)
+
+<span class="nm">pipeline</span> = <span class="cl">AudioIngestionPipeline</span>(<span class="nm">transcriber</span>=<span class="nm">transcriber</span>)
+<span class="nm">pipeline</span>.<span class="fn">ingest</span>(<span class="st">"earnings_call.mp3"</span>)
+<span class="nm">pipeline</span>.<span class="fn">ingest</span>(<span class="st">"interview.wav"</span>)
+<span class="nm">pipeline</span>.<span class="fn">ingest_dir</span>(<span class="st">"./podcasts/"</span>)     <span class="cm"># batch</span>
+
+<span class="cm"># Retrieve transcript segments by meaning</span>
+<span class="nm">retriever</span> = <span class="cl">AudioRetriever</span>(<span class="nm">transcriber</span>=<span class="nm">transcriber</span>)
+<span class="nm">results</span>   = <span class="nm">retriever</span>.<span class="fn">retrieve</span>(<span class="st">"revenue guidance for next quarter"</span>, <span class="nm">top_k</span>=<span class="nb">5</span>)
+<span class="kw">for</span> <span class="nm">r</span> <span class="kw">in</span> <span class="nm">results</span>:
+    <span class="fn">print</span>(<span class="nb">f</span><span class="st">"[{r.source}] score={r.score:.3f}"</span>)
+    <span class="fn">print</span>(<span class="nm">r</span>.<span class="nm">text</span>)</code></pre>
+      </div>
+    </div>
+
+    <!-- Multimodal embedders table -->
+    <div class="section-label" style="margin-bottom:12px">Multimodal Embedders</div>
+    <div class="table-wrap" style="margin-bottom:40px">
+      <table>
+        <thead>
+          <tr>
+            <th>Embedder</th>
+            <th>Dimensions</th>
+            <th>Modalities</th>
+            <th>Best For</th>
+            <th>Install</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>CLIPEmbedder</code></td>
+            <td>512 / 768</td>
+            <td>Image + Text</td>
+            <td>General image-text retrieval, zero-shot classification</td>
+            <td><code>raglib[clip]</code></td>
+          </tr>
+          <tr>
+            <td><code>SigLIPEmbedder</code></td>
+            <td>1152</td>
+            <td>Image + Text</td>
+            <td>Higher accuracy image understanding, multilingual</td>
+            <td><code>raglib[clip]</code></td>
+          </tr>
+          <tr>
+            <td><code>ImageBindEmbedder</code></td>
+            <td>1024</td>
+            <td>Image + Text + Audio + Video + IMU + Depth</td>
+            <td>Cross-modal retrieval across 6 modalities in one space</td>
+            <td><code>raglib[multimodal]</code></td>
+          </tr>
+          <tr>
+            <td><code>BLIP2Embedder</code></td>
+            <td>256</td>
+            <td>Image + Text</td>
+            <td>Document images, charts, screenshots with rich captions</td>
+            <td><code>raglib[multimodal]</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Transcription providers table -->
+    <div class="section-label" style="margin-bottom:12px">Transcription Providers</div>
+    <div class="table-wrap" style="margin-bottom:40px">
+      <table>
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Class</th>
+            <th>Method</th>
+            <th>Install</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Whisper (local)</td>
+            <td><code>WhisperLocalTranscriber</code></td>
+            <td>Offline — runs on CPU or CUDA GPU</td>
+            <td><code>raglib[whisper]</code></td>
+          </tr>
+          <tr>
+            <td>OpenAI Whisper API</td>
+            <td><code>WhisperAPITranscriber</code></td>
+            <td>Cloud — <code>whisper-1</code> model</td>
+            <td><code>raglib[openai]</code></td>
+          </tr>
+          <tr>
+            <td>AssemblyAI</td>
+            <td><code>AssemblyAITranscriber</code></td>
+            <td>Cloud — speaker diarisation, topic detection</td>
+            <td><code>raglib[multimodal]</code></td>
+          </tr>
+          <tr>
+            <td>Deepgram</td>
+            <td><code>DeepgramTranscriber</code></td>
+            <td>Cloud — real-time streaming + batch</td>
+            <td><code>raglib[multimodal]</code></td>
+          </tr>
+          <tr>
+            <td>Google Speech-to-Text</td>
+            <td><code>GoogleSTTTranscriber</code></td>
+            <td>Cloud — 125+ languages, medical models</td>
+            <td><code>raglib[vertex-ai]</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Install commands -->
+    <div class="section-label" style="margin-bottom:12px">Install Commands</div>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="code-lang">shell — multimodal extras</span>
+      </div>
+      <pre><code><span class="cm"># CLIP image embedder (CLIP + SigLIP)</span>
+pip install <span class="st">raglib[clip]</span>
+
+<span class="cm"># Video frame extraction (ffmpeg-python + keyframe sampler)</span>
+pip install <span class="st">raglib[video]</span>
+
+<span class="cm"># Local Whisper transcription (runs fully offline)</span>
+pip install <span class="st">raglib[whisper]</span>
+
+<span class="cm"># Full multimodal bundle — all of the above + ImageBind + BLIP-2 + cloud transcribers</span>
+pip install <span class="st">raglib[multimodal]</span></code></pre>
+    </div>
+  </div>
+</section>
+
 <!-- ── FOOTER ────────────────────────────────────────────────────────────── -->
 <footer>
   <div class="container footer-inner">
@@ -1072,6 +1333,17 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
     tabs.forEach((t, i) => {
       t.classList.toggle('active', names[i] === name);
     });
+  }
+
+  /* ── Multimodal tab switcher ──────────────────────────────────────────── */
+  function switchMMTab(name) {
+    ['image', 'video', 'audio'].forEach(n => {
+      const panel = document.getElementById('mm-' + n);
+      if (panel) panel.classList.toggle('active', n === name);
+    });
+    const tabs = document.querySelectorAll('#mm-tabs .tab');
+    const names = ['image', 'video', 'audio'];
+    tabs.forEach((t, i) => t.classList.toggle('active', names[i] === name));
   }
 
   /* ── Smooth nav active state ──────────────────────────────────────────── */

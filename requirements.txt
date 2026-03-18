@@ -1,4 +1,4 @@
-# ── raglib — default requirements ────────────────────────────────────────────
+# ── raglib v2.0.0 — default requirements ──────────────────────────────────────
 #
 # Equivalent to:  pip install -e ".[default]"
 #
@@ -14,6 +14,9 @@
 #
 # For selective extras:
 #     pip install -e ".[openai,qdrant,pdf,ocr-local]"
+#
+# For multimodal RAG (Image / Video / Audio — experimental):
+#     pip install raglib[multimodal]
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Core (always required)

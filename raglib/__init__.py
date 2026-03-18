@@ -32,6 +32,22 @@ Vector stores: chroma [default], qdrant, pinecone, faiss, weaviate, milvus, pgve
 Graph stores:  neo4j [default], microsoft_graphrag, memgraph, arangodb, networkx, none
 OCR:           gemini_vision [default], openai_vision, anthropic_vision, azure_vision,
                bedrock_vision, tesseract
+
+Multimodal RAG (experimental):
+    Image RAG:  CLIP / SigLIP / ImageBind / BLIP-2 — text-to-image retrieval
+    Video RAG:  frame extraction, scene detection, transcript alignment
+    Audio RAG:  Whisper / Google STT / AWS Transcribe — segment-level retrieval
+
+    from raglib.multimodal import ImageIngestionPipeline, ImageRetriever
+    from raglib.multimodal.embedders import CLIPEmbedder
+    from raglib.multimodal.stores import ChromaMultimodalStore
+
+    embedder = CLIPEmbedder()
+    store = ChromaMultimodalStore()
+    pipeline = ImageIngestionPipeline(embedder=embedder, store=store)
+    pipeline.ingest("photo.jpg")
+    retriever = ImageRetriever(embedder=embedder, store=store)
+    results = retriever.retrieve("a dog playing in the park")
 """
 
 from raglib.library import RAGLibrary
@@ -61,7 +77,23 @@ from raglib.config.base import LibraryConfig
 # Registry for custom plugins
 from raglib.registry import PluginRegistry
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
+
+# ── Multimodal extension (experimental) ─────────────────────────────────────
+# Expose base classes + key types so users can do:
+#   from raglib import BaseMultimodalEmbedder, ImageChunk, ...
+from raglib.multimodal.embedders.base import BaseMultimodalEmbedder
+from raglib.multimodal.transcribers.base import BaseTranscriber, TranscriptionResult
+from raglib.multimodal.stores.base import BaseMultimodalStore
+from raglib.multimodal.retrievers.base import BaseMultimodalRetriever
+from raglib.multimodal.models.media import (
+    ImageChunk,
+    VideoFrame,
+    VideoChunk,
+    AudioSegment,
+    AudioChunk,
+    MultimodalRetrievalResult,
+)
 
 __all__ = [
     # Primary API
@@ -77,6 +109,11 @@ __all__ = [
     "LibraryConfig",
     # Plugin registry
     "PluginRegistry",
+    # Multimodal (experimental)
+    "BaseMultimodalEmbedder", "BaseTranscriber", "TranscriptionResult",
+    "BaseMultimodalStore", "BaseMultimodalRetriever",
+    "ImageChunk", "VideoFrame", "VideoChunk",
+    "AudioSegment", "AudioChunk", "MultimodalRetrievalResult",
     # Version
     "__version__",
 ]
