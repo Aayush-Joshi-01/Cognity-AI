@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>raglib — Modular RAG Library</title>
+  <meta name="description" content="raglib: Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --bg-card:     #161b22;
+      --bg-code:     #1c2128;
+      --border:      #30363d;
+      --border-light:#21262d;
+      --text:        #e6edf3;
+      --text-muted:  #7d8590;
+      --text-dim:    #484f58;
+      --accent:      #58a6ff;
+      --accent-2:    #bc8cff;
+      --accent-3:    #3fb950;
+      --accent-4:    #f78166;
+      --accent-5:    #ffa657;
+      --accent-6:    #79c0ff;
+      --glow:        rgba(88,166,255,.15);
+      --radius:      10px;
+      --radius-sm:   6px;
+      --font:        'Inter', system-ui, sans-serif;
+      --mono:        'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Nav ────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 17px; font-weight: 700; color: var(--text);
+    }
+    .nav-logo .logo-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, #58a6ff, #bc8cff);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a {
+      color: var(--text-muted); font-size: 14px; font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-github {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 14px; border-radius: var(--radius-sm);
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text) !important; font-size: 13px; font-weight: 500;
+      transition: border-color .2s, background .2s;
+    }
+    .nav-github:hover { border-color: var(--accent); text-decoration: none !important; }
+
+    /* ── Hero ───────────────────────────────────────────────────────── */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute;
+      top: -200px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(88,166,255,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 14px; border-radius: 20px;
+      background: rgba(88,166,255,.1); border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent); font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 72px);
+      font-weight: 800; letter-spacing: -.03em; line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, #58a6ff 0%, #bc8cff 50%, #3fb950 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; color: var(--text-muted); max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600; transition: all .2s;
+      cursor: pointer; border: none; text-decoration: none !important;
+    }
+    .btn-primary {
+      background: var(--accent); color: #0d1117;
+    }
+    .btn-primary:hover { background: #79c0ff; transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+    .hero-badges {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      justify-content: center; margin-top: 40px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 4px;
+      font-size: 11px; font-weight: 600;
+      border: 1px solid;
+    }
+    .badge-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3); background: rgba(88,166,255,.07); }
+    .badge-green  { color: #3fb950; border-color: rgba(63,185,80,.3);  background: rgba(63,185,80,.07); }
+    .badge-purple { color: #bc8cff; border-color: rgba(188,140,255,.3);background: rgba(188,140,255,.07); }
+    .badge-orange { color: #ffa657; border-color: rgba(255,166,87,.3); background: rgba(255,166,87,.07); }
+
+    /* ── Section ────────────────────────────────────────────────────── */
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border-light); }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--accent); margin-bottom: 10px;
+    }
+    h2 {
+      font-size: clamp(26px, 4vw, 36px); font-weight: 700;
+      letter-spacing: -.02em; margin-bottom: 14px;
+    }
+    .section-sub {
+      color: var(--text-muted); font-size: 16px; max-width: 640px;
+      margin-bottom: 48px;
+    }
+
+    /* ── Code Block ─────────────────────────────────────────────────── */
+    .code-block {
+      background: var(--bg-code); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .code-lang {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dots .dot-r { background: #ff5f57; }
+    .code-dots .dot-y { background: #febc2e; }
+    .code-dots .dot-g { background: #28c840; }
+    pre {
+      padding: 20px; overflow-x: auto; font-family: var(--mono);
+      font-size: 13px; line-height: 1.7; tab-size: 2;
+    }
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+    code {
+      font-family: var(--mono); font-size: 13px;
+      background: var(--bg-code); border: 1px solid var(--border);
+      padding: 2px 6px; border-radius: 4px; color: var(--accent-6);
+    }
+
+    /* Syntax highlighting */
+    .kw  { color: #ff7b72; }   /* keywords */
+    .st  { color: #a5d6ff; }   /* strings */
+    .cm  { color: #8b949e; font-style: italic; } /* comments */
+    .fn  { color: #d2a8ff; }   /* functions */
+    .cl  { color: #ffa657; }   /* classes */
+    .nm  { color: #79c0ff; }   /* names/vars */
+    .nb  { color: #3fb950; }   /* built-ins / values */
+
+    /* ── Features Grid ──────────────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 14px;
+    }
+    .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .feature-card p  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Provider Grid ──────────────────────────────────────────────── */
+    .provider-section { margin-bottom: 40px; }
+    .provider-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-muted); }
+    .provider-grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .provider-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 8px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      font-size: 13px; font-weight: 500;
+      transition: border-color .2s;
+    }
+    .provider-pill:hover { border-color: var(--accent); }
+    .provider-pill .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .pill-default { border-color: rgba(88,166,255,.4); color: var(--accent); }
+    .pill-default .dot { background: var(--accent); }
+    .dot-green  { background: #3fb950; }
+    .dot-purple { background: #bc8cff; }
+    .dot-orange { background: #ffa657; }
+    .dot-red    { background: #ff7b72; }
+    .dot-cyan   { background: #39d353; }
+    .dot-teal   { background: #56d364; }
+    .dot-yellow { background: #e3b341; }
+    .dot-gray   { background: #7d8590; }
+
+    /* ── RAG Methods ────────────────────────────────────────────────── */
+    .methods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .method-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      transition: border-color .2s;
+    }
+    .method-card:hover { border-color: var(--accent); }
+    .method-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .method-name { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent-6); }
+    .method-default {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--accent-3); background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3);
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .method-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Pipeline Diagram ───────────────────────────────────────────── */
+    .pipeline {
+      display: flex; flex-direction: column; gap: 0;
+      max-width: 700px; margin: 0 auto;
+    }
+    .pipeline-row {
+      display: flex; align-items: stretch; gap: 0;
+    }
+    .pipeline-arrow {
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 22px; padding: 4px 0;
+      opacity: .6;
+    }
+    .pipeline-node {
+      flex: 1; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 20px;
+      transition: border-color .2s;
+    }
+    .pipeline-node:hover { border-color: var(--accent); }
+    .pipeline-node-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .pipeline-node-sub   { font-size: 12px; color: var(--text-muted); }
+    .pipeline-split {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
+    }
+    .pipeline-merge {
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; width: 100%;
+    }
+    .pipeline-merge .pipeline-node { font-size: 12px; padding: 12px 14px; }
+
+    /* ── Table ──────────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg-card); }
+    th {
+      padding: 12px 16px; text-align: left; font-size: 12px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    td code { font-size: 12px; }
+    .td-default { color: var(--accent-3); font-weight: 600; font-size: 11px; }
+
+    /* ── Tab switcher ───────────────────────────────────────────────── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab {
+      padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer; transition: all .2s;
+    }
+    .tab:hover { border-color: var(--accent); color: var(--text); }
+    .tab.active { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Install ────────────────────────────────────────────────────── */
+    .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 700px) { .install-grid { grid-template-columns: 1fr; } }
+    .install-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+    }
+    .install-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text-muted); }
+    .install-card pre { padding: 0; font-size: 13px; }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      color: var(--text-muted); font-size: 13px;
+    }
+    .footer-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero { padding: 70px 0 60px; }
+      section { padding: 60px 0; }
+      .pipeline-merge { grid-template-columns: 1fr 1fr; }
+      .pipeline-split { grid-template-columns: 1fr; }
+    }
+
+    /* ── Scroll highlight ───────────────────────────────────────────── */
+    :target { scroll-margin-top: 80px; }
+
+    /* ── Custom scrollbar ───────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo" style="text-decoration:none">
+      <div class="logo-icon">⚡</div>
+      raglib
+    </a>
+    <div class="nav-links">
+      <a href="#quickstart">Quick Start</a>
+      <a href="#providers">Providers</a>
+      <a href="#methods">RAG Methods</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#api">API</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/yourname/graph-rag" class="nav-github">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">⚡ v2.0 — Now with raglib</div>
+    <h1>
+      The RAG library that<br>
+      <span class="grad">works with everything</span>
+    </h1>
+    <p class="hero-sub">
+      Any LLM &middot; Any vector store &middot; Any graph DB &middot; Any file format.<br>
+      One API. Smart defaults. Drop it into any AI agent.
+    </p>
+    <div class="hero-actions">
+      <a href="#quickstart" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.54 5.96l-4 6a.75.75 0 01-1.28-.78L9.38 7.5H5.75a.75.75 0 01-.64-1.14l4-6a.75.75 0 011.28.78L7.27 5.5h3.69a.75.75 0 01.58 1.23-.8.8 0 01-.58.23z"/></svg>
+        Get Started
+      </a>
+      <a href="#api" class="btn btn-outline">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0114.25 16H1.75A1.75 1.75 0 010 14.25V1.75zM1.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25V1.75a.25.25 0 00-.25-.25H1.75zM11.5 6a.5.5 0 000 1H13a.5.5 0 000-1h-1.5zm0 3a.5.5 0 000 1H13a.5.5 0 000-1h-1.5zm-8-3a.5.5 0 000 1h1.5a.5.5 0 000-1H3.5zm0 3a.5.5 0 000 1h1.5a.5.5 0 000-1H3.5z"/></svg>
+        API Reference
+      </a>
+      <a href="https://github.com/yourname/graph-rag" class="btn btn-outline">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View Source
+      </a>
+    </div>
+
+    <div class="hero-badges">
+      <span class="badge badge-blue">Python 3.11+</span>
+      <span class="badge badge-green">MIT License</span>
+      <span class="badge badge-purple">v2.0.0</span>
+      <span class="badge badge-blue">9 LLM Providers</span>
+      <span class="badge badge-orange">8 Vector Stores</span>
+      <span class="badge badge-purple">5 Graph Stores</span>
+      <span class="badge badge-green">14 File Formats</span>
+      <span class="badge badge-blue">8 RAG Methods</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ──────────────────────────────────────────────────────────── -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">What's inside</div>
+    <h2>Everything you need for production RAG</h2>
+    <p class="section-sub">raglib handles the plumbing so your agent handles the intelligence.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1)">📄</div>
+        <h3>Universal File Ingestion</h3>
+        <p>PDF, DOCX, XLSX, PPTX, CSV, HTML, JSON, YAML, TXT, MD, and images. Embedded images in documents are auto-extracted and OCR'd inline.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1)">👁️</div>
+        <h3>Multimodal OCR</h3>
+        <p>Gemini Vision, GPT-4o, Claude, Azure, Bedrock, or local Tesseract. Complex tables, handwriting, and mixed layouts handled natively.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(63,185,80,.1)">🔀</div>
+        <h3>4-Channel Hybrid Retrieval</h3>
+        <p>Graph BFS + Vector semantic + Community global + Graph→Vector bridge. Fused with Reciprocal Rank Fusion. Best answer, every time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,166,87,.1)">🧠</div>
+        <h3>NLP-First Extraction</h3>
+        <p>spaCy handles ~70% of extraction free and locally. LLMs only augment what NLP misses — causal links, implicit associations.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(121,192,255,.1)">⚡</div>
+        <h3>Zero-Config Smart Defaults</h3>
+        <p>Auto-selects the best methodology for your stack. hybrid_graph when Neo4j is available, falls back to naive gracefully. No YAML required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,123,114,.1)">🔌</div>
+        <h3>Plugin Architecture</h3>
+        <p>Register custom loaders, chunkers, embedders, generators, and retrievers. Every component is an ABC — swap anything without touching the pipeline.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(88,166,255,.1)">♻️</div>
+        <h3>Incremental Ingestion</h3>
+        <p>SHA-256 hash-based change detection. Unchanged documents are skipped entirely — zero API calls on re-ingest of an unchanged corpus.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(188,140,255,.1)">🌍</div>
+        <h3>Knowledge Lifecycle</h3>
+        <p>Confirm, deprecate, detect conflicts, prune low-confidence triples. Full provenance tracking. Sources influence retrieval scores.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUICK START ───────────────────────────────────────────────────────── -->
+<section id="quickstart">
+  <div class="container">
+    <div class="section-label">Quick Start</div>
+    <h2>From zero to RAG in minutes</h2>
+    <p class="section-sub">Install, configure, ingest, and query — no infrastructure required for the default setup.</p>
+
+    <div class="tabs" id="qs-tabs">
+      <button class="tab active" onclick="switchTab('qs','default')">Default (Gemini + Neo4j)</button>
+      <button class="tab" onclick="switchTab('qs','openai')">OpenAI + Qdrant</button>
+      <button class="tab" onclick="switchTab('qs','offline')">Fully Offline</button>
+      <button class="tab" onclick="switchTab('qs','files')">Any File Type</button>
+    </div>
+
+    <div id="qs-default" class="tab-panel active">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python</span>
+        </div>
+        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+
+<span class="cm"># Smart defaults: Gemini LLM + embedder, Neo4j graph, ChromaDB vector</span>
+rag = <span class="cl">RAGLibrary</span>(
+    <span class="nm">gemini_api_key</span>=<span class="st">"your-api-key"</span>,
+    <span class="nm">neo4j_password</span>=<span class="st">"your-password"</span>,
+)
+
+<span class="cm"># Ingest — auto-detects format from extension</span>
+rag.<span class="fn">ingest</span>(<span class="st">"report.pdf"</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"data.xlsx"</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"slides.pptx"</span>)
+rag.<span class="fn">ingest_dir</span>(<span class="st">"./docs/"</span>)        <span class="cm"># recursive batch</span>
+
+<span class="cm"># Build community graph (optional, enriches thematic queries)</span>
+rag.<span class="fn">build_communities</span>()
+
+<span class="cm"># Query</span>
+answer = rag.<span class="fn">query</span>(<span class="st">"What are the key findings?"</span>)
+
+<span class="cm"># Query with full source attribution</span>
+result = rag.<span class="fn">query_with_sources</span>(<span class="st">"Who founded Anthropic?"</span>)
+<span class="fn">print</span>(result[<span class="st">"answer"</span>])
+<span class="fn">print</span>(result[<span class="st">"sources"</span>])       <span class="cm"># graph, vector, community</span>
+<span class="fn">print</span>(result[<span class="st">"seed_entities"</span>])  <span class="cm"># ["Anthropic"]</span></code></pre>
+      </div>
+    </div>
+
+    <div id="qs-openai" class="tab-panel">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python</span>
+        </div>
+        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+
+rag = <span class="cl">RAGLibrary</span>(
+    <span class="nm">llm</span>=<span class="st">"openai"</span>,
+    <span class="nm">embedder</span>=<span class="st">"openai"</span>,
+    <span class="nm">vector_store</span>=<span class="st">"qdrant"</span>,
+    <span class="nm">graph_store</span>=<span class="st">"neo4j"</span>,
+    <span class="nm">openai_api_key</span>=<span class="st">"sk-..."</span>,
+    <span class="nm">neo4j_password</span>=<span class="st">"your-password"</span>,
+)
+
+rag.<span class="fn">ingest</span>(<span class="st">"contract.docx"</span>)
+answer = rag.<span class="fn">query</span>(<span class="st">"What are the payment terms?"</span>)</code></pre>
+      </div>
+    </div>
+
+    <div id="qs-offline" class="tab-panel">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python</span>
+        </div>
+        <pre><code><span class="cm"># 100% offline — no API keys, no cloud services</span>
+<span class="cm"># pip install -e ".[sentence-transformers,faiss,networkx,nlp]"</span>
+<span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+
+rag = <span class="cl">RAGLibrary</span>(
+    <span class="nm">llm</span>=<span class="st">"ollama"</span>,             <span class="cm"># local Ollama server</span>
+    <span class="nm">embedder</span>=<span class="st">"sentence_transformers"</span>,
+    <span class="nm">vector_store</span>=<span class="st">"faiss"</span>,
+    <span class="nm">graph_store</span>=<span class="st">"networkx"</span>,
+    <span class="nm">ocr</span>=<span class="st">"tesseract"</span>,
+)
+
+rag.<span class="fn">ingest</span>(<span class="st">"local_docs/report.pdf"</span>)
+answer = rag.<span class="fn">query</span>(<span class="st">"Summarize the main points"</span>)</code></pre>
+      </div>
+    </div>
+
+    <div id="qs-files" class="tab-panel">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python</span>
+        </div>
+        <pre><code><span class="cm"># Ingest ANY file type — format auto-detected</span>
+rag.<span class="fn">ingest</span>(<span class="st">"report.pdf"</span>)          <span class="cm"># PDF: page-aware, embedded images</span>
+rag.<span class="fn">ingest</span>(<span class="st">"contract.docx"</span>)       <span class="cm"># Word: headings, tables, images</span>
+rag.<span class="fn">ingest</span>(<span class="st">"financials.xlsx"</span>)     <span class="cm"># Excel: per-sheet text</span>
+rag.<span class="fn">ingest</span>(<span class="st">"deck.pptx"</span>)           <span class="cm"># PowerPoint: slides + notes</span>
+rag.<span class="fn">ingest</span>(<span class="st">"data.csv"</span>)            <span class="cm"># CSV: header-aware</span>
+rag.<span class="fn">ingest</span>(<span class="st">"page.html"</span>)           <span class="cm"># HTML: tag stripping</span>
+rag.<span class="fn">ingest</span>(<span class="st">"photo.jpg"</span>)           <span class="cm"># Image: Gemini Vision OCR</span>
+rag.<span class="fn">ingest</span>(<span class="st">"scan.png"</span>)            <span class="cm"># Image: complex layout OCR</span>
+rag.<span class="fn">ingest</span>(<span class="st">"notes.md"</span>)            <span class="cm"># Markdown: heading detection</span>
+rag.<span class="fn">ingest</span>(<span class="st">"config.yaml"</span>)         <span class="cm"># YAML/JSON: key-value text</span>
+
+<span class="cm"># Or ingest an entire directory at once</span>
+results = rag.<span class="fn">ingest_dir</span>(<span class="st">"./knowledge_base/"</span>, <span class="nm">recursive</span>=<span class="nb">True</span>)
+<span class="fn">print</span>(<span class="nb">len</span>(results), <span class="st">"files ingested"</span>)</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROVIDERS ─────────────────────────────────────────────────────────── -->
+<section id="providers">
+  <div class="container">
+    <div class="section-label">Provider Matrix</div>
+    <h2>Every major provider supported</h2>
+    <p class="section-sub">Change providers by changing a single string. No code changes required.</p>
+
+    <div class="provider-section">
+      <h3>🤖 LLM Generators</h3>
+      <div class="provider-grid">
+        <div class="provider-pill pill-default"><span class="dot dot-blue" style="background:var(--accent)"></span>Gemini <small style="color:var(--text-muted);margin-left:4px">default</small></div>
+        <div class="provider-pill"><span class="dot dot-gray" style="background:#7d8590"></span>OpenAI GPT-4o</div>
+        <div class="provider-pill"><span class="dot" style="background:#d2a8ff"></span>Anthropic Claude</div>
+        <div class="provider-pill"><span class="dot dot-orange"></span>Azure OpenAI</div>
+        <div class="provider-pill"><span class="dot dot-yellow"></span>AWS Bedrock</div>
+        <div class="provider-pill"><span class="dot" style="background:#3fb950"></span>Vertex AI</div>
+        <div class="provider-pill"><span class="dot" style="background:#39d353"></span>Cohere Command R+</div>
+        <div class="provider-pill"><span class="dot dot-red"></span>Ollama (local)</div>
+      </div>
+    </div>
+
+    <div class="provider-section">
+      <h3>🔢 Embedders</h3>
+      <div class="provider-grid">
+        <div class="provider-pill pill-default"><span class="dot" style="background:var(--accent)"></span>Gemini text-embedding-004 <small style="color:var(--text-muted);margin-left:4px">default</small></div>
+        <div class="provider-pill"><span class="dot dot-gray" style="background:#7d8590"></span>OpenAI text-embedding-3</div>
+        <div class="provider-pill"><span class="dot dot-orange"></span>Azure OpenAI</div>
+        <div class="provider-pill"><span class="dot dot-yellow"></span>Bedrock Titan V2</div>
+        <div class="provider-pill"><span class="dot" style="background:#3fb950"></span>Vertex AI</div>
+        <div class="provider-pill"><span class="dot" style="background:#39d353"></span>Cohere embed-v3</div>
+        <div class="provider-pill"><span class="dot" style="background:#56d364"></span>SentenceTransformers</div>
+        <div class="provider-pill"><span class="dot dot-red"></span>Ollama (local)</div>
+      </div>
+    </div>
+
+    <div class="provider-section">
+      <h3>🗄️ Vector Stores</h3>
+      <div class="provider-grid">
+        <div class="provider-pill pill-default"><span class="dot" style="background:var(--accent)"></span>ChromaDB <small style="color:var(--text-muted);margin-left:4px">default</small></div>
+        <div class="provider-pill"><span class="dot dot-red"></span>Qdrant</div>
+        <div class="provider-pill"><span class="dot dot-green" style="background:#3fb950"></span>Pinecone</div>
+        <div class="provider-pill"><span class="dot dot-orange"></span>FAISS</div>
+        <div class="provider-pill"><span class="dot dot-purple" style="background:#bc8cff"></span>Weaviate</div>
+        <div class="provider-pill"><span class="dot" style="background:#79c0ff"></span>Milvus</div>
+        <div class="provider-pill"><span class="dot dot-yellow"></span>pgvector (PostgreSQL)</div>
+        <div class="provider-pill"><span class="dot dot-orange"></span>Azure AI Search</div>
+      </div>
+    </div>
+
+    <div class="provider-section">
+      <h3>🕸️ Graph Stores</h3>
+      <div class="provider-grid">
+        <div class="provider-pill pill-default"><span class="dot" style="background:var(--accent)"></span>Neo4j <small style="color:var(--text-muted);margin-left:4px">default</small></div>
+        <div class="provider-pill"><span class="dot dot-red"></span>Memgraph</div>
+        <div class="provider-pill"><span class="dot dot-yellow"></span>ArangoDB</div>
+        <div class="provider-pill"><span class="dot" style="background:#3fb950"></span>NetworkX (in-memory)</div>
+        <div class="provider-pill"><span class="dot dot-orange"></span>Microsoft GraphRAG</div>
+      </div>
+    </div>
+
+    <div class="provider-section">
+      <h3>👁️ OCR Providers</h3>
+      <div class="provider-grid">
+        <div class="provider-pill pill-default"><span class="dot" style="background:var(--accent)"></span>Gemini Vision <small style="color:var(--text-muted);margin-left:4px">default</small></div>
+        <div class="provider-pill"><span class="dot dot-gray" style="background:#7d8590"></span>OpenAI GPT-4o Vision</div>
+        <div class="provider-pill"><span class="dot" style="background:#d2a8ff"></span>Anthropic Claude Vision</div>
+        <div class="provider-pill"><span class="dot dot-orange"></span>Azure GPT-4o Vision</div>
+        <div class="provider-pill"><span class="dot dot-yellow"></span>AWS Bedrock Vision</div>
+        <div class="provider-pill"><span class="dot dot-gray" style="background:#7d8590"></span>Tesseract (offline)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── RAG METHODS ───────────────────────────────────────────────────────── -->
+<section id="methods">
+  <div class="container">
+    <div class="section-label">RAG Methodologies</div>
+    <h2>8 retrieval strategies, one API</h2>
+    <p class="section-sub">Set at init time or override per-query. The best method auto-selects based on available infrastructure.</p>
+
+    <div class="methods-grid">
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">hybrid_graph</span>
+          <span class="method-default">DEFAULT</span>
+        </div>
+        <p class="method-desc">4-channel fusion: Graph BFS + Vector cosine + Community global + Graph→Vector bridge. Weighted RRF. Best for multi-hop reasoning and structured knowledge bases.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">naive</span>
+        </div>
+        <p class="method-desc">Pure vector cosine similarity. Default when no graph store is available. Fastest setup — no graph DB required.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">vector_only</span>
+        </div>
+        <p class="method-desc">Vector semantic search + community summaries. Good middle ground — richer than naive but no graph traversal overhead.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">graph_only</span>
+        </div>
+        <p class="method-desc">Graph traversal only. Best for fully structured knowledge bases where all facts are in the graph and semantic search adds noise.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">parent_child</span>
+        </div>
+        <p class="method-desc">Child chunks for precise retrieval, parent chunks for rich generation context. Best for long documents where precision matters.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">multi_query</span>
+        </div>
+        <p class="method-desc">LLM generates N query reformulations → retrieves all → merges via RRF. Best for complex, ambiguous, or multi-faceted questions.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">microsoft_graphrag</span>
+        </div>
+        <p class="method-desc">Official MS GraphRAG local + global search. Wraps the microsoft/graphrag library. Best for MS-ecosystem workflows.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-header">
+          <span class="method-name">adaptive</span>
+        </div>
+        <p class="method-desc">Classifies each query and routes to the optimal sub-retriever. Factual → graph; broad → community; semantic → vector. Zero configuration needed.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:32px">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">python — per-query override</span>
+        </div>
+        <pre><code><span class="cm"># Default method set at init</span>
+rag = <span class="cl">RAGLibrary</span>(<span class="nm">rag_method</span>=<span class="st">"hybrid_graph"</span>, ...)
+
+<span class="cm"># Override per-query without reinitializing</span>
+answer    = rag.<span class="fn">query</span>(<span class="st">"Who founded X?"</span>)
+thematic  = rag.<span class="fn">query</span>(<span class="st">"Summarize all themes"</span>, <span class="nm">method</span>=<span class="st">"microsoft_graphrag"</span>)
+precise   = rag.<span class="fn">query</span>(<span class="st">"What's on page 12?"</span>, <span class="nm">method</span>=<span class="st">"parent_child"</span>)
+multi_hop = rag.<span class="fn">query</span>(<span class="st">"Compare AI safety approaches"</span>, <span class="nm">method</span>=<span class="st">"multi_query"</span>)</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PIPELINE ──────────────────────────────────────────────────────────── -->
+<section id="pipeline">
+  <div class="container">
+    <div class="section-label">Architecture</div>
+    <h2>How the pipeline works</h2>
+    <p class="section-sub">Every component is swappable. Every stage is observable.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-node">
+        <div class="pipeline-node-title">📁 File Input</div>
+        <div class="pipeline-node-sub">PDF · DOCX · XLSX · PPTX · CSV · HTML · JSON · YAML · TXT · MD · Images</div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-split">
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">📖 Loader</div>
+          <div class="pipeline-node-sub">Format-specific parsing · page map · embedded image extraction</div>
+        </div>
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">👁️ OCR</div>
+          <div class="pipeline-node-sub">Gemini/GPT-4o/Claude Vision or Tesseract for images</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-node">
+        <div class="pipeline-node-title">📑 Page Index</div>
+        <div class="pipeline-node-sub">Structural (PDF page nums) + Regex fallback · persistent JSON store</div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-node">
+        <div class="pipeline-node-title">✂️ Chunker</div>
+        <div class="pipeline-node-sub">sentence · fixed · recursive · semantic · parent_child · hybrid</div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-node">
+        <div class="pipeline-node-title">🧬 Extractor</div>
+        <div class="pipeline-node-sub">spaCy NER + SVO + deps + coref (free) → LLM augments gaps (selective)</div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-node">
+        <div class="pipeline-node-title">🔢 Embedder</div>
+        <div class="pipeline-node-sub">Batch embedding (100/call) · any provider</div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-split">
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">🕸️ Graph Store</div>
+          <div class="pipeline-node-sub">Entities · Relations · ChunkRef links · Communities</div>
+        </div>
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">🗄️ Vector Store</div>
+          <div class="pipeline-node-sub">Chunk embeddings · Community embeddings</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div style="font-size:12px;color:var(--text-muted);text-align:center;padding:6px 0">— Query time —</div>
+      <div class="pipeline-merge">
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">Ch1 Graph BFS</div>
+          <div class="pipeline-node-sub">weight 1.2×</div>
+        </div>
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">Ch2 Vector</div>
+          <div class="pipeline-node-sub">weight 1.0×</div>
+        </div>
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">Ch3 Community</div>
+          <div class="pipeline-node-sub">weight 0.8×</div>
+        </div>
+        <div class="pipeline-node">
+          <div class="pipeline-node-title">Ch4 Bridge</div>
+          <div class="pipeline-node-sub">weight 1.1×</div>
+        </div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-node">
+        <div class="pipeline-node-title">⚖️ RRF Fusion + Confidence Boost</div>
+        <div class="pipeline-node-sub">Reciprocal Rank Fusion · confirmed sources 1.5× · deprecated 0.5×</div>
+      </div>
+      <div class="pipeline-arrow">↓</div>
+      <div class="pipeline-node" style="border-color:rgba(88,166,255,.4)">
+        <div class="pipeline-node-title" style="color:var(--accent)">✨ Generator → Answer</div>
+        <div class="pipeline-node-sub">Any LLM provider with full context + source attribution</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── API ───────────────────────────────────────────────────────────────── -->
+<section id="api">
+  <div class="container">
+    <div class="section-label">API Reference</div>
+    <h2>Everything through one class</h2>
+    <p class="section-sub">The full <code>RAGLibrary</code> public API.</p>
+
+    <div class="table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>ingest(source, doc_id, status)</code></td><td><code>dict</code></td><td>Ingest any file. Auto-detects format from extension.</td></tr>
+          <tr><td><code>ingest_dir(directory, recursive)</code></td><td><code>list[dict]</code></td><td>Batch ingest all supported files in a directory.</td></tr>
+          <tr><td><code>ingest_text(text, doc_id, source_name)</code></td><td><code>dict</code></td><td>Ingest raw text directly. Backward-compatible.</td></tr>
+          <tr><td><code>ingest_batch(documents)</code></td><td><code>list[dict]</code></td><td>Batch ingest from list of dicts.</td></tr>
+          <tr><td><code>build_communities()</code></td><td><code>list[CommunityInfo]</code></td><td>Run Leiden/Louvain community detection + summarization.</td></tr>
+          <tr><td><code>remove_document(doc_id)</code></td><td><code>None</code></td><td>Remove doc + all graph/vector data.</td></tr>
+          <tr><td><code>sync(current_doc_ids)</code></td><td><code>list[str]</code></td><td>Garbage collect docs not in provided set.</td></tr>
+          <tr><td><code>query(question, top_k, method)</code></td><td><code>str</code></td><td>Retrieve + generate. Returns answer string.</td></tr>
+          <tr><td><code>query_with_sources(question, method)</code></td><td><code>dict</code></td><td>Full answer + graph/vector/community sources + scores.</td></tr>
+          <tr><td><code>retrieve(query, top_k, method)</code></td><td><code>list[RetrievalResult]</code></td><td>Retrieval only, no generation.</td></tr>
+          <tr><td><code>confirm(doc_id)</code></td><td><code>None</code></td><td>Boost all triples from doc to confidence 1.0.</td></tr>
+          <tr><td><code>deprecate(doc_id)</code></td><td><code>None</code></td><td>Halve triple confidences. Penalizes retrieval scores.</td></tr>
+          <tr><td><code>detect_conflicts(entity_name)</code></td><td><code>list[dict]</code></td><td>Find contradictions for entity across sources.</td></tr>
+          <tr><td><code>prune(threshold)</code></td><td><code>int</code></td><td>Remove relations below confidence threshold.</td></tr>
+          <tr><td><code>health_report()</code></td><td><code>dict</code></td><td>Entity / relation / doc / community counts.</td></tr>
+          <tr><td><code>register_loader(ext, cls)</code></td><td><code>None</code></td><td>Register custom file loader for extension.</td></tr>
+          <tr><td><code>register_embedder(name, cls)</code></td><td><code>None</code></td><td>Register custom embedder by string key.</td></tr>
+          <tr><td><code>register_retriever(name, cls)</code></td><td><code>None</code></td><td>Register custom retriever by string key.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="code-lang">python — custom plugin example</span>
+      </div>
+      <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+<span class="kw">from</span> raglib.loaders.base <span class="kw">import</span> <span class="cl">BaseLoader</span>
+<span class="kw">from</span> raglib.models.document <span class="kw">import</span> <span class="cl">Document</span>
+
+<span class="kw">class</span> <span class="cl">MyLoader</span>(<span class="cl">BaseLoader</span>):
+    <span class="kw">def</span> <span class="fn">load</span>(<span class="nm">self</span>, <span class="nm">path</span>: <span class="cl">str</span>) -> <span class="cl">list</span>[<span class="cl">Document</span>]:
+        <span class="kw">return</span> [<span class="cl">Document</span>(<span class="nm">doc_id</span>=<span class="st">"x"</span>, <span class="nm">text</span>=<span class="fn">open</span>(<span class="nm">path</span>).<span class="fn">read</span>())]
+
+    <span class="kw">@property</span>
+    <span class="kw">def</span> <span class="fn">supported_extensions</span>(<span class="nm">self</span>): <span class="kw">return</span> [<span class="st">".myext"</span>]
+
+rag = <span class="cl">RAGLibrary</span>(...)
+rag.<span class="fn">register_loader</span>(<span class="st">".myext"</span>, <span class="cl">MyLoader</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"proprietary_file.myext"</span>)</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── INSTALL ───────────────────────────────────────────────────────────── -->
+<section id="install">
+  <div class="container">
+    <div class="section-label">Installation</div>
+    <h2>Install only what you need</h2>
+    <p class="section-sub">Optional dependency groups keep your environment lean. Mix and match any combination.</p>
+
+    <div class="install-grid">
+      <div class="install-card">
+        <h4>Default (recommended)</h4>
+        <pre><code>pip install -e ".[default]"
+
+# Includes:
+# Gemini LLM + embedder
+# Neo4j graph store
+# ChromaDB vector store
+# spaCy NLP extraction
+# PDF, DOCX, XLSX, PPTX loaders
+# Pillow (for OCR)</code></pre>
+      </div>
+      <div class="install-card">
+        <h4>OpenAI + Qdrant stack</h4>
+        <pre><code>pip install -e ".[openai,qdrant,pdf,nlp]"</code></pre>
+        <h4 style="margin-top:16px">Anthropic + Pinecone</h4>
+        <pre><code>pip install -e ".[anthropic,pinecone,office]"</code></pre>
+        <h4 style="margin-top:16px">AWS Bedrock + FAISS</h4>
+        <pre><code>pip install -e ".[bedrock,faiss,pdf]"</code></pre>
+      </div>
+      <div class="install-card">
+        <h4>Fully offline (zero API cost)</h4>
+        <pre><code>pip install -e "[sentence-transformers,faiss,networkx,nlp,ocr-local]"
+
+# Then start Ollama:
+ollama pull llama3
+ollama serve</code></pre>
+      </div>
+      <div class="install-card">
+        <h4>All providers + stores + loaders</h4>
+        <pre><code>pip install -e ".[all]"
+
+# After install, download spaCy model:
+python -m spacy download en_core_web_trf
+# or lightweight:
+python -m spacy download en_core_web_sm</code></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:32px">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+          <span class="code-lang">all available extras</span>
+        </div>
+        <pre><code><span class="cm"># LLM providers</span>
+[gemini] [openai] [azure] [anthropic] [bedrock] [vertex-ai] [cohere] [ollama]
+
+<span class="cm"># Embedders</span>
+[sentence-transformers]
+
+<span class="cm"># Vector stores</span>
+[chroma] [qdrant] [pinecone] [faiss] [weaviate] [milvus] [pgvector] [azure-search]
+
+<span class="cm"># Graph stores</span>
+[neo4j] [networkx] [memgraph] [arangodb] [microsoft-graphrag]
+
+<span class="cm"># NLP extraction</span>
+[nlp]    <span class="cm"># spaCy</span>
+
+<span class="cm"># File loaders</span>
+[pdf] [office] [csv] [html] [yaml]
+
+<span class="cm"># OCR</span>
+[ocr]       <span class="cm"># Pillow (for LLM vision)</span>
+[ocr-local] <span class="cm"># pytesseract + Pillow</span>
+
+<span class="cm"># Convenience bundles</span>
+[full-loaders] [default] [all]</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MIGRATION ─────────────────────────────────────────────────────────── -->
+<section id="migration">
+  <div class="container">
+    <div class="section-label">Migration</div>
+    <h2>Coming from hybrid_rag?</h2>
+    <p class="section-sub">The old <code>build_pipeline()</code> API still works — it'll emit a deprecation warning and delegate to <code>RAGLibrary</code>. Migrate at your own pace.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <p style="font-size:12px;color:var(--accent-4);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Before (deprecated)</p>
+        <div class="code-block">
+          <pre><code><span class="kw">from</span> hybrid_rag.main <span class="kw">import</span> build_pipeline
+
+c = <span class="fn">build_pipeline</span>()
+c[<span class="st">"pipeline"</span>].<span class="fn">ingest</span>(
+    <span class="nm">doc_id</span>=<span class="st">"d1"</span>,
+    <span class="nm">text</span>=<span class="st">"..."</span>,
+    <span class="nm">source_name</span>=<span class="st">"report"</span>,
+)
+answer = c[<span class="st">"retriever"</span>].<span class="fn">query</span>(
+    <span class="st">"What is X?"</span>
+)</code></pre>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--accent-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">After (new)</p>
+        <div class="code-block">
+          <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+
+rag = <span class="cl">RAGLibrary</span>(
+    <span class="nm">gemini_api_key</span>=<span class="st">"..."</span>,
+    <span class="nm">neo4j_password</span>=<span class="st">"..."</span>,
+)
+rag.<span class="fn">ingest_text</span>(
+    <span class="st">"..."</span>,
+    <span class="nm">doc_id</span>=<span class="st">"d1"</span>,
+    <span class="nm">source_name</span>=<span class="st">"report"</span>,
+)
+answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="container footer-inner">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="logo-icon" style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#58a6ff,#bc8cff);display:flex;align-items:center;justify-content:center;font-size:11px">⚡</div>
+      <span><strong>raglib</strong> v2.0.0 &mdash; MIT License</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/yourname/graph-rag">GitHub</a>
+      <a href="https://github.com/yourname/graph-rag/blob/main/API.md">API Docs</a>
+      <a href="https://github.com/yourname/graph-rag/blob/main/ARCHITECTURE.md">Architecture</a>
+      <a href="https://github.com/yourname/graph-rag/blob/main/CHANGELOG.md">Changelog</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* ── Tab switcher ─────────────────────────────────────────────────────── */
+  function switchTab(group, name) {
+    const panels = document.querySelectorAll(`[id^="${group}-"]`);
+    panels.forEach(p => p.classList.remove('active'));
+    document.getElementById(`${group}-${name}`).classList.add('active');
+
+    const tabs = document.querySelectorAll('#qs-tabs .tab');
+    const names = ['default','openai','offline','files'];
+    tabs.forEach((t, i) => {
+      t.classList.toggle('active', names[i] === name);
+    });
+  }
+
+  /* ── Smooth nav active state ──────────────────────────────────────────── */
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navLinks.forEach(a => {
+          a.style.color = a.getAttribute('href') === `#${id}` ? 'var(--text)' : '';
+        });
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-80px 0px -40% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
