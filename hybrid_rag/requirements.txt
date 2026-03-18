@@ -1,3 +1,22 @@
+# ── hybrid_rag (DEPRECATED) ──────────────────────────────────────────────────
+#
+# This package has been superseded by `raglib`.
+# The build_pipeline() function still works but will emit a DeprecationWarning.
+#
+# New usage:
+#     pip install -e ".[default]"   (from the repo root)
+#   or
+#     pip install raglib[default]   (once published to PyPI)
+#
+# Then:
+#     from raglib import RAGLibrary
+#     rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
+#
+# ──────────────────────────────────────────────────────────────────────────────
+# Minimum deps to keep legacy build_pipeline() working
+# (raglib is expected to be installed alongside this package)
+# ──────────────────────────────────────────────────────────────────────────────
+
 neo4j>=5.0.0
 chromadb>=0.4.0
 google-generativeai>=0.5.0

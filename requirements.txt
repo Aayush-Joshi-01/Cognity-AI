@@ -1,0 +1,47 @@
+# ── raglib — default requirements ────────────────────────────────────────────
+#
+# Equivalent to:  pip install -e ".[default]"
+#
+# Covers: Gemini LLM + embedder, Neo4j graph store, ChromaDB vector store,
+#         spaCy NLP extraction, PDF / DOCX / Excel / PPTX / HTML / YAML loaders,
+#         Pillow for image/OCR support.
+#
+# For a minimal install (core only, no providers):
+#     pip install -e .
+#
+# For all providers/stores/loaders:
+#     pip install -e ".[all]"
+#
+# For selective extras:
+#     pip install -e ".[openai,qdrant,pdf,ocr-local]"
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Core (always required)
+pydantic>=2.0.0
+tenacity>=8.0.0
+numpy>=1.24.0
+
+# Default LLM + embedder
+google-generativeai>=0.5.0
+
+# Default graph store
+neo4j>=5.0.0
+
+# Default vector store
+chromadb>=0.4.0
+
+# NLP extraction
+spacy>=3.7.0
+# After pip install, run ONE of:
+#   python -m spacy download en_core_web_trf   (best accuracy, ~500 MB)
+#   python -m spacy download en_core_web_sm    (lightweight fallback, ~12 MB)
+
+# File loaders
+pdfplumber>=0.10.0
+python-docx>=1.0.0
+openpyxl>=3.1.0
+pandas>=2.0.0
+python-pptx>=0.6.21
+beautifulsoup4>=4.12.0
+PyYAML>=6.0
+Pillow>=10.0.0

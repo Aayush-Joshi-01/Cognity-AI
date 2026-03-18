@@ -1,4 +1,20 @@
 """
+DEPRECATED: hybrid_rag.main — use raglib.RAGLibrary instead.
+
+The `build_pipeline()` function is kept for backward compatibility but
+delegates to the new raglib package when available.
+
+New usage:
+    from raglib import RAGLibrary
+    rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
+    rag.ingest("report.pdf")
+    answer = rag.query("What are the findings?")
+
+Legacy usage (still works, deprecated):
+    from hybrid_rag.main import build_pipeline
+    c = build_pipeline()
+
+────────────────────────────────────────────────────────────────────────
 Hybrid Dynamic Graph RAG + Vector RAG — Ultimate Edition
 
 Architecture:
@@ -49,6 +65,7 @@ Cost optimization:
   • Rate limiting on all API calls
 """
 
+import warnings
 from config import Config
 from nlp_processor import NLPProcessor
 from gemini_extractor import GeminiExtractor
@@ -61,7 +78,18 @@ from knowledge_updater import KnowledgeUpdater
 
 
 def build_pipeline(config: Config | None = None) -> dict:
-    """Wire all components. Returns dict of named components."""
+    """
+    Wire all components. Returns dict of named components.
+
+    .. deprecated::
+       Use :class:`raglib.RAGLibrary` instead. This function will be
+       removed in a future version.
+    """
+    warnings.warn(
+        "build_pipeline() is deprecated. Use `from raglib import RAGLibrary` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     config = config or Config()
 
     nlp = NLPProcessor(config.nlp)

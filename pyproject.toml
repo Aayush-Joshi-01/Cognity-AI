@@ -1,0 +1,213 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "raglib"
+version = "1.0.0"
+description = "Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+keywords = ["rag", "llm", "graph", "vector", "knowledge-graph", "embeddings", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# ── Core (always installed) ──────────────────────────────────────────────────
+dependencies = [
+    "pydantic>=2.0.0",
+    "tenacity>=8.0.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+
+# ── LLM providers ────────────────────────────────────────────────────────────
+gemini = [
+    "google-generativeai>=0.5.0",
+]
+vertex-ai = [
+    "google-cloud-aiplatform>=1.50.0",
+    "google-generativeai>=0.5.0",
+]
+openai = [
+    "openai>=1.0.0",
+]
+azure = [
+    "openai>=1.0.0",          # Azure OpenAI uses the openai SDK
+]
+anthropic = [
+    "anthropic>=0.25.0",
+]
+bedrock = [
+    "boto3>=1.34.0",
+    "botocore>=1.34.0",
+]
+cohere = [
+    "cohere>=5.0.0",
+]
+ollama = [
+    "ollama>=0.1.0",
+]
+
+# ── Embedding models ─────────────────────────────────────────────────────────
+sentence-transformers = [
+    "sentence-transformers>=2.2.0",
+]
+
+# ── Graph stores ─────────────────────────────────────────────────────────────
+neo4j = [
+    "neo4j>=5.0.0",
+]
+networkx = [
+    "networkx>=3.0",
+]
+memgraph = [
+    "neo4j>=5.0.0",           # Memgraph uses the Neo4j Bolt driver
+]
+arangodb = [
+    "python-arango>=7.0.0",
+]
+microsoft-graphrag = [
+    "graphrag>=0.3.0",
+    "pandas>=2.0.0",
+]
+
+# ── Vector stores ────────────────────────────────────────────────────────────
+chroma = [
+    "chromadb>=0.4.0",
+]
+qdrant = [
+    "qdrant-client>=1.7.0",
+]
+pinecone = [
+    "pinecone-client>=3.0.0",
+]
+faiss = [
+    "faiss-cpu>=1.7.4",
+    "numpy>=1.24.0",
+]
+weaviate = [
+    "weaviate-client>=4.0.0",
+]
+milvus = [
+    "pymilvus>=2.3.0",
+]
+pgvector = [
+    "psycopg2-binary>=2.9.0",
+]
+azure-search = [
+    "azure-search-documents>=11.6.0",
+    "azure-core>=1.30.0",
+]
+
+# ── NLP extraction ───────────────────────────────────────────────────────────
+nlp = [
+    "spacy>=3.7.0",
+]
+
+# ── File loaders ─────────────────────────────────────────────────────────────
+pdf = [
+    "pdfplumber>=0.10.0",
+    "pypdf>=3.0.0",
+    "pdfminer.six>=20221105",
+]
+office = [
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+    "python-pptx>=0.6.21",
+]
+csv = [
+    "pandas>=2.0.0",
+]
+html = [
+    "beautifulsoup4>=4.12.0",
+]
+yaml = [
+    "PyYAML>=6.0",
+]
+
+# ── OCR ─────────────────────────────────────────────────────────────────────
+ocr-local = [
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0.0",
+]
+ocr = [
+    "Pillow>=10.0.0",   # needed for LLM vision (image loading) + tesseract
+]
+
+# ── Convenience bundles ──────────────────────────────────────────────────────
+full-loaders = [
+    "pdfplumber>=0.10.0",
+    "pypdf>=3.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+    "python-pptx>=0.6.21",
+    "beautifulsoup4>=4.12.0",
+    "PyYAML>=6.0",
+    "Pillow>=10.0.0",
+    "pytesseract>=0.3.10",
+]
+default = [
+    "google-generativeai>=0.5.0",
+    "neo4j>=5.0.0",
+    "chromadb>=0.4.0",
+    "spacy>=3.7.0",
+    "pdfplumber>=0.10.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+    "python-pptx>=0.6.21",
+    "beautifulsoup4>=4.12.0",
+    "Pillow>=10.0.0",
+    "PyYAML>=6.0",
+]
+all = [
+    "google-generativeai>=0.5.0",
+    "google-cloud-aiplatform>=1.50.0",
+    "openai>=1.0.0",
+    "anthropic>=0.25.0",
+    "boto3>=1.34.0",
+    "cohere>=5.0.0",
+    "ollama>=0.1.0",
+    "sentence-transformers>=2.2.0",
+    "neo4j>=5.0.0",
+    "networkx>=3.0",
+    "python-arango>=7.0.0",
+    "chromadb>=0.4.0",
+    "qdrant-client>=1.7.0",
+    "pinecone-client>=3.0.0",
+    "faiss-cpu>=1.7.4",
+    "weaviate-client>=4.0.0",
+    "pymilvus>=2.3.0",
+    "psycopg2-binary>=2.9.0",
+    "azure-search-documents>=11.6.0",
+    "azure-core>=1.30.0",
+    "spacy>=3.7.0",
+    "pdfplumber>=0.10.0",
+    "pypdf>=3.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+    "python-pptx>=0.6.21",
+    "beautifulsoup4>=4.12.0",
+    "Pillow>=10.0.0",
+    "pytesseract>=0.3.10",
+    "PyYAML>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["raglib*"]
+
+[tool.setuptools.package-data]
+raglib = ["py.typed"]
