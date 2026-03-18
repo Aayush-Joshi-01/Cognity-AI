@@ -1,299 +1,473 @@
+# raglib
+
+**Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format.**
+
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Neo4j-Online-4581C3?logo=neo4j&logoColor=white" />
-  <img src="https://img.shields.io/badge/ChromaDB-Local-FF6F00" />
-  <img src="https://img.shields.io/badge/Gemini-2.0_Flash-4285F4?logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/spaCy-NLP-09A3D5?logo=spacy&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-green" />
+  <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white" alt="Python 3.11+"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT"/>
+  <img src="https://img.shields.io/badge/Version-1.0.0-blue" alt="Version: 1.0.0"/>
+  <img src="https://img.shields.io/badge/Neo4j-supported-blue?logo=neo4j&logoColor=white" alt="Neo4j"/>
+  <img src="https://img.shields.io/badge/ChromaDB-supported-orange" alt="ChromaDB"/>
+  <img src="https://img.shields.io/badge/Gemini-supported-4285F4?logo=google&logoColor=white" alt="Gemini"/>
+  <img src="https://img.shields.io/badge/spaCy-supported-09A3D5" alt="spaCy"/>
+  <img src="https://img.shields.io/badge/OpenAI-supported-000000?logo=openai&logoColor=white" alt="OpenAI"/>
+  <img src="https://img.shields.io/badge/Anthropic-supported-7C3AED" alt="Anthropic"/>
 </p>
-
-# HybridGraphRAG
-
-**A production-grade hybrid Retrieval-Augmented Generation system combining knowledge graph traversal, vector semantic search, and Microsoft GraphRAG community intelligence — with NLP-first extraction for cost efficiency.**
 
 ---
 
-## Why This Exists
+## Overview
 
-Standard RAG (embed chunks → cosine similarity → generate) loses structural relationships between entities. Pure Graph RAG captures structure but misses semantic nuance. Community-level summarization (Microsoft GraphRAG) handles global queries but is expensive to build.
+`raglib` is a drop-in RAG (Retrieval-Augmented Generation) service for AI agents. It was extracted and redesigned from the original `hybrid_rag` monolith into a fully modular library — every component is swappable at runtime with zero code changes beyond configuration.
 
-**HybridGraphRAG fuses all three** — and does it economically by running local NLP (spaCy) for ~70% of knowledge extraction before touching any API.
+**What makes it different:**
+
+- **Any LLM:** Gemini, OpenAI, Azure OpenAI, Anthropic, AWS Bedrock, Cohere, Ollama, Vertex AI
+- **Any embedder:** Same provider list — Anthropic automatically falls back to `sentence-transformers` since it has no native embedding API
+- **Any vector store:** ChromaDB, Qdrant, Pinecone, FAISS, Weaviate, Milvus, pgvector, Azure AI Search
+- **Any graph DB:** Neo4j, Memgraph, ArangoDB, NetworkX (in-memory), Microsoft GraphRAG
+- **Any file format:** PDF, DOCX, XLSX, PPTX, CSV, HTML, JSON, YAML, TXT, MD, images (via multimodal OCR)
+- **Multiple RAG methodologies:** `hybrid_graph`, `naive`, `vector_only`, `graph_only`, `parent_child`, `multi_query`, `microsoft_graphrag`, `adaptive`
+- **Smart defaults:** The best available methodology is automatically selected based on which stores are configured
+
+The primary API surface is a single class — `RAGLibrary` — which wires up the full pipeline from ingestion through retrieval and generation.
 
 ---
 
 ## Architecture Overview
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│  Documents   │────►│  NLP Layer   │────►│ Gemini Augment│
-│  (+ pages)   │     │  (spaCy)     │     │ (only gaps)   │
-└─────────────┘     │  • NER       │     └───────┬───────┘
-                    │  • SVO       │             │
-                    │  • DepParse  │             │
-                    │  • Coref     │             │
-                    │  • Chunking  │             │
-                    └──────┬───────┘             │
-                           │          ┌─────────┘
-                           ▼          ▼
-┌──────────────────────────────────────────────────────┐
-│              Ingestion Pipeline                       │
-│  Hash check → Page index → Chunk → Extract → Embed   │
-└──────────────┬────────────────────────┬──────────────┘
-               │                        │
-               ▼                        ▼
-┌──────────────────┐     ┌──────────────────────┐
-│   Neo4j (Online)  │◄──►│   ChromaDB (Local)    │
-│  • Entities       │     │  • Chunk embeddings   │
-│  • Relations      │     │  • Community embeds   │
-│  • Communities    │     │  • Page metadata      │
-│  • ChunkRef links │     │  • Entity-linked IDs  │
-└──────────────────┘     └──────────────────────┘
-               │                        │
-               └────────┬───────────────┘
-                        ▼
-┌──────────────────────────────────────────────────────┐
-│           4-Channel Hybrid Retriever                  │
-│  Ch1: Graph Local (BFS subgraph traversal)           │
-│  Ch2: Vector Semantic (cosine similarity)            │
-│  Ch3: Community Global (GraphRAG summaries)          │
-│  Ch4: Graph→Vector Bridge (entity-linked chunks)     │
-│                                                       │
-│  → Reciprocal Rank Fusion → Source-confidence boost   │
-│  → Gemini generation with multi-context prompt        │
-└──────────────────────────────────────────────────────┘
+Files (PDF / DOCX / XLSX / PPTX / images / ...)
+        |
+        v
+   [ Loaders ]  ──► OCR (if image: Gemini Vision / GPT-4o / Claude / Tesseract)
+        |
+        v
+   [ PageIndex ]  (regex / structural / hybrid page boundary detection)
+        |
+        v
+   [ Chunkers ]  (sentence / fixed / recursive / semantic / parent_child / hybrid)
+        |
+        v
+   [ Extractors ]  (NLP + LLM hybrid entity & relation extraction)
+        |
+        v
+   [ Embedders ]  (Gemini / OpenAI / Bedrock / Cohere / Ollama / SentenceTransformers)
+        |
+        v
+  ┌─────────────────────┐
+  │   Graph Store       │   ◄── Neo4j / Memgraph / ArangoDB / NetworkX / MS GraphRAG
+  │   Vector Store      │   ◄── ChromaDB / Qdrant / Pinecone / FAISS / Weaviate / ...
+  └─────────────────────┘
+        |
+        v
+   [ Retrievers ]
+   4-channel Hybrid:
+     ├── Graph BFS traversal
+     ├── Vector similarity search
+     ├── Community summary search
+     └── Bridge node discovery
+          └──► RRF fusion
+        |
+        v
+   [ Generators ]  (Gemini / OpenAI / Anthropic / Bedrock / Cohere / Ollama / Vertex AI)
+        |
+        v
+      Answer
 ```
-
----
-
-## Key Features
-
-### Intelligent Extraction (NLP-First)
-- **Named Entity Recognition** — spaCy transformer NER (Person, Org, Location, Concept, etc.)
-- **Subject-Verb-Object triples** — dependency-parsed relation extraction from every sentence
-- **Coreference resolution** — pronoun→entity linking ("He founded" → "Sam Altman founded")
-- **Noun phrase entities** — catches compound concepts NER misses ("Constitutional AI", "protein folding")
-- **Gemini augmentation** — LLM fills only the semantic gaps NLP can't catch (causal links, implicit associations)
-
-### Microsoft GraphRAG Patterns
-- **Leiden community detection** via Neo4j GDS
-- **Hierarchical community summarization** — Gemini generates title + summary per community
-- **Global search** — community summaries answer broad thematic queries
-- **Community embeddings** — stored in dedicated ChromaDB collection for vector-based community retrieval
-
-### 4-Channel Hybrid Retrieval
-| Channel | What It Does | Weight |
-|---------|-------------|--------|
-| **Graph Local** | BFS subgraph expansion from seed entities | 1.2× |
-| **Graph→Vector Bridge** | Entity `MENTIONED_IN` edges fetch linked chunks | 1.1× |
-| **Vector Semantic** | Cosine similarity on chunk embeddings | 1.0× |
-| **Community Global** | Ranked community summaries for thematic context | 0.8× |
-
-Results are fused via **Reciprocal Rank Fusion (RRF)** with confirmed-source boosting.
-
-### Incremental & Economical
-- **SHA-256 hash check** — unchanged docs are skipped entirely
-- **Stale data cleanup** — on re-ingest, old subgraph + vectors are removed before new data
-- **Page/section indexing** — structural awareness with persistent page index
-- **Batch embeddings** — 100 texts per API call
-- **Rate limiting** — built into every Gemini call
-- **Configurable extraction mode** — `"augment"` (NLP + LLM) or `"full"` (LLM only)
-
-### Knowledge Lifecycle
-- **Confirm sources** → boosts all triples from that doc to confidence 1.0
-- **Deprecate sources** → halves confidence of associated triples
-- **Conflict detection** → finds same `(entity, relation)` pointing to different targets across sources
-- **Low-confidence pruning** → removes triples below threshold
-- **Health reporting** → entity/relation/doc/community counts + average confidence
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-
-| Component | Purpose | Setup |
-|-----------|---------|-------|
-| **Neo4j Aura** (or self-hosted) | Knowledge graph | [neo4j.com/cloud/aura](https://neo4j.com/cloud/aura/) — free tier works |
-| **Neo4j APOC plugin** | Subgraph traversal | Usually pre-installed on Aura |
-| **Neo4j GDS plugin** | Community detection (Leiden) | Required for GraphRAG communities; gracefully skips if absent |
-| **Google Gemini API key** | Embeddings + augmentation + generation | [aistudio.google.com](https://aistudio.google.com/) |
-| **Python 3.10+** | Runtime | — |
-
 ### Installation
 
 ```bash
-git clone https://github.com/yourname/hybrid-graph-rag.git
-cd hybrid-graph-rag
+# Default: Gemini + Neo4j + ChromaDB + spaCy + all loaders
+pip install -e ".[default]"
 
-pip install -r requirements.txt
+# Selective extras — mix and match
+pip install -e ".[openai,qdrant,pdf]"
+pip install -e ".[anthropic,pinecone,office]"
+pip install -e ".[bedrock,faiss]"
 
-# Download spaCy models
-python -m spacy download en_core_web_trf    # Best accuracy (~500MB)
-python -m spacy download en_core_web_sm     # Lightweight fallback (~12MB)
+# Everything
+pip install -e ".[all]"
+
+# spaCy language model (required for NLP-based extraction)
+python -m spacy download en_core_web_trf   # best accuracy (~500 MB)
+python -m spacy download en_core_web_sm    # lightweight (~12 MB)
 ```
 
-### Environment Variables
-
-```bash
-export NEO4J_URI="neo4j+s://xxxxxxx.databases.neo4j.io"
-export NEO4J_USER="neo4j"
-export NEO4J_PASSWORD="your-password"
-export GEMINI_API_KEY="your-gemini-api-key"
-
-# Optional
-export NEO4J_DATABASE="neo4j"
-export CHROMA_PERSIST_DIR="./chroma_store"
-```
-
-### Basic Usage
+### Zero-config start
 
 ```python
-from main import build_pipeline
+from raglib import RAGLibrary
 
-# Wire all components
-c = build_pipeline()
-pipeline = c["pipeline"]
-retriever = c["retriever"]
-updater = c["updater"]
+rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
 
-# ── Ingest documents ────────────────────────────────
-pipeline.ingest(
-    doc_id="doc_001",
-    text="OpenAI was founded by Sam Altman in 2015...",
-    source_name="tech_report",
-    status="confirmed",      # or "pending"
-)
+# Ingest any file format — format is auto-detected from extension
+rag.ingest("report.pdf")
+rag.ingest("data.xlsx")
+rag.ingest("slides.pptx")
+rag.ingest("photo.jpg")          # OCR via Gemini Vision
+rag.ingest_dir("./docs/")        # recursive, all supported formats
 
-# Batch ingest
-pipeline.ingest_batch([
-    {"doc_id": "doc_002", "text": "...", "source_name": "research"},
-    {"doc_id": "doc_003", "text": "...", "source_name": "notes"},
-])
+# Optional: build GraphRAG community summaries for global search
+rag.build_communities()
 
-# ── Build communities (run after ingestion) ─────────
-pipeline.build_communities()
+answer = rag.query("What are the key findings?")
 
-# ── Query ───────────────────────────────────────────
-answer = retriever.query("Who founded OpenAI?")
-
-# Query with full source attribution
-result = retriever.query_with_sources("Compare AI safety approaches")
+result = rag.query_with_sources("Who founded Anthropic?")
 print(result["answer"])
-print(result["sources"])          # graph, vector, community sources
-print(result["retrieval_scores"]) # per-result scores by channel
-print(result["seed_entities"])    # NLP-extracted query entities
-
-# ── Knowledge lifecycle ─────────────────────────────
-updater.confirm_source("doc_002")
-updater.deprecate_source("doc_old")
-conflicts = updater.detect_conflicts("San Francisco")
-updater.prune_low_confidence(threshold=0.3)
-print(updater.health_report())
+print(result["sources"])
 ```
 
-### Run the Demo
+### Full explicit configuration
 
-```bash
-python main.py
+```python
+rag = RAGLibrary(
+    rag_method="hybrid_graph",
+    chunker="sentence",
+    embedder="openai",
+    vector_store="qdrant",
+    graph_store="neo4j",
+    llm="anthropic",
+    ocr="gemini_vision",
+    page_index="hybrid",
+    openai_api_key="...",
+    anthropic_api_key="...",
+    neo4j_uri="bolt://localhost:7687",
+    neo4j_password="...",
+)
+```
+
+Every parameter has a sensible default. You only need to set the keys for the providers you actually use.
+
+---
+
+## Supported File Formats
+
+| Format | Extensions | Notes |
+|--------|------------|-------|
+| PDF | `.pdf` | pdfplumber + pypdf; page-aware; extracts embedded images |
+| Word | `.docx` | python-docx; tables, headings, embedded images |
+| Excel | `.xlsx`, `.xls` | openpyxl + pandas; ingested per-sheet |
+| PowerPoint | `.pptx` | python-pptx; slides + speaker notes + images |
+| CSV / TSV | `.csv`, `.tsv` | pandas; auto-detects delimiter |
+| HTML | `.html`, `.htm` | beautifulsoup4; strips tags, extracts text |
+| Text / Markdown | `.txt`, `.md` | native; markdown heading detection |
+| JSON / YAML | `.json`, `.yaml`, `.yml` | recursive key-value flattening |
+| Images | `.jpg`, `.png`, `.jpeg`, `.bmp`, `.tiff`, `.webp` | multimodal OCR (see below) |
+
+---
+
+## OCR Providers
+
+Image files are processed by a configurable OCR provider. The default is Gemini Vision, which handles complex layouts, mixed text/diagram pages, and handwriting well.
+
+| Provider | Key | Method |
+|----------|-----|--------|
+| Gemini Vision (default) | `gemini_vision` | Gemini 2.0 Flash multimodal |
+| OpenAI Vision | `openai_vision` | GPT-4o vision |
+| Anthropic Vision | `anthropic_vision` | Claude 3.5 Sonnet vision |
+| Azure Vision | `azure_vision` | Azure-deployed GPT-4o vision |
+| Bedrock Vision | `bedrock_vision` | AWS Bedrock Claude vision |
+| Tesseract | `tesseract` | Local pytesseract (fully offline) |
+
+Configure via:
+
+```python
+rag = RAGLibrary(ocr="tesseract")                                         # offline
+rag = RAGLibrary(ocr="anthropic_vision", anthropic_api_key="...")
 ```
 
 ---
 
-## Configuration
+## RAG Methodologies
 
-All settings live in `config.py` as dataclasses. Override via constructor or environment variables.
+| Method | Description | When to Use |
+|--------|-------------|-------------|
+| `hybrid_graph` (default) | 4-channel retrieval: Graph BFS + Vector + Community + Bridge nodes, fused with RRF | Knowledge graphs, multi-hop reasoning, structured corpora |
+| `naive` | Pure vector cosine similarity, no graph | Quick setup, unstructured flat text |
+| `vector_only` | Vector similarity + community summary search | No graph store, but communities exist |
+| `graph_only` | Graph traversal only, no vector lookup | Structured knowledge bases with clear entity relationships |
+| `parent_child` | Retrieve small precise chunks, return their larger parent context | Long documents where context window matters |
+| `multi_query` | Generate N query variants, merge and deduplicate results | Complex or ambiguous queries |
+| `microsoft_graphrag` | Official MS GraphRAG local + global search modes | Microsoft ecosystem integrations |
+| `adaptive` | Auto-routes to the best method based on query classification | Unknown or mixed query patterns |
+
+### Per-query method override
 
 ```python
-from config import Config, NLPConfig, IngestionConfig
-
-config = Config(
-    nlp=NLPConfig(
-        spacy_model="en_core_web_sm",         # Use lighter model
-        semantic_chunk_sentences=8,            # Bigger chunks
-    ),
-    ingestion=IngestionConfig(
-        gemini_extraction_mode="full",         # Skip NLP, use Gemini only
-        max_gemini_chunks_per_doc=100,
-        confidence_threshold=0.6,
-    ),
-)
+# Override method for a single query without reconfiguring the library
+answer = rag.query("What themes emerge across all documents?", method="multi_query")
+result = rag.query_with_sources("Who founded Anthropic?", method="hybrid_graph")
 ```
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `nlp.spacy_model` | `en_core_web_trf` | spaCy model (trf=best, sm=fast) |
-| `nlp.semantic_chunk_sentences` | `5` | Sentences per chunk |
-| `nlp.semantic_chunk_overlap` | `1` | Sentence overlap between chunks |
-| `ingestion.gemini_extraction_mode` | `"augment"` | `"augment"` = NLP+LLM, `"full"` = LLM only |
-| `ingestion.confidence_threshold` | `0.5` | Pruning cutoff |
-| `ingestion.confirmed_boost` | `1.5` | Score multiplier for confirmed sources |
-| `graphrag.leiden_resolution` | `1.0` | Community detection granularity |
-| `graphrag.max_community_levels` | `3` | Hierarchical depth |
-| `graphrag.global_search_top_communities` | `5` | Communities returned in global search |
-| `gemini.batch_embed_limit` | `100` | Texts per embedding API call |
-| `gemini.rpm_limit` | `15` | Rate limit (requests/minute) |
+---
+
+## Provider Matrix
+
+### LLMs and Embedders
+
+| Provider | Key | Generator | Embedder | Notes |
+|----------|-----|-----------|----------|-------|
+| Gemini (default) | `gemini` | Yes | Yes | Gemini 2.0 Flash / text-embedding-004 |
+| Vertex AI | `vertex_ai` | Yes | Yes | Gemini 1.5 Pro / text-embedding-005 |
+| OpenAI | `openai` | Yes | Yes | GPT-4o / text-embedding-3-small |
+| Azure OpenAI | `azure_openai` | Yes | Yes | Azure-deployed GPT-4o and embedding models |
+| Anthropic | `anthropic` | Yes | No | claude-3-5-sonnet; embedding falls back to `sentence_transformers` |
+| AWS Bedrock | `bedrock` | Yes | Yes | Claude / Titan / Llama + Titan Embeddings V2 |
+| Cohere | `cohere` | Yes | Yes | Command R+ / embed-english-v3.0 |
+| Ollama | `ollama` | Yes | Yes | llama3, mistral, nomic-embed-text (fully local) |
+| SentenceTransformers | `sentence_transformers` | No | Yes | all-MiniLM-L6-v2 (offline, no API key needed) |
+
+> **Note on Anthropic embeddings:** Anthropic does not provide an embedding API. When `llm="anthropic"` and no explicit `embedder` is set, `raglib` automatically falls back to `sentence_transformers` for embeddings.
+
+---
+
+## Vector Stores
+
+| Store | Key | Type |
+|-------|-----|------|
+| ChromaDB (default) | `chroma` | Local persistent |
+| Qdrant | `qdrant` | Local or Qdrant Cloud |
+| Pinecone | `pinecone` | Cloud (serverless or pod) |
+| FAISS | `faiss` | Local in-memory |
+| Weaviate | `weaviate` | Local or Weaviate Cloud |
+| Milvus | `milvus` | Local or Zilliz Cloud |
+| pgvector | `pgvector` | PostgreSQL extension |
+| Azure AI Search | `azure_search` | Azure cloud |
+
+---
+
+## Graph Stores
+
+| Store | Key | Type |
+|-------|-----|------|
+| Neo4j (default) | `neo4j` | Dedicated graph DB (Bolt protocol) |
+| Microsoft GraphRAG | `microsoft_graphrag` | Wraps the official `graphrag` library |
+| Memgraph | `memgraph` | Open source, Neo4j-compatible (Bolt) |
+| ArangoDB | `arangodb` | Multi-model (document + graph) |
+| NetworkX | `networkx` | In-memory Python graph (testing / no-DB mode) |
+
+---
+
+## Knowledge Lifecycle Management
+
+`raglib` tracks confidence scores for every extracted knowledge triple. Use the lifecycle API to manage knowledge quality over time.
+
+```python
+# Boost confidence for a confirmed, authoritative source
+rag.confirm("doc_001")
+
+# Penalize an outdated or superseded document — halves confidence,
+# reduces retrieval score for all associated triples
+rag.deprecate("old_doc")
+
+# Find contradictions: returns triples that conflict with other sources
+conflicts = rag.detect_conflicts("Anthropic")
+
+# Remove low-confidence triples from both stores
+rag.prune(threshold=0.5)
+
+# Summarise store health: triple count, avg confidence, conflict rate
+print(rag.health_report())
+```
+
+---
+
+## Plugin System
+
+Every component type is pluggable. Register custom implementations at runtime and they become available via their key string, just like built-in providers.
+
+```python
+from raglib.loaders.base import BaseLoader
+from raglib.models.document import Document
+
+class MyLoader(BaseLoader):
+    def load(self, path: str) -> list[Document]:
+        ...  # parse your custom format here
+
+    @property
+    def supported_extensions(self) -> list[str]:
+        return [".myext"]
+
+
+rag.register_loader(".myext", MyLoader)
+rag.register_embedder("my_embedder", MyEmbedder)
+rag.register_retriever("my_method", MyRetriever)
+
+# Inspect all registered components
+print(rag.available_plugins())
+```
+
+The same pattern applies to generators, chunkers, extractors, OCR providers, and stores.
 
 ---
 
 ## Project Structure
 
 ```
-hybrid_rag/
-├── main.py                 # Entry point, wiring, demo
-├── config.py               # All configuration dataclasses
-├── models.py               # Pydantic data models
-├── nlp_processor.py        # spaCy NLP pipeline (NER, SVO, coref, chunking)
-├── gemini_extractor.py     # Gemini API layer (augment, describe, summarize, embed)
-├── graph_manager.py        # Neo4j CRUD, communities, retrieval, lifecycle
-├── vector_manager.py       # ChromaDB dual-collection (chunks + communities)
-├── page_index.py           # Persistent page/section index
-├── ingestion.py            # Full ingestion pipeline orchestration
-├── hybrid_retriever.py     # 4-channel retrieval + RRF + generation
-├── knowledge_updater.py    # Source lifecycle + conflict detection
-└── requirements.txt
+D:\Graph-RAG\
+├── raglib/                        # Main library package
+│   ├── library.py                 # RAGLibrary — the primary public API
+│   ├── factory.py                 # Component wiring + provider auto-fallback logic
+│   ├── registry.py                # Plugin registry for all component types
+│   ├── models/                    # Core data models
+│   │   ├── document.py            # Document, Chunk, PageInfo
+│   │   ├── knowledge.py           # Entity, Relation, Triple, Community
+│   │   └── retrieval.py           # RetrievalResult, SourceReference
+│   ├── config/                    # Configuration dataclasses
+│   │   ├── base.py                # LibraryConfig
+│   │   └── providers.py           # Per-provider config (Neo4jConfig, etc.)
+│   ├── loaders/                   # File format loaders
+│   │   ├── pdf.py                 # pdfplumber + pypdf
+│   │   ├── docx.py                # python-docx
+│   │   ├── excel.py               # openpyxl + pandas
+│   │   ├── pptx.py                # python-pptx
+│   │   ├── csv.py                 # pandas
+│   │   ├── html.py                # beautifulsoup4
+│   │   ├── text.py                # plain text + markdown
+│   │   ├── json_loader.py         # JSON + YAML
+│   │   ├── image.py               # delegates to OCR provider
+│   │   └── factory.py             # extension → loader routing
+│   ├── ocr/                       # OCR providers
+│   │   ├── gemini_vision.py
+│   │   ├── openai_vision.py
+│   │   ├── anthropic_vision.py
+│   │   ├── azure_vision.py
+│   │   ├── bedrock_vision.py
+│   │   └── tesseract.py
+│   ├── chunkers/                  # Text splitting strategies
+│   │   ├── sentence.py
+│   │   ├── fixed.py
+│   │   ├── recursive.py
+│   │   ├── semantic.py
+│   │   ├── parent_child.py
+│   │   └── hybrid.py
+│   ├── page_index/                # Page boundary detection
+│   │   ├── regex_index.py
+│   │   ├── structural_index.py
+│   │   └── hybrid_index.py
+│   ├── extractors/                # Entity + relation extraction
+│   │   ├── nlp.py                 # spaCy NER + dependency parsing
+│   │   ├── llm.py                 # LLM-guided extraction
+│   │   └── hybrid.py              # NLP first, LLM gap-fill
+│   ├── embedders/                 # Embedding providers
+│   │   ├── gemini.py
+│   │   ├── openai.py
+│   │   ├── azure_openai.py
+│   │   ├── vertex_ai.py
+│   │   ├── bedrock.py
+│   │   ├── cohere.py
+│   │   ├── ollama.py
+│   │   └── sentence_transformers.py
+│   ├── generators/                # LLM response generators
+│   │   ├── gemini.py
+│   │   ├── openai.py
+│   │   ├── azure_openai.py
+│   │   ├── anthropic.py
+│   │   ├── vertex_ai.py
+│   │   ├── bedrock.py
+│   │   ├── cohere.py
+│   │   └── ollama.py
+│   ├── stores/
+│   │   ├── vector/                # Vector store adapters
+│   │   │   ├── chroma.py
+│   │   │   ├── qdrant.py
+│   │   │   ├── pinecone.py
+│   │   │   ├── faiss.py
+│   │   │   └── ...
+│   │   └── graph/                 # Graph store adapters
+│   │       ├── neo4j.py
+│   │       ├── memgraph.py
+│   │       ├── arangodb.py
+│   │       └── networkx.py
+│   ├── retrievers/                # Retrieval strategies
+│   │   ├── hybrid_graph.py        # 4-channel + RRF fusion
+│   │   ├── naive.py
+│   │   ├── vector_only.py
+│   │   ├── graph_only.py
+│   │   ├── parent_child.py
+│   │   ├── multi_query.py
+│   │   ├── microsoft_graphrag.py
+│   │   └── adaptive.py
+│   └── pipeline/                  # Orchestration
+│       ├── ingestion.py           # IngestionPipeline
+│       └── knowledge_updater.py   # KnowledgeUpdater (lifecycle ops)
+├── hybrid_rag/                    # DEPRECATED legacy package (see Migration section)
+├── pyproject.toml                 # Packaging + optional dependency groups
+├── requirements.txt               # Default install dependencies
+└── docs/                          # GitHub Pages documentation site
 ```
 
 ---
 
-## Cost Analysis
+## Migration from `hybrid_rag`
 
-For a **1000-document corpus** (avg 2000 tokens each):
+The original `hybrid_rag` package is **deprecated** but still functional. It emits a `DeprecationWarning` on import. It will be removed in a future major version.
 
-| Operation | Without NLP-First | With NLP-First | Savings |
-|-----------|-------------------|----------------|---------|
-| Entity extraction | ~4000 Gemini calls | ~4000 spaCy (free) + ~1000 Gemini augment | **~75%** |
-| Embeddings | ~4000 calls | ~40 batched calls (100/batch) | **~99%** |
-| Community summaries | ~50 calls | ~50 calls | Same |
-| Re-ingestion (no changes) | ~4000 calls | **0 calls** (hash skip) | **100%** |
+**Before (deprecated):**
+
+```python
+from hybrid_rag.main import build_pipeline
+
+c = build_pipeline()
+c["pipeline"].ingest(doc_id="d1", text="...", source_name="report")
+answer = c["retriever"].query("What is X?")
+```
+
+**After (raglib):**
+
+```python
+from raglib import RAGLibrary
+
+rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
+rag.ingest_text("...", doc_id="d1", source_name="report")
+answer = rag.query("What is X?")
+```
+
+The new API is a strict superset of the old one in terms of capability, with cleaner configuration and no internal coupling between components.
 
 ---
 
-## Neo4j Graph Schema
+## Configuration Reference
 
-```
-(:Entity {name, entity_type, description, confidence, mentions, source_id, extraction_method})
-(:DocumentMeta {doc_id, source_name, content_hash, status, chunk_count, entity_count})
-(:Community {community_id, title, summary, rank, level, entity_count})
-(:ChunkRef {chunk_id, doc_id})
+The `LibraryConfig` dataclass (and the `RAGLibrary` constructor kwargs) accept the following top-level keys:
 
-(:Entity)-[:MENTIONED_IN]->(:ChunkRef)
-(:Entity)-[:BELONGS_TO_COMMUNITY]->(:Community)
-(:Entity)-[:<DYNAMIC_RELATION> {confidence, weight, description, source_id}]->(:Entity)
-```
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `rag_method` | `str` | `"hybrid_graph"` | Retrieval methodology |
+| `chunker` | `str` | `"sentence"` | Text chunking strategy |
+| `embedder` | `str` | `"gemini"` | Embedding provider key |
+| `vector_store` | `str` | `"chroma"` | Vector store key |
+| `graph_store` | `str` | `"neo4j"` | Graph store key |
+| `llm` | `str` | `"gemini"` | Generator LLM key |
+| `extraction` | `str` | `"hybrid"` | Knowledge extraction strategy (`nlp`, `llm`, `hybrid`) |
+| `ocr` | `str` | `"gemini_vision"` | OCR provider for images |
+| `page_index` | `str` | `"hybrid"` | Page boundary detection strategy |
 
----
-
-## License
-
-MIT
+Provider-specific settings (API keys, URIs, model names) are passed as additional kwargs and are forwarded to the relevant provider config automatically.
 
 ---
 
 ## Contributing
 
-PRs welcome. Key areas for contribution:
-- Additional NLP backends (Stanza, Flair)
-- Async ingestion pipeline
-- Streaming retrieval
-- Alternative LLM backends (OpenAI, local models)
-- Web UI for knowledge graph exploration
+Pull requests are welcome. High-priority areas:
+
+- **New loaders:** EPUB, XML, Markdown front-matter, audio transcripts
+- **New graph / vector store adapters:** Weaviate, Milvus, pgvector, ArangoDB
+- **Streaming retrieval:** async generator interface for token-by-token output
+- **Async pipeline:** full async/await ingestion and retrieval path
+- **Web UI:** graph exploration and document management interface
+- **Evaluation harness:** RAGAS / ARES integration for automated quality scoring
+
+Please open an issue before starting large changes to align on design direction.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for full terms.
