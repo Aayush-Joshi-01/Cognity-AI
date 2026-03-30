@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loaders — raglib API</title>
+  <meta name="description" content="Complete reference for document loaders, the BaseLoader ABC, Document model, and PDF utilities in raglib." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg:          #0d1117;
+      --bg-card:     #161b22;
+      --bg-code:     #1c2128;
+      --border:      #30363d;
+      --border-light:#21262d;
+      --text:        #e6edf3;
+      --text-muted:  #7d8590;
+      --text-dim:    #484f58;
+      --accent:      #58a6ff;
+      --accent-2:    #bc8cff;
+      --accent-3:    #3fb950;
+      --accent-4:    #f78166;
+      --accent-5:    #ffa657;
+      --accent-6:    #79c0ff;
+      --radius:      10px;
+      --radius-sm:   6px;
+      --font:        'Inter', system-ui, sans-serif;
+      --mono:        'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: var(--text); }
+    .nav-logo .logo-icon { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #58a6ff, #bc8cff); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+    .nav-github { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); color: var(--text) !important; font-size: 13px; font-weight: 500; transition: border-color .2s, background .2s; }
+    .nav-github:hover { border-color: var(--accent); text-decoration: none !important; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Layout */
+    .page-layout { display: grid; grid-template-columns: 1fr 200px; gap: 48px; max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+    .page-content { min-width: 0; }
+    .page-toc { position: sticky; top: 80px; font-size: 12px; align-self: start; }
+    .page-toc-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 10px; }
+    .page-toc a { display: block; padding: 3px 0 3px 8px; color: var(--text-muted); font-size: 12px; border-left: 2px solid transparent; }
+    .page-toc a:hover { color: var(--accent); text-decoration: none; }
+    .page-toc a.active { color: var(--accent); border-left-color: var(--accent); }
+    .page-toc .toc-sub { padding-left: 20px; font-size: 11px; }
+    @media (max-width: 900px) { .page-layout { grid-template-columns: 1fr; } .page-toc { display: none; } }
+
+    /* Typography */
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 10px; }
+    h1 { font-size: 36px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+    h2 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 14px; margin-top: 56px; padding-top: 16px; }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; margin-top: 32px; color: var(--accent-6); }
+    p { margin-bottom: 16px; color: var(--text); }
+
+    /* Code blocks */
+    .code-block { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+    .code-lang { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dots .dot-r { background: #ff5f57; }
+    .code-dots .dot-y { background: #febc2e; }
+    .code-dots .dot-g { background: #28c840; }
+    pre { padding: 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; tab-size: 2; }
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+    code { font-family: var(--mono); font-size: 13px; background: var(--bg-code); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--accent-6); }
+
+    /* Syntax highlighting */
+    .kw  { color: #ff7b72; }
+    .st  { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .cl  { color: #ffa657; }
+    .nm  { color: #79c0ff; }
+    .nb  { color: #3fb950; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg-card); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    td code { font-size: 12px; }
+
+    /* Method signature cards */
+    .method-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+    .method-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .method-name { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent-2); }
+    .method-kind { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); }
+    .method-card-body { padding: 14px 18px; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .method-card-body p { margin-bottom: 10px; color: var(--text-muted); font-size: 13px; }
+    .method-card-body p:last-child { margin-bottom: 0; }
+    .param-list { list-style: none; margin: 10px 0; }
+    .param-list li { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+    .param-list li:last-child { border-bottom: none; }
+    .param-name { font-family: var(--mono); color: var(--accent-6); font-size: 12px; min-width: 140px; }
+    .param-type { font-family: var(--mono); color: var(--accent-2); font-size: 12px; min-width: 140px; }
+    .param-desc { color: var(--text-muted); font-size: 12px; }
+
+    /* Extension tags */
+    .ext-tag { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 4px; background: rgba(88,166,255,.1); border: 1px solid rgba(88,166,255,.2); color: var(--accent-6); margin: 2px 2px 2px 0; }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3);  background: rgba(88,166,255,.07); }
+    .badge-green  { color: #3fb950; border-color: rgba(63,185,80,.3);   background: rgba(63,185,80,.07); }
+    .badge-orange { color: #ffa657; border-color: rgba(255,166,87,.3);  background: rgba(255,166,87,.07); }
+
+    /* Admonitions */
+    .admonition { border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 24px; display: flex; gap: 12px; }
+    .admonition-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .admonition-body { font-size: 13px; line-height: 1.6; }
+    .admonition-body strong { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .admonition-note { background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.25); }
+    .admonition-note .admonition-body strong { color: var(--accent); }
+    .admonition-tip  { background: rgba(63,185,80,.08);  border: 1px solid rgba(63,185,80,.25); }
+    .admonition-tip  .admonition-body strong { color: var(--accent-3); }
+
+    /* Section divider */
+    .section-divider { border: none; border-top: 1px solid var(--border-light); margin: 48px 0; }
+
+    /* Page header */
+    .page-header { padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px; }
+    .page-header p { color: var(--text-muted); font-size: 16px; margin: 0; }
+
+    :target { scroll-margin-top: 80px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none">
+      <div class="logo-icon">⚡</div>
+      raglib
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag" class="nav-github">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="page-layout">
+
+  <!-- Main Content -->
+  <main class="page-content">
+
+    <!-- Page Header -->
+    <div class="page-header" id="top">
+      <div class="section-label">API Reference</div>
+      <h1>Loaders</h1>
+      <p>Document loaders for every major file format, plus the <code>BaseLoader</code> ABC for custom implementations.</p>
+    </div>
+
+    <!-- BaseLoader -->
+    <section id="base-loader">
+      <h2>BaseLoader</h2>
+      <p>All loaders implement the <code>BaseLoader</code> abstract base class. You can subclass it to add support for custom file formats.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">from</span> raglib.models <span class="kw">import</span> Document
+
+<span class="kw">class</span> <span class="cl">BaseLoader</span>(ABC):
+
+    <span class="nb">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">load</span>(<span class="nm">self</span>, path: <span class="nm">str</span>) -> <span class="nm">list</span>[<span class="cl">Document</span>]: ...
+
+    <span class="nb">@property</span>
+    <span class="nb">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">supported_extensions</span>(<span class="nm">self</span>) -> <span class="nm">list</span>[<span class="nm">str</span>]: ...</code></pre>
+      </div>
+
+      <div class="method-card">
+        <div class="method-card-header">
+          <span class="method-name">load(path)</span>
+          <span class="method-kind">abstract method</span>
+        </div>
+        <div class="method-card-body">
+          <p>Load and parse a file at <code>path</code>, returning a list of <code>Document</code> objects. Multi-page formats like PDF return one <code>Document</code> per file (not per page) with a populated <code>page_map</code>.</p>
+          <ul class="param-list">
+            <li>
+              <span class="param-name">path</span>
+              <span class="param-type">str</span>
+              <span class="param-desc">Absolute or relative path to the source file.</span>
+            </li>
+          </ul>
+          <p><strong style="color:var(--text);font-size:12px;">Returns</strong> &nbsp;<code>list[Document]</code> — typically one element; some loaders (e.g. ExcelLoader) may return one per sheet.</p>
+        </div>
+      </div>
+
+      <div class="method-card">
+        <div class="method-card-header">
+          <span class="method-name">supported_extensions</span>
+          <span class="method-kind">abstract property</span>
+        </div>
+        <div class="method-card-body">
+          <p>Returns the list of file extensions this loader handles, each including the leading dot (e.g. <code>[".pdf"]</code>). Used by <code>LoaderFactory</code> to auto-select the correct loader.</p>
+          <p><strong style="color:var(--text);font-size:12px;">Returns</strong> &nbsp;<code>list[str]</code></p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Document model -->
+    <section id="document-model">
+      <h2>Document Model</h2>
+      <p>The universal document representation returned by all loaders. Downstream pipeline stages (chunkers, embedders, extractors) operate on this type.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.models <span class="kw">import</span> Document, PageInfo, ImageRef
+
+<span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">Document</span>:
+    id:          <span class="nm">str</span>             <span class="cm"># UUID — auto-generated on load</span>
+    text:        <span class="nm">str</span>             <span class="cm"># Full extracted plain text</span>
+    metadata:    <span class="nm">dict</span>            <span class="cm"># source, title, page_count, author, …</span>
+    source_path: <span class="nm">str</span>             <span class="cm"># Absolute path to the original file</span>
+    page_map:    <span class="nm">list</span>[<span class="cl">PageInfo</span>]  <span class="cm"># Per-page character offsets + headings</span>
+    image_refs:  <span class="nm">list</span>[<span class="cl">ImageRef</span>]  <span class="cm"># Embedded image positions in the text</span>
+
+<span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">PageInfo</span>:
+    page_number: <span class="nm">int</span>
+    char_start:  <span class="nm">int</span>
+    char_end:    <span class="nm">int</span>
+    headings:    <span class="nm">list</span>[<span class="nm">str</span>]
+
+<span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">ImageRef</span>:
+    image_id:    <span class="nm">str</span>    <span class="cm"># Unique ID within the document</span>
+    char_offset: <span class="nm">int</span>    <span class="cm"># Position in text where the image is anchored</span>
+    page_number: <span class="nm">int</span>
+    caption:     <span class="nm">str</span>    <span class="cm"># OCR-extracted or explicit caption</span></code></pre>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td><code>str</code></td><td>UUID generated at load time. Stable for the same file path.</td></tr>
+            <tr><td><code>text</code></td><td><code>str</code></td><td>Full extracted plain text, normalised to UTF-8 with page boundaries marked by <code>\n\n</code>.</td></tr>
+            <tr><td><code>metadata</code></td><td><code>dict</code></td><td>Loader-specific metadata. Common keys: <code>source</code>, <code>title</code>, <code>author</code>, <code>page_count</code>, <code>created</code>, <code>encoding</code>.</td></tr>
+            <tr><td><code>source_path</code></td><td><code>str</code></td><td>Absolute path to the original file on disk.</td></tr>
+            <tr><td><code>page_map</code></td><td><code>list[PageInfo]</code></td><td>One entry per page. Maps page numbers to character offsets in <code>text</code>.</td></tr>
+            <tr><td><code>image_refs</code></td><td><code>list[ImageRef]</code></td><td>References to embedded images with their text anchor positions and captions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Supported Formats -->
+    <section id="supported-formats">
+      <h2>Supported Formats</h2>
+      <p>raglib ships loaders for 11 file format families. All are auto-selected by <code>LoaderFactory</code> based on file extension.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Loader Class</th>
+              <th>Extensions</th>
+              <th>Key Dependency</th>
+              <th>Metadata Extracted</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>TxtLoader</code></td>
+              <td>
+                <span class="ext-tag">.txt</span>
+              </td>
+              <td>stdlib</td>
+              <td>filename, encoding, line count</td>
+            </tr>
+            <tr>
+              <td><code>MdLoader</code></td>
+              <td>
+                <span class="ext-tag">.md</span>
+                <span class="ext-tag">.markdown</span>
+              </td>
+              <td>stdlib</td>
+              <td>H1–H6 headings as sections</td>
+            </tr>
+            <tr>
+              <td><code>PdfLoader</code></td>
+              <td>
+                <span class="ext-tag">.pdf</span>
+              </td>
+              <td>pdfplumber, pypdf</td>
+              <td>page numbers, headings, tables, embedded images</td>
+            </tr>
+            <tr>
+              <td><code>DocxLoader</code></td>
+              <td>
+                <span class="ext-tag">.docx</span>
+                <span class="ext-tag">.doc</span>
+              </td>
+              <td>python-docx</td>
+              <td>headings, tables, page breaks, embedded images</td>
+            </tr>
+            <tr>
+              <td><code>ExcelLoader</code></td>
+              <td>
+                <span class="ext-tag">.xlsx</span>
+                <span class="ext-tag">.xls</span>
+              </td>
+              <td>openpyxl, pandas</td>
+              <td>sheet names, row-to-text conversion, formula values</td>
+            </tr>
+            <tr>
+              <td><code>CsvLoader</code></td>
+              <td>
+                <span class="ext-tag">.csv</span>
+                <span class="ext-tag">.tsv</span>
+              </td>
+              <td>pandas</td>
+              <td>headers, delimiter auto-detect</td>
+            </tr>
+            <tr>
+              <td><code>PptxLoader</code></td>
+              <td>
+                <span class="ext-tag">.pptx</span>
+                <span class="ext-tag">.ppt</span>
+              </td>
+              <td>python-pptx</td>
+              <td>slide numbers, speaker notes, embedded images</td>
+            </tr>
+            <tr>
+              <td><code>HtmlLoader</code></td>
+              <td>
+                <span class="ext-tag">.html</span>
+                <span class="ext-tag">.htm</span>
+              </td>
+              <td>beautifulsoup4</td>
+              <td>title, headings, links</td>
+            </tr>
+            <tr>
+              <td><code>JsonLoader</code></td>
+              <td>
+                <span class="ext-tag">.json</span>
+              </td>
+              <td>stdlib</td>
+              <td>key structure, depth</td>
+            </tr>
+            <tr>
+              <td><code>YamlLoader</code></td>
+              <td>
+                <span class="ext-tag">.yaml</span>
+                <span class="ext-tag">.yml</span>
+              </td>
+              <td>PyYAML</td>
+              <td>key structure</td>
+            </tr>
+            <tr>
+              <td><code>ImageLoader</code></td>
+              <td>
+                <span class="ext-tag">.jpg</span>
+                <span class="ext-tag">.jpeg</span>
+                <span class="ext-tag">.png</span>
+                <span class="ext-tag">.bmp</span>
+                <span class="ext-tag">.tiff</span>
+                <span class="ext-tag">.webp</span>
+                <span class="ext-tag">.gif</span>
+              </td>
+              <td>OCR subsystem</td>
+              <td>filename, OCR confidence score</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admonition admonition-note">
+        <div class="admonition-icon">ℹ️</div>
+        <div class="admonition-body">
+          <strong>Note</strong>
+          <code>ImageLoader</code> delegates to the OCR backend configured in <code>LibraryConfig.ocr</code>. Set <code>ocr="gemini_vision"</code>, <code>"aws_textract"</code>, <code>"google_vision"</code>, or <code>"tesseract"</code> depending on your deployment. For scanned PDFs, <code>PdfLoader</code> automatically invokes the same OCR backend when native text extraction yields empty pages.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- LoaderFactory -->
+    <section id="loader-factory">
+      <h2>LoaderFactory</h2>
+      <p>The recommended way to get a loader. <code>LoaderFactory</code> maintains an extension-to-loader registry and auto-selects the correct loader for any given file path.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.loaders <span class="kw">import</span> LoaderFactory
+
+factory = <span class="cl">LoaderFactory</span>()
+
+<span class="cm"># Auto-detect from extension — returns the appropriate BaseLoader subclass</span>
+loader = factory.<span class="fn">get_loader</span>(<span class="st">"report.pdf"</span>)
+docs = loader.<span class="fn">load</span>(<span class="st">"report.pdf"</span>)
+
+<span class="cm"># Load a directory — recurses and dispatches per-file</span>
+all_docs = factory.<span class="fn">load_directory</span>(<span class="st">"./documents/"</span>)
+
+<span class="cm"># Register a custom loader for a proprietary format</span>
+factory.<span class="fn">register</span>(<span class="st">".myext"</span>, <span class="cl">MyCustomLoader</span>)</code></pre>
+      </div>
+
+      <div class="method-card">
+        <div class="method-card-header">
+          <span class="method-name">get_loader(path)</span>
+          <span class="method-kind">method</span>
+        </div>
+        <div class="method-card-body">
+          <p>Look up and return the loader registered for the extension of <code>path</code>.</p>
+          <ul class="param-list">
+            <li><span class="param-name">path</span><span class="param-type">str</span><span class="param-desc">File path or filename. Only the extension is used for lookup.</span></li>
+          </ul>
+          <p><strong style="color:var(--text);font-size:12px;">Returns</strong> &nbsp;<code>BaseLoader</code> &nbsp;&nbsp; <strong style="color:var(--text);font-size:12px;">Raises</strong> &nbsp;<code>UnsupportedFormatError</code> if no loader is registered for the extension.</p>
+        </div>
+      </div>
+
+      <div class="method-card">
+        <div class="method-card-header">
+          <span class="method-name">load_directory(path, recursive=True, glob="**/*")</span>
+          <span class="method-kind">method</span>
+        </div>
+        <div class="method-card-body">
+          <p>Walk a directory and load all files whose extensions are registered. Unknown extensions are silently skipped.</p>
+          <ul class="param-list">
+            <li><span class="param-name">path</span><span class="param-type">str</span><span class="param-desc">Root directory to scan.</span></li>
+            <li><span class="param-name">recursive</span><span class="param-type">bool</span><span class="param-desc">Whether to descend into subdirectories. Default <code>True</code>.</span></li>
+            <li><span class="param-name">glob</span><span class="param-type">str</span><span class="param-desc">Glob pattern to filter files. Default <code>"**/*"</code>.</span></li>
+          </ul>
+          <p><strong style="color:var(--text);font-size:12px;">Returns</strong> &nbsp;<code>list[Document]</code></p>
+        </div>
+      </div>
+
+      <div class="method-card">
+        <div class="method-card-header">
+          <span class="method-name">register(extension, loader_class)</span>
+          <span class="method-kind">method</span>
+        </div>
+        <div class="method-card-body">
+          <p>Register a custom loader class for a file extension. Overrides any existing registration for that extension.</p>
+          <ul class="param-list">
+            <li><span class="param-name">extension</span><span class="param-type">str</span><span class="param-desc">File extension including the leading dot, e.g. <code>".xyz"</code>.</span></li>
+            <li><span class="param-name">loader_class</span><span class="param-type">type[BaseLoader]</span><span class="param-desc">The loader class (not an instance) to register.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Direct Loader Usage</h3>
+      <p>You can also instantiate loaders directly, which is useful when you need access to loader-specific options:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.loaders <span class="kw">import</span> PdfLoader, DocxLoader, CsvLoader
+
+<span class="cm"># PDF — extract text and images</span>
+pdf_loader = <span class="cl">PdfLoader</span>(extract_images=<span class="nb">True</span>, ocr_fallback=<span class="nb">True</span>)
+docs = pdf_loader.<span class="fn">load</span>(<span class="st">"annual_report.pdf"</span>)
+doc = docs[<span class="nb">0</span>]
+<span class="fn">print</span>(doc.metadata[<span class="st">"page_count"</span>])   <span class="cm"># → 42</span>
+<span class="fn">print</span>(<span class="fn">len</span>(doc.page_map))            <span class="cm"># → 42</span>
+<span class="fn">print</span>(<span class="fn">len</span>(doc.image_refs))          <span class="cm"># → number of embedded images</span>
+
+<span class="cm"># DOCX — headings and tables</span>
+docx_loader = <span class="cl">DocxLoader</span>()
+docs = docx_loader.<span class="fn">load</span>(<span class="st">"spec.docx"</span>)
+
+<span class="cm"># CSV — custom delimiter</span>
+csv_loader = <span class="cl">CsvLoader</span>(delimiter=<span class="st">";"</span>)
+docs = csv_loader.<span class="fn">load</span>(<span class="st">"data.csv"</span>)
+<span class="fn">print</span>(docs[<span class="nb">0</span>].metadata[<span class="st">"headers"</span>])   <span class="cm"># → ["col1", "col2", …]</span></code></pre>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- PDF Utilities -->
+    <section id="pdf-utils">
+      <h2>PDF Utilities</h2>
+      <p>Lower-level helpers in <code>raglib.loaders.pdf_utils</code> for programmatic PDF manipulation independent of the loader pipeline.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.loaders.pdf_utils <span class="kw">import</span> (
+    extract_tables,   <span class="cm"># → list[pd.DataFrame], one per page</span>
+    extract_images,   <span class="cm"># → list[bytes], raw image bytes per page</span>
+    extract_metadata, <span class="cm"># → dict  (author, title, created, page_count, …)</span>
+    slice_pages,      <span class="cm"># → bytes  (sub-PDF from page range)</span>
+    merge_pdfs,       <span class="cm"># → bytes  (merged single PDF)</span>
+    pdf_to_images,    <span class="cm"># → list[PIL.Image]  (full-page raster for OCR)</span>
+)</code></pre>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Function</th><th>Signature</th><th>Returns</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>extract_tables</code></td>
+              <td><code>(path, pages=None)</code></td>
+              <td><code>list[DataFrame]</code></td>
+              <td>Extract all tables from the PDF as pandas DataFrames. Pass <code>pages=[1,3]</code> to limit to specific pages.</td>
+            </tr>
+            <tr>
+              <td><code>extract_images</code></td>
+              <td><code>(path, pages=None)</code></td>
+              <td><code>list[bytes]</code></td>
+              <td>Return raw image bytes for every embedded image. Includes JPEG, PNG, and JBIG2 streams.</td>
+            </tr>
+            <tr>
+              <td><code>extract_metadata</code></td>
+              <td><code>(path)</code></td>
+              <td><code>dict</code></td>
+              <td>Return document-level metadata: <code>author</code>, <code>title</code>, <code>subject</code>, <code>creator</code>, <code>created</code>, <code>page_count</code>.</td>
+            </tr>
+            <tr>
+              <td><code>slice_pages</code></td>
+              <td><code>(path, start, end)</code></td>
+              <td><code>bytes</code></td>
+              <td>Extract pages <code>start</code>–<code>end</code> (1-indexed, inclusive) as a new in-memory PDF. Write to disk with <code>open(..., "wb").write(result)</code>.</td>
+            </tr>
+            <tr>
+              <td><code>merge_pdfs</code></td>
+              <td><code>(paths)</code></td>
+              <td><code>bytes</code></td>
+              <td>Concatenate multiple PDFs in order. Accepts a list of file paths.</td>
+            </tr>
+            <tr>
+              <td><code>pdf_to_images</code></td>
+              <td><code>(path, dpi=150)</code></td>
+              <td><code>list[PIL.Image]</code></td>
+              <td>Render each page as a PIL Image at the specified DPI. Useful for full-page OCR pipelines.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>PDF Utilities Example</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.loaders.pdf_utils <span class="kw">import</span> extract_tables, slice_pages, pdf_to_images
+
+<span class="cm"># Extract all tables from a financial report</span>
+tables = <span class="fn">extract_tables</span>(<span class="st">"report.pdf"</span>)
+<span class="kw">for</span> df <span class="kw">in</span> tables:
+    <span class="fn">print</span>(df.<span class="fn">to_string</span>())
+
+<span class="cm"># Slice out the appendix (pages 40–55) as a new PDF</span>
+appendix_bytes = <span class="fn">slice_pages</span>(<span class="st">"report.pdf"</span>, start=<span class="nb">40</span>, end=<span class="nb">55</span>)
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"appendix.pdf"</span>, <span class="st">"wb"</span>) <span class="kw">as</span> f:
+    f.<span class="fn">write</span>(appendix_bytes)
+
+<span class="cm"># Render pages as images for vision model processing</span>
+images = <span class="fn">pdf_to_images</span>(<span class="st">"scanned_doc.pdf"</span>, dpi=<span class="nb">300</span>)
+<span class="kw">for</span> i, img <span class="kw">in</span> <span class="fn">enumerate</span>(images):
+    img.<span class="fn">save</span>(<span class="st">f"page_<span class="nb">{i+1}</span>.png"</span>)</code></pre>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Custom Loaders -->
+    <section id="custom-loaders">
+      <h2>Writing a Custom Loader</h2>
+      <p>Subclass <code>BaseLoader</code>, implement the two abstract members, and register with <code>LoaderFactory</code>:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.loaders <span class="kw">import</span> BaseLoader, LoaderFactory
+<span class="kw">from</span> raglib.models <span class="kw">import</span> Document
+<span class="kw">import</span> uuid
+
+<span class="kw">class</span> <span class="cl">EpubLoader</span>(<span class="cl">BaseLoader</span>):
+
+    <span class="nb">@property</span>
+    <span class="kw">def</span> <span class="fn">supported_extensions</span>(<span class="nm">self</span>) -> <span class="nm">list</span>[<span class="nm">str</span>]:
+        <span class="kw">return</span> [<span class="st">".epub"</span>]
+
+    <span class="kw">def</span> <span class="fn">load</span>(<span class="nm">self</span>, path: <span class="nm">str</span>) -> <span class="nm">list</span>[<span class="cl">Document</span>]:
+        <span class="cm"># parse the epub, extract text …</span>
+        text = <span class="fn">_parse_epub</span>(path)
+        <span class="kw">return</span> [
+            <span class="cl">Document</span>(
+                id=<span class="nm">str</span>(uuid.<span class="fn">uuid4</span>()),
+                text=text,
+                metadata={<span class="st">"source"</span>: path},
+                source_path=path,
+                page_map=[],
+                image_refs=[],
+            )
+        ]
+
+<span class="cm"># Register globally</span>
+factory = <span class="cl">LoaderFactory</span>()
+factory.<span class="fn">register</span>(<span class="st">".epub"</span>, <span class="cl">EpubLoader</span>)</code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOC Sidebar -->
+  <aside class="page-toc">
+    <div class="page-toc-title">On This Page</div>
+    <a href="#base-loader">BaseLoader</a>
+    <a href="#document-model">Document Model</a>
+    <a href="#supported-formats">Supported Formats</a>
+    <a href="#loader-factory">LoaderFactory</a>
+    <a href="#pdf-utils">PDF Utilities</a>
+    <a href="#custom-loaders">Custom Loaders</a>
+  </aside>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <span>raglib v2.0.0 · MIT License · Built with ❤️</span>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

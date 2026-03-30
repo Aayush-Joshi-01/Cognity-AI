@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generators — raglib API</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --border: #30363d; --border-light: #21262d;
+      --text: #e6edf3; --text-muted: #7d8590; --text-dim: #484f58;
+      --accent: #58a6ff; --accent-2: #bc8cff; --accent-3: #3fb950;
+      --accent-4: #f78166; --accent-5: #ffa657; --accent-6: #79c0ff;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: var(--text); }
+    .nav-logo .logo-icon { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #58a6ff, #bc8cff); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+    .nav-github { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); color: var(--text) !important; font-size: 13px; font-weight: 500; transition: border-color .2s, background .2s; }
+    .nav-github:hover { border-color: var(--accent); text-decoration: none !important; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Layout */
+    .guide-layout { display: grid; grid-template-columns: 1fr 200px; gap: 48px; max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+    .guide-content { max-width: 720px; }
+    .guide-toc { position: sticky; top: 80px; font-size: 12px; }
+    .guide-toc-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 10px; }
+    .guide-toc a { display: block; padding: 3px 0; color: var(--text-muted); font-size: 12px; border-left: 2px solid transparent; padding-left: 8px; }
+    .guide-toc a:hover { color: var(--accent); text-decoration: none; }
+    .guide-toc a.active { color: var(--accent); border-left-color: var(--accent); }
+    @media (max-width: 900px) { .guide-layout { grid-template-columns: 1fr; } .guide-toc { display: none; } }
+
+    /* Typography */
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 10px; }
+    h2 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 14px; margin-top: 56px; padding-top: 16px; }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; margin-top: 28px; }
+    p { margin-bottom: 16px; color: var(--text); }
+
+    /* Code blocks */
+    .code-block { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+    .code-lang { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dots .dot-r { background: #ff5f57; }
+    .code-dots .dot-y { background: #febc2e; }
+    .code-dots .dot-g { background: #28c840; }
+    pre { padding: 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; tab-size: 2; }
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+    code { font-family: var(--mono); font-size: 13px; background: var(--bg-code); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--accent-6); }
+
+    /* Syntax highlighting */
+    .kw  { color: #ff7b72; }
+    .st  { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .cl  { color: #ffa657; }
+    .nm  { color: #79c0ff; }
+    .nb  { color: #3fb950; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg-card); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    td code { font-size: 12px; }
+
+    /* Admonitions */
+    .admonition { border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 24px; display: flex; gap: 12px; }
+    .admonition-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .admonition-body { font-size: 13px; line-height: 1.6; }
+    .admonition-body strong { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .admonition-note { background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.25); }
+    .admonition-note .admonition-body strong { color: var(--accent); }
+    .admonition-warn { background: rgba(255,166,87,.08); border: 1px solid rgba(255,166,87,.25); }
+    .admonition-warn .admonition-body strong { color: var(--accent-5); }
+    .admonition-tip  { background: rgba(63,185,80,.08); border: 1px solid rgba(63,185,80,.25); }
+    .admonition-tip  .admonition-body strong { color: var(--accent-3); }
+
+    /* Badge */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3);  background: rgba(88,166,255,.07); }
+    .badge-green  { color: #3fb950; border-color: rgba(63,185,80,.3);   background: rgba(63,185,80,.07); }
+    .badge-purple { color: #bc8cff; border-color: rgba(188,140,255,.3); background: rgba(188,140,255,.07); }
+    .badge-orange { color: #ffa657; border-color: rgba(255,166,87,.3);  background: rgba(255,166,87,.07); }
+
+    /* Divider */
+    .section-divider { border: none; border-top: 1px solid var(--border-light); margin: 48px 0; }
+
+    :target { scroll-margin-top: 80px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none">
+      <div class="logo-icon">&#9889;</div>
+      raglib
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag" class="nav-github">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="guide-layout">
+
+  <!-- Main Content -->
+  <main class="guide-content">
+
+    <!-- Page Header -->
+    <div style="padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px;">
+      <div class="section-label">API Reference</div>
+      <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;">Generators</h1>
+      <p style="color:var(--text-muted);font-size:16px;">LLM generation providers — take a question and retrieved context, and produce a grounded natural-language answer.</p>
+    </div>
+
+    <!-- Section: BaseGenerator ABC -->
+    <section id="base-generator">
+      <h2>BaseGenerator ABC</h2>
+      <p style="color:var(--text-muted);">All LLM providers implement the <code>BaseGenerator</code> abstract base class. The core contract is a single <code>generate()</code> call that combines a user question with retrieved context passages.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> <span class="nm">abc</span> <span class="kw">import</span> <span class="cl">ABC</span>, <span class="fn">abstractmethod</span>
+
+<span class="kw">class</span> <span class="cl">BaseGenerator</span>(<span class="cl">ABC</span>):
+    <span class="fn">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">generate</span>(<span class="nm">self</span>, question: <span class="nb">str</span>, context: <span class="nb">str</span>) -> <span class="nb">str</span>: ...
+
+    <span class="kw">def</span> <span class="fn">generate_with_system</span>(
+        <span class="nm">self</span>, question: <span class="nb">str</span>, context: <span class="nb">str</span>, system_prompt: <span class="nb">str</span>
+    ) -> <span class="nb">str</span>: ...</code></pre>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Signature</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>generate</code></td>
+              <td><code>(question: str, context: str) -&gt; str</code></td>
+              <td>Core RAG generation call. <code>context</code> contains retrieved passages; the model answers <code>question</code> grounded in that context.</td>
+            </tr>
+            <tr>
+              <td><code>generate_with_system</code></td>
+              <td><code>(question: str, context: str, system_prompt: str) -&gt; str</code></td>
+              <td>Same as <code>generate</code> but prepends a custom system prompt. Useful for domain-specific personas or format constraints. Provided as a default mixin; override for providers that handle system prompts differently.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section: Provider Table -->
+    <section id="providers">
+      <h2>Providers</h2>
+      <p style="color:var(--text-muted);">Choose a generation provider by passing its key to the <code>llm=</code> argument of <code>RAGLibrary()</code>. The default provider is <span class="badge badge-blue">gemini</span>.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Class</th>
+              <th>Install extra</th>
+              <th>Default model</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>gemini</code> <span class="badge badge-blue">DEFAULT</span></td>
+              <td><code>GeminiGenerator</code></td>
+              <td><code>raglib[gemini]</code></td>
+              <td><code>gemini-2.0-flash</code></td>
+              <td>Fast, cheap, multimodal</td>
+            </tr>
+            <tr>
+              <td><code>vertex_ai</code></td>
+              <td><code>VertexAIGenerator</code></td>
+              <td><code>raglib[vertex-ai]</code></td>
+              <td><code>gemini-1.5-pro</code></td>
+              <td>Google Cloud enterprise</td>
+            </tr>
+            <tr>
+              <td><code>openai</code></td>
+              <td><code>OpenAIGenerator</code></td>
+              <td><code>raglib[openai]</code></td>
+              <td><code>gpt-4o</code></td>
+              <td>High quality; also <code>gpt-4o-mini</code></td>
+            </tr>
+            <tr>
+              <td><code>azure_openai</code></td>
+              <td><code>AzureOpenAIGenerator</code></td>
+              <td><code>raglib[azure]</code></td>
+              <td>Azure GPT-4o</td>
+              <td>Azure-hosted GPT models</td>
+            </tr>
+            <tr>
+              <td><code>anthropic</code></td>
+              <td><code>AnthropicGenerator</code></td>
+              <td><code>raglib[anthropic]</code></td>
+              <td><code>claude-3-5-sonnet-20241022</code></td>
+              <td>Strong reasoning; also <code>claude-3-7-sonnet</code></td>
+            </tr>
+            <tr>
+              <td><code>bedrock</code></td>
+              <td><code>BedrockGenerator</code></td>
+              <td><code>raglib[bedrock]</code></td>
+              <td><code>anthropic.claude-3-5-sonnet-20241022-v2:0</code></td>
+              <td>AWS-native; also Titan, Llama, Mistral</td>
+            </tr>
+            <tr>
+              <td><code>cohere</code></td>
+              <td><code>CohereGenerator</code></td>
+              <td><code>raglib[cohere]</code></td>
+              <td><code>command-r-plus</code></td>
+              <td>Retrieval-augmented generation optimized</td>
+            </tr>
+            <tr>
+              <td><code>ollama</code></td>
+              <td><code>OllamaGenerator</code></td>
+              <td><code>raglib[ollama]</code></td>
+              <td><code>llama3</code></td>
+              <td>Local; any Ollama-supported model</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section: Per-Provider Examples -->
+    <section id="examples">
+      <h2>Per-Provider Examples</h2>
+      <p style="color:var(--text-muted);">Quick setup snippets for common providers via the <code>RAGLibrary</code> constructor.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> <span class="nm">raglib</span> <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+
+<span class="cm"># Anthropic (Claude)</span>
+<span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(llm=<span class="st">"anthropic"</span>, anthropic_api_key=<span class="st">"sk-ant-..."</span>)
+
+<span class="cm"># Azure OpenAI</span>
+<span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(
+    llm=<span class="st">"azure_openai"</span>,
+    azure_openai_endpoint=<span class="st">"https://myinstance.openai.azure.com/"</span>,
+    azure_openai_key=<span class="st">"..."</span>,
+)
+
+<span class="cm"># Bedrock (AWS)</span>
+<span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(llm=<span class="st">"bedrock"</span>, aws_region=<span class="st">"us-east-1"</span>)
+
+<span class="cm"># Per-query LLM override (retriever stays same, only generation changes)</span>
+<span class="nm">answer</span> = <span class="nm">rag</span>.<span class="fn">query</span>(<span class="st">"Explain this"</span>, method=<span class="st">"naive"</span>)</code></pre>
+      </div>
+
+      <div class="admonition admonition-note">
+        <div class="admonition-icon">&#8505;&#65039;</div>
+        <div class="admonition-body">
+          <strong>AWS credential chain</strong>
+          The <code>bedrock</code> provider uses the standard boto3 credential resolution order: IAM instance role, environment variables (<code>AWS_ACCESS_KEY_ID</code> / <code>AWS_SECRET_ACCESS_KEY</code>), then <code>~/.aws/credentials</code>. No explicit API key is required when running inside AWS.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section: Custom Model Selection -->
+    <section id="custom-model">
+      <h2>Custom Model Selection</h2>
+      <p style="color:var(--text-muted);">For fine-grained control over model version, token limits, and temperature, pass a typed config object instead of a key string.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> <span class="nm">raglib.config</span> <span class="kw">import</span> <span class="cl">LibraryConfig</span>, <span class="cl">AnthropicConfig</span>
+
+<span class="nm">config</span> = <span class="cl">LibraryConfig</span>(
+    llm=<span class="st">"anthropic"</span>,
+    anthropic=<span class="cl">AnthropicConfig</span>(
+        api_key=<span class="st">"sk-ant-..."</span>,
+        model=<span class="st">"claude-3-7-sonnet-20250219"</span>,
+        max_tokens=<span class="nm">8192</span>,
+        temperature=<span class="nm">0.0</span>,
+    ),
+)
+<span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(config=<span class="nm">config</span>)</code></pre>
+      </div>
+
+      <p style="color:var(--text-muted);">Each provider has a corresponding config dataclass (<code>GeminiConfig</code>, <code>OpenAIConfig</code>, <code>BedrockConfig</code>, etc.) with provider-specific fields. Refer to the <code>raglib.config</code> module for the full set of available fields per provider.</p>
+
+      <div class="admonition admonition-tip">
+        <div class="admonition-icon">&#128161;</div>
+        <div class="admonition-body">
+          <strong>Temperature 0.0 for RAG</strong>
+          Setting <code>temperature=0.0</code> is strongly recommended for production RAG pipelines. It removes stochastic variation from answers, making responses deterministic and easier to evaluate and debug.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Table of Contents -->
+  <aside class="guide-toc">
+    <div class="guide-toc-title">On this page</div>
+    <a href="#base-generator">BaseGenerator ABC</a>
+    <a href="#providers">Providers</a>
+    <a href="#examples">Per-Provider Examples</a>
+    <a href="#custom-model">Custom Model Selection</a>
+  </aside>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <span>raglib &copy; 2026</span>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('.guide-toc a');
+  const sections = Array.from(tocLinks).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll() {
+    let current = sections[0];
+    for (const s of sections) {
+      if (s && s.getBoundingClientRect().top <= 100) current = s;
+    }
+    tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>

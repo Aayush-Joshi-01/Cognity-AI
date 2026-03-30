@@ -9,6 +9,7 @@ description = "Modular, provider-agnostic RAG library — any LLM, any vector st
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
+authors = [{name = "Aayush Joshi", email = "aayushjoshi.dev@gmail.com"}]
 keywords = ["rag", "llm", "graph", "vector", "knowledge-graph", "embeddings", "ai"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -290,6 +291,13 @@ all = [
     "openai-whisper>=20231117",
     "ffmpeg-python>=0.2.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/aayushjoshi-12/graph-rag"
+Documentation = "https://aayushjoshi-12.github.io/graph-rag"
+Repository = "https://github.com/aayushjoshi-12/graph-rag"
+"Bug Tracker" = "https://github.com/aayushjoshi-12/graph-rag/issues"
+Changelog = "https://github.com/aayushjoshi-12/graph-rag/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAGLibrary — raglib API</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --border: #30363d; --border-light: #21262d;
+      --text: #e6edf3; --text-muted: #7d8590; --text-dim: #484f58;
+      --accent: #58a6ff; --accent-2: #bc8cff; --accent-3: #3fb950;
+      --accent-4: #f78166; --accent-5: #ffa657; --accent-6: #79c0ff;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: var(--text); }
+    .nav-logo .logo-icon { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #58a6ff, #bc8cff); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+    .nav-github { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); color: var(--text) !important; font-size: 13px; font-weight: 500; transition: border-color .2s, background .2s; }
+    .nav-github:hover { border-color: var(--accent); text-decoration: none !important; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Guide Layout */
+    .guide-layout { display: grid; grid-template-columns: 1fr 210px; gap: 48px; max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+    .guide-content { min-width: 0; }
+    .guide-toc { position: sticky; top: 80px; font-size: 12px; max-height: calc(100vh - 100px); overflow-y: auto; }
+    .guide-toc-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 10px; }
+    .guide-toc a { display: block; padding: 3px 0 3px 8px; color: var(--text-muted); font-size: 12px; border-left: 2px solid transparent; }
+    .guide-toc a:hover { color: var(--accent); text-decoration: none; }
+    .guide-toc a.active { color: var(--accent); border-left-color: var(--accent); }
+    .guide-toc a.toc-sub { padding-left: 18px; font-size: 11px; }
+    @media (max-width: 900px) { .guide-layout { grid-template-columns: 1fr; } .guide-toc { display: none; } }
+
+    /* Typography */
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 10px; }
+    h2 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 14px; margin-top: 56px; padding-top: 16px; }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 32px; color: var(--text); }
+    p { margin-bottom: 16px; color: var(--text); }
+
+    /* Code blocks */
+    .code-block { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+    .code-lang { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dots .dot-r { background: #ff5f57; }
+    .code-dots .dot-y { background: #febc2e; }
+    .code-dots .dot-g { background: #28c840; }
+    pre { padding: 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; tab-size: 2; }
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+    code { font-family: var(--mono); font-size: 13px; background: var(--bg-code); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--accent-6); }
+
+    /* Syntax highlight */
+    .kw  { color: #ff7b72; }
+    .st  { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .cl  { color: #ffa657; }
+    .nm  { color: #79c0ff; }
+    .nb  { color: #3fb950; }
+    .op  { color: #ff7b72; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 28px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg-card); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); vertical-align: top; line-height: 1.5; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.018); }
+    td code { font-size: 12px; }
+    td.td-default { color: var(--text-muted); }
+    td.td-desc { color: var(--text-muted); }
+
+    /* Method signature blocks */
+    .method-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 32px; overflow: hidden; }
+    .method-header { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .method-kind { flex-shrink: 0; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; border-radius: 4px; margin-top: 3px; }
+    .kind-method { background: rgba(88,166,255,.12); color: var(--accent); border: 1px solid rgba(88,166,255,.25); }
+    .kind-class  { background: rgba(255,166,87,.12); color: var(--accent-5); border: 1px solid rgba(255,166,87,.25); }
+    .method-sig  { font-family: var(--mono); font-size: 13px; color: var(--text); line-height: 1.6; }
+    .method-body { padding: 16px 20px; }
+    .method-body p { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+    .method-body p:last-child { margin-bottom: 0; }
+    .method-returns { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); background: var(--bg-code); border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; margin-top: 8px; }
+    .method-returns strong { color: var(--accent-6); font-weight: 500; }
+
+    /* Admonitions */
+    .admonition { border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 24px; display: flex; gap: 12px; }
+    .admonition-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .admonition-body { font-size: 13px; line-height: 1.6; }
+    .admonition-body strong { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .admonition-note { background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.25); }
+    .admonition-note .admonition-body strong { color: var(--accent); }
+    .admonition-warn { background: rgba(255,166,87,.08); border: 1px solid rgba(255,166,87,.25); }
+    .admonition-warn .admonition-body strong { color: var(--accent-5); }
+    .admonition-tip  { background: rgba(63,185,80,.08); border: 1px solid rgba(63,185,80,.25); }
+    .admonition-tip  .admonition-body strong { color: var(--accent-3); }
+
+    /* Badge */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3); background: rgba(88,166,255,.07); }
+    .badge-green  { color: #3fb950; border-color: rgba(63,185,80,.3);  background: rgba(63,185,80,.07); }
+    .badge-purple { color: #bc8cff; border-color: rgba(188,140,255,.3);background: rgba(188,140,255,.07); }
+    .badge-orange { color: #ffa657; border-color: rgba(255,166,87,.3); background: rgba(255,166,87,.07); }
+
+    /* Valid values pill list */
+    .values-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; }
+    .val-pill { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--bg-code); border: 1px solid var(--border); color: var(--accent-6); }
+    .val-pill.val-default { border-color: rgba(88,166,255,.4); color: var(--accent); background: rgba(88,166,255,.08); }
+
+    /* Section divider */
+    .section-divider { border: none; border-top: 1px solid var(--border-light); margin: 52px 0; }
+
+    :target { scroll-margin-top: 80px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none">
+      <div class="logo-icon">&#9889;</div>
+      raglib
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag" class="nav-github">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="guide-layout">
+
+  <!-- Main Content -->
+  <main class="guide-content">
+
+    <!-- Page Header -->
+    <div style="padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="section-label" style="margin-bottom:0;">raglib</div>
+        <span style="color:var(--text-dim);font-size:11px;">/</span>
+        <a href="index.html" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);">API Reference</a>
+      </div>
+      <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;font-family:var(--mono);">RAGLibrary</h1>
+      <p style="color:var(--text-muted);font-size:16px;">The primary facade class for raglib. Single entry-point for ingestion, querying, knowledge lifecycle management, and plugin registration.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+        <span class="badge badge-blue">Class</span>
+        <span class="badge badge-green">Stable API</span>
+        <span class="badge badge-orange">raglib.__init__</span>
+      </div>
+    </div>
+
+    <!-- Constructor -->
+    <section id="constructor">
+      <h2>Constructor</h2>
+      <p style="color:var(--text-muted);">All parameters are optional. Passing no arguments gives a zero-config instance that auto-detects available backends from installed packages and environment variables.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">class</span> <span class="cl">RAGLibrary</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(
+        <span class="nm">self</span>,
+        <span class="cm"># Component selection</span>
+        rag_method: <span class="nb">str</span> = <span class="st">"hybrid_graph"</span>,
+        chunker: <span class="nb">str</span> = <span class="st">"sentence"</span>,
+        embedder: <span class="nb">str</span> = <span class="st">"gemini"</span>,
+        vector_store: <span class="nb">str</span> = <span class="st">"chroma"</span>,
+        graph_store: <span class="nb">str</span> = <span class="st">"neo4j"</span>,
+        llm: <span class="nb">str</span> = <span class="st">"gemini"</span>,
+        extraction: <span class="nb">str</span> = <span class="st">"hybrid"</span>,
+        ocr: <span class="nb">str</span> = <span class="st">"gemini_vision"</span>,
+        page_index: <span class="nb">str</span> = <span class="st">"hybrid"</span>,
+        <span class="cm"># API credentials</span>
+        gemini_api_key: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        openai_api_key: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        anthropic_api_key: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        azure_openai_endpoint: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        azure_openai_key: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        aws_region: <span class="nb">str</span> = <span class="st">"us-east-1"</span>,
+        neo4j_uri: <span class="nb">str</span> = <span class="st">"bolt://localhost:7687"</span>,
+        neo4j_user: <span class="nb">str</span> = <span class="st">"neo4j"</span>,
+        neo4j_password: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        cohere_api_key: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+        ollama_base_url: <span class="nb">str</span> = <span class="st">"http://localhost:11434"</span>,
+        <span class="cm"># Advanced: full config override</span>
+        config: <span class="cl">LibraryConfig</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>,
+    )</code></pre>
+      </div>
+
+      <div class="admonition admonition-note">
+        <div class="admonition-icon">&#8505;</div>
+        <div class="admonition-body">
+          <strong>Config precedence</strong>
+          When a <code>config</code> object is supplied it takes full precedence; individual keyword arguments are ignored. Use keyword arguments for quick setup and <a href="config.html"><code>LibraryConfig</code></a> for production deployments with fine-grained control.
+        </div>
+      </div>
+
+      <!-- Parameters table -->
+      <h3>Parameters</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>rag_method</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"hybrid_graph"</code></td>
+              <td class="td-desc">Default retrieval strategy used for all <code>query()</code> calls unless overridden per-call.</td>
+            </tr>
+            <tr>
+              <td><code>chunker</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"sentence"</code></td>
+              <td class="td-desc">Text chunking strategy applied during ingestion.</td>
+            </tr>
+            <tr>
+              <td><code>embedder</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"gemini"</code></td>
+              <td class="td-desc">Embedding provider used to vectorize chunks and queries.</td>
+            </tr>
+            <tr>
+              <td><code>vector_store</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"chroma"</code></td>
+              <td class="td-desc">Backend for storing and searching dense vector embeddings.</td>
+            </tr>
+            <tr>
+              <td><code>graph_store</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"neo4j"</code></td>
+              <td class="td-desc">Graph database backend for entity-relationship storage.</td>
+            </tr>
+            <tr>
+              <td><code>llm</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"gemini"</code></td>
+              <td class="td-desc">LLM provider used for answer generation.</td>
+            </tr>
+            <tr>
+              <td><code>extraction</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"hybrid"</code></td>
+              <td class="td-desc">Entity and relation extraction strategy during ingestion.</td>
+            </tr>
+            <tr>
+              <td><code>ocr</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"gemini_vision"</code></td>
+              <td class="td-desc">OCR provider for image and scanned-document ingestion.</td>
+            </tr>
+            <tr>
+              <td><code>page_index</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"hybrid"</code></td>
+              <td class="td-desc">Strategy for indexing page-level structure in multi-page documents.</td>
+            </tr>
+            <tr>
+              <td><code>gemini_api_key</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Google Gemini API key. Falls back to <code>GEMINI_API_KEY</code> env var.</td>
+            </tr>
+            <tr>
+              <td><code>openai_api_key</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">OpenAI API key. Falls back to <code>OPENAI_API_KEY</code> env var.</td>
+            </tr>
+            <tr>
+              <td><code>anthropic_api_key</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Anthropic API key. Falls back to <code>ANTHROPIC_API_KEY</code> env var.</td>
+            </tr>
+            <tr>
+              <td><code>azure_openai_endpoint</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Azure OpenAI resource endpoint URL.</td>
+            </tr>
+            <tr>
+              <td><code>azure_openai_key</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Azure OpenAI API key.</td>
+            </tr>
+            <tr>
+              <td><code>aws_region</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"us-east-1"</code></td>
+              <td class="td-desc">AWS region for Bedrock API calls. Uses standard AWS credential chain.</td>
+            </tr>
+            <tr>
+              <td><code>neo4j_uri</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"bolt://localhost:7687"</code></td>
+              <td class="td-desc">Neo4j Bolt connection URI.</td>
+            </tr>
+            <tr>
+              <td><code>neo4j_user</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"neo4j"</code></td>
+              <td class="td-desc">Neo4j username.</td>
+            </tr>
+            <tr>
+              <td><code>neo4j_password</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Neo4j password. Falls back to <code>NEO4J_PASSWORD</code> env var.</td>
+            </tr>
+            <tr>
+              <td><code>cohere_api_key</code></td>
+              <td><code>str | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Cohere API key. Falls back to <code>COHERE_API_KEY</code> env var.</td>
+            </tr>
+            <tr>
+              <td><code>ollama_base_url</code></td>
+              <td><code>str</code></td>
+              <td class="td-default"><code>"http://localhost:11434"</code></td>
+              <td class="td-desc">Base URL for a locally running Ollama server.</td>
+            </tr>
+            <tr>
+              <td><code>config</code></td>
+              <td><code>LibraryConfig | None</code></td>
+              <td class="td-default"><code>None</code></td>
+              <td class="td-desc">Full configuration object. When supplied, all other keyword arguments are ignored.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Valid values -->
+      <h3 id="valid-values">Valid String Values</h3>
+      <p style="color:var(--text-muted);">The highlighted pill is the default value for each parameter.</p>
+
+      <div style="display:grid;gap:20px;margin-bottom:28px;">
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>rag_method</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">hybrid_graph</span>
+            <span class="val-pill">naive</span>
+            <span class="val-pill">vector_only</span>
+            <span class="val-pill">graph_only</span>
+            <span class="val-pill">parent_child</span>
+            <span class="val-pill">multi_query</span>
+            <span class="val-pill">microsoft_graphrag</span>
+            <span class="val-pill">adaptive</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>chunker</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">sentence</span>
+            <span class="val-pill">fixed</span>
+            <span class="val-pill">semantic</span>
+            <span class="val-pill">recursive</span>
+            <span class="val-pill">parent_child</span>
+            <span class="val-pill">hybrid</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>embedder</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">gemini</span>
+            <span class="val-pill">vertex_ai</span>
+            <span class="val-pill">openai</span>
+            <span class="val-pill">azure_openai</span>
+            <span class="val-pill">bedrock</span>
+            <span class="val-pill">cohere</span>
+            <span class="val-pill">sentence_transformers</span>
+            <span class="val-pill">ollama</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>vector_store</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">chroma</span>
+            <span class="val-pill">qdrant</span>
+            <span class="val-pill">pinecone</span>
+            <span class="val-pill">faiss</span>
+            <span class="val-pill">weaviate</span>
+            <span class="val-pill">milvus</span>
+            <span class="val-pill">pgvector</span>
+            <span class="val-pill">azure_search</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>graph_store</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">neo4j</span>
+            <span class="val-pill">microsoft_graphrag</span>
+            <span class="val-pill">memgraph</span>
+            <span class="val-pill">arangodb</span>
+            <span class="val-pill">networkx</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>llm</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">gemini</span>
+            <span class="val-pill">vertex_ai</span>
+            <span class="val-pill">openai</span>
+            <span class="val-pill">azure_openai</span>
+            <span class="val-pill">anthropic</span>
+            <span class="val-pill">bedrock</span>
+            <span class="val-pill">cohere</span>
+            <span class="val-pill">ollama</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>extraction</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">hybrid</span>
+            <span class="val-pill">nlp</span>
+            <span class="val-pill">llm</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>ocr</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">gemini_vision</span>
+            <span class="val-pill">openai_vision</span>
+            <span class="val-pill">anthropic_vision</span>
+            <span class="val-pill">azure_vision</span>
+            <span class="val-pill">bedrock_vision</span>
+            <span class="val-pill">tesseract</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;"><code>page_index</code></div>
+          <div class="values-list">
+            <span class="val-pill val-default">hybrid</span>
+            <span class="val-pill">regex</span>
+            <span class="val-pill">structural</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Ingestion Methods -->
+    <section id="ingestion">
+      <h2>Ingestion Methods</h2>
+      <p style="color:var(--text-muted);">All ingestion methods parse documents, chunk text, extract entities, embed chunks, and write to both the vector store and graph store in a single call.</p>
+
+      <!-- ingest -->
+      <div id="ingest" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">ingest</span>(<span class="nm">path</span>: <span class="nb">str</span> <span class="op">|</span> <span class="cl">Path</span>) <span class="op">-&gt;</span> <span class="nb">None</span></span>
+        </div>
+        <div class="method-body">
+          <p>Ingest a single file. The file format is auto-detected from the file extension. Supports PDF, DOCX, XLSX, PPTX, TXT, MD, HTML, CSV, JSON, JSONL, and any image format supported by the configured OCR provider.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:0;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>path</code></td><td><code>str | Path</code></td><td class="td-desc">Filesystem path to the file to ingest.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ingest_dir -->
+      <div id="ingest-dir" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">ingest_dir</span>(<span class="nm">directory</span>: <span class="nb">str</span> <span class="op">|</span> <span class="cl">Path</span>, <span class="nm">recursive</span>: <span class="nb">bool</span> = <span class="nb">True</span>, <span class="nm">glob</span>: <span class="nb">str</span> = <span class="st">"*"</span>) <span class="op">-&gt;</span> <span class="nb">int</span></span>
+        </div>
+        <div class="method-body">
+          <p>Ingest all matching files in a directory. Files that cannot be parsed are skipped with a warning. Returns the total count of successfully ingested files.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:0;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>directory</code></td><td><code>str | Path</code></td><td class="td-default">—</td><td class="td-desc">Root directory to scan.</td></tr>
+                <tr><td><code>recursive</code></td><td><code>bool</code></td><td class="td-default"><code>True</code></td><td class="td-desc">When <code>True</code>, descend into subdirectories.</td></tr>
+                <tr><td><code>glob</code></td><td><code>str</code></td><td class="td-default"><code>"*"</code></td><td class="td-desc">Glob pattern to filter filenames, e.g. <code>"*.pdf"</code> or <code>"report_*.docx"</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px;"><span class="method-returns">Returns <strong>int</strong> &mdash; number of files successfully ingested</span></div>
+        </div>
+      </div>
+
+      <!-- ingest_text -->
+      <div id="ingest-text" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">ingest_text</span>(<span class="nm">text</span>: <span class="nb">str</span>, <span class="nm">doc_id</span>: <span class="nb">str</span>, <span class="nm">metadata</span>: <span class="nb">dict</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>) <span class="op">-&gt;</span> <span class="nb">None</span></span>
+        </div>
+        <div class="method-body">
+          <p>Ingest raw text directly, bypassing the loader step. Useful for programmatically generated content, API responses, or when you have already extracted text from a custom source.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:0;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>text</code></td><td><code>str</code></td><td class="td-desc">The raw text content to ingest.</td></tr>
+                <tr><td><code>doc_id</code></td><td><code>str</code></td><td class="td-desc">A unique identifier for this document. Used for lifecycle operations (<code>confirm</code>, <code>deprecate</code>).</td></tr>
+                <tr><td><code>metadata</code></td><td><code>dict | None</code></td><td class="td-desc">Optional key-value metadata to attach (e.g. source URL, author, timestamp).</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- build_communities -->
+      <div id="build-communities" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">build_communities</span>() <span class="op">-&gt;</span> <span class="nb">int</span></span>
+        </div>
+        <div class="method-body">
+          <p>Run community detection over the knowledge graph using the Leiden or Louvain algorithm (selected automatically based on graph size). Communities are stored back into the graph store and used by the <code>microsoft_graphrag</code> and <code>hybrid_graph</code> retrieval methods to answer global/thematic queries.</p>
+          <p>Call this method after bulk ingestion. Incremental ingestion does not automatically rebuild communities.</p>
+          <div style="margin-top:4px;"><span class="method-returns">Returns <strong>int</strong> &mdash; number of communities detected</span></div>
+        </div>
+      </div>
+
+      <div class="admonition admonition-tip">
+        <div class="admonition-icon">&#128161;</div>
+        <div class="admonition-body">
+          <strong>Batch ingestion pattern</strong>
+          Call <code>ingest_dir()</code> first, then <code>build_communities()</code> once at the end. Re-running <code>build_communities()</code> after adding new documents is cheap — only the changed subgraph is recomputed.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Query Methods -->
+    <section id="query">
+      <h2>Query Methods</h2>
+      <p style="color:var(--text-muted);">All query methods accept a plain-language question and return answers grounded in the ingested knowledge base. The <code>method</code> argument overrides the default <code>rag_method</code> for a single call.</p>
+
+      <!-- query -->
+      <div id="query-method" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">query</span>(<span class="nm">question</span>: <span class="nb">str</span>, <span class="nm">top_k</span>: <span class="nb">int</span> = <span class="nm">10</span>, <span class="nm">method</span>: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>) <span class="op">-&gt;</span> <span class="nb">str</span></span>
+        </div>
+        <div class="method-body">
+          <p>Answer a natural-language question using the configured RAG pipeline. Returns the generated answer as a plain string. For source attribution use <a href="#query-with-sources"><code>query_with_sources()</code></a> instead.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:0;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>question</code></td><td><code>str</code></td><td class="td-default">—</td><td class="td-desc">The question to answer.</td></tr>
+                <tr><td><code>top_k</code></td><td><code>int</code></td><td class="td-default"><code>10</code></td><td class="td-desc">Maximum number of chunks to retrieve and pass to the LLM context.</td></tr>
+                <tr><td><code>method</code></td><td><code>str | None</code></td><td class="td-default"><code>None</code></td><td class="td-desc">Per-query RAG method override. Accepts same values as the <code>rag_method</code> constructor argument.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px;"><span class="method-returns">Returns <strong>str</strong> &mdash; generated answer</span></div>
+        </div>
+      </div>
+
+      <!-- query_with_sources -->
+      <div id="query-with-sources" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">query_with_sources</span>(<span class="nm">question</span>: <span class="nb">str</span>, <span class="nm">top_k</span>: <span class="nb">int</span> = <span class="nm">10</span>, <span class="nm">method</span>: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>) <span class="op">-&gt;</span> <span class="nb">dict</span></span>
+        </div>
+        <div class="method-body">
+          <p>Answer a question and return the answer together with full provenance — source document metadata and the raw chunks that were used to construct the answer.</p>
+          <p>The returned dictionary has the following shape:</p>
+          <div class="code-block" style="margin-bottom:12px;">
+            <div class="code-header">
+              <span class="code-lang">python</span>
+              <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+            </div>
+            <pre><code>{
+    <span class="st">"answer"</span>:  <span class="nb">str</span>,                 <span class="cm"># Generated answer text</span>
+    <span class="st">"sources"</span>: <span class="nb">list</span>[<span class="nb">dict</span>],           <span class="cm"># Source document metadata dicts</span>
+    <span class="st">"chunks"</span>:  <span class="nb">list</span>[<span class="cl">SemanticChunk</span>],  <span class="cm"># Raw chunks passed to the LLM</span>
+}</code></pre>
+          </div>
+          <div style="margin-top:4px;"><span class="method-returns">Returns <strong>dict</strong> &mdash; answer, sources, chunks</span></div>
+        </div>
+      </div>
+
+      <!-- retrieve -->
+      <div id="retrieve" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">retrieve</span>(<span class="nm">query</span>: <span class="nb">str</span>, <span class="nm">top_k</span>: <span class="nb">int</span> = <span class="nm">10</span>, <span class="nm">method</span>: <span class="nb">str</span> <span class="op">|</span> <span class="nb">None</span> = <span class="nb">None</span>) <span class="op">-&gt;</span> <span class="nb">list</span>[<span class="cl">RetrievalResult</span>]</span>
+        </div>
+        <div class="method-body">
+          <p>Retrieve the most relevant chunks for a query without generating an LLM answer. Useful for inspection, custom re-ranking pipelines, or building your own prompt.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:0;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>query</code></td><td><code>str</code></td><td class="td-default">—</td><td class="td-desc">The search query.</td></tr>
+                <tr><td><code>top_k</code></td><td><code>int</code></td><td class="td-default"><code>10</code></td><td class="td-desc">Maximum number of results to return.</td></tr>
+                <tr><td><code>method</code></td><td><code>str | None</code></td><td class="td-default"><code>None</code></td><td class="td-desc">Retrieval strategy override for this call.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px;"><span class="method-returns">Returns <strong>list[RetrievalResult]</strong> &mdash; ranked results, highest score first</span></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Lifecycle Methods -->
+    <section id="lifecycle">
+      <h2>Lifecycle Methods</h2>
+      <p style="color:var(--text-muted);">raglib tracks the authority and freshness of each ingested document. Lifecycle methods let you mark sources as authoritative, retire outdated knowledge, detect conflicts, and prune low-confidence information.</p>
+
+      <div id="confirm" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">confirm</span>(<span class="nm">doc_id</span>: <span class="nb">str</span>) <span class="op">-&gt;</span> <span class="nb">None</span></span>
+        </div>
+        <div class="method-body">
+          <p>Mark a document as confirmed and authoritative. Confirmed sources receive a higher confidence weight during retrieval ranking, making their chunks more likely to appear in answers.</p>
+        </div>
+      </div>
+
+      <div id="deprecate" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">deprecate</span>(<span class="nm">doc_id</span>: <span class="nb">str</span>) <span class="op">-&gt;</span> <span class="nb">None</span></span>
+        </div>
+        <div class="method-body">
+          <p>Mark a document as deprecated. Deprecated chunks are excluded from retrieval but remain in the stores so they can be restored or audited. Use this to retire superseded reports or outdated policy documents without deleting them.</p>
+        </div>
+      </div>
+
+      <div id="detect-conflicts" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">detect_conflicts</span>(<span class="nm">entity</span>: <span class="nb">str</span>) <span class="op">-&gt;</span> <span class="nb">list</span>[<span class="nb">dict</span>]</span>
+        </div>
+        <div class="method-body">
+          <p>Find conflicting facts about a named entity in the knowledge graph. Returns a list of conflict records, each containing the two contradicting claims, their source documents, and a conflict severity score.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:8px;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>entity</code></td><td><code>str</code></td><td class="td-desc">The entity name to check for conflicting assertions (e.g. <code>"Apple Inc"</code>, <code>"CEO"</code>).</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div><span class="method-returns">Returns <strong>list[dict]</strong> &mdash; list of conflict records</span></div>
+        </div>
+      </div>
+
+      <div id="prune" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">prune</span>(<span class="nm">threshold</span>: <span class="nb">float</span> = <span class="nm">0.5</span>) <span class="op">-&gt;</span> <span class="nb">int</span></span>
+        </div>
+        <div class="method-body">
+          <p>Remove chunks and graph nodes whose confidence score falls below <code>threshold</code>. Confidence is computed from source status, citation frequency, and conflict history. Returns the number of items pruned.</p>
+          <div class="table-wrap" style="margin-top:12px;margin-bottom:8px;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>threshold</code></td><td><code>float</code></td><td class="td-default"><code>0.5</code></td><td class="td-desc">Confidence threshold in [0, 1]. Items below this value are permanently deleted.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div><span class="method-returns">Returns <strong>int</strong> &mdash; number of items pruned</span></div>
+        </div>
+      </div>
+
+      <div id="health-report" class="method-block">
+        <div class="method-header">
+          <span class="method-kind kind-method">method</span>
+          <span class="method-sig"><span class="fn">health_report</span>() <span class="op">-&gt;</span> <span class="nb">dict</span></span>
+        </div>
+        <div class="method-body">
+          <p>Return a summary of the current knowledge base state. Useful for monitoring ingestion progress and graph quality.</p>
+          <div class="code-block" style="margin-top:12px;margin-bottom:0;">
+            <div class="code-header">
+              <span class="code-lang">python</span>
+              <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+            </div>
+            <pre><code>{
+    <span class="st">"entities"</span>:    <span class="nb">int</span>,  <span class="cm"># Total graph entities (nodes)</span>
+    <span class="st">"relations"</span>:   <span class="nb">int</span>,  <span class="cm"># Total graph relationships (edges)</span>
+    <span class="st">"chunks"</span>:      <span class="nb">int</span>,  <span class="cm"># Total chunks in the vector store</span>
+    <span class="st">"communities"</span>: <span class="nb">int</span>,  <span class="cm"># Graph communities detected (0 if not yet built)</span>
+    <span class="st">"documents"</span>:   <span class="nb">int</span>,  <span class="cm"># Total source documents ingested</span>
+    <span class="st">"deprecated"</span>:  <span class="nb">int</span>,  <span class="cm"># Documents marked deprecated</span>
+    <span class="st">"confirmed"</span>:   <span class="nb">int</span>,  <span class="cm"># Documents marked confirmed/authoritative</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="admonition admonition-warn">
+        <div class="admonition-icon">&#9888;</div>
+        <div class="admonition-body">
+          <strong>Prune is irreversible</strong>
+          <code>prune()</code> permanently deletes data from both the vector store and graph store. Consider calling <code>health_report()</code> first to understand what will be removed, and lower the threshold incrementally.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Plugin Registration -->
+    <section id="plugin-registration">
+      <h2>Plugin Registration</h2>
+      <p style="color:var(--text-muted);">Register custom implementations at runtime. All registration methods follow the same pattern: supply a string key (used in constructor arguments) and a class that extends the corresponding base class.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="fn">register_loader</span>(<span class="nm">extension</span>: <span class="nb">str</span>, <span class="nm">loader_class</span>: <span class="nb">type</span>[<span class="cl">BaseLoader</span>]) <span class="op">-&gt;</span> <span class="nb">None</span>
+<span class="fn">register_embedder</span>(<span class="nm">key</span>: <span class="nb">str</span>, <span class="nm">embedder_class</span>: <span class="nb">type</span>[<span class="cl">BaseEmbedder</span>]) <span class="op">-&gt;</span> <span class="nb">None</span>
+<span class="fn">register_generator</span>(<span class="nm">key</span>: <span class="nb">str</span>, <span class="nm">generator_class</span>: <span class="nb">type</span>[<span class="cl">BaseGenerator</span>]) <span class="op">-&gt;</span> <span class="nb">None</span>
+<span class="fn">register_retriever</span>(<span class="nm">key</span>: <span class="nb">str</span>, <span class="nm">retriever_class</span>: <span class="nb">type</span>[<span class="cl">BaseRetriever</span>]) <span class="op">-&gt;</span> <span class="nb">None</span>
+<span class="fn">register_vector_store</span>(<span class="nm">key</span>: <span class="nb">str</span>, <span class="nm">store_class</span>: <span class="nb">type</span>[<span class="cl">BaseVectorStore</span>]) <span class="op">-&gt;</span> <span class="nb">None</span>
+<span class="fn">register_graph_store</span>(<span class="nm">key</span>: <span class="nb">str</span>, <span class="nm">store_class</span>: <span class="nb">type</span>[<span class="cl">BaseGraphStore</span>]) <span class="op">-&gt;</span> <span class="nb">None</span></code></pre>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Key format</th>
+              <th>Base class</th>
+              <th>Import from</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>register_loader</code></td><td class="td-desc">File extension incl. dot, e.g. <code>".xyz"</code></td><td><code>BaseLoader</code></td><td><code>raglib.loaders</code></td></tr>
+            <tr><td><code>register_embedder</code></td><td class="td-desc">Snake-case string, e.g. <code>"my_embedder"</code></td><td><code>BaseEmbedder</code></td><td><code>raglib.embedders</code></td></tr>
+            <tr><td><code>register_generator</code></td><td class="td-desc">Snake-case string</td><td><code>BaseGenerator</code></td><td><code>raglib.generators</code></td></tr>
+            <tr><td><code>register_retriever</code></td><td class="td-desc">Snake-case string</td><td><code>BaseRetriever</code></td><td><code>raglib.retrievers</code></td></tr>
+            <tr><td><code>register_vector_store</code></td><td class="td-desc">Snake-case string</td><td><code>BaseVectorStore</code></td><td><code>raglib.stores</code></td></tr>
+            <tr><td><code>register_graph_store</code></td><td class="td-desc">Snake-case string</td><td><code>BaseGraphStore</code></td><td><code>raglib.stores</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admonition admonition-note">
+        <div class="admonition-icon">&#8505;</div>
+        <div class="admonition-body">
+          <strong>Registration replaces built-ins</strong>
+          Registering a key that already exists (e.g. <code>"openai"</code> for an embedder) will override the built-in implementation for that instance only. Other <code>RAGLibrary</code> instances are unaffected.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Full Example -->
+    <section id="example">
+      <h2>Full Usage Example</h2>
+      <p style="color:var(--text-muted);">A complete walkthrough from configuration to querying and lifecycle management.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+
+<span class="cm"># --- Minimal setup: zero-config, auto-detects available backends ---</span>
+rag = <span class="cl">RAGLibrary</span>()
+
+<span class="cm"># --- Explicit configuration ---</span>
+rag = <span class="cl">RAGLibrary</span>(
+    rag_method=<span class="st">"hybrid_graph"</span>,
+    embedder=<span class="st">"openai"</span>,
+    vector_store=<span class="st">"qdrant"</span>,
+    graph_store=<span class="st">"neo4j"</span>,
+    llm=<span class="st">"anthropic"</span>,
+    openai_api_key=<span class="st">"sk-..."</span>,
+    anthropic_api_key=<span class="st">"sk-ant-..."</span>,
+    neo4j_uri=<span class="st">"bolt://localhost:7687"</span>,
+    neo4j_password=<span class="st">"password"</span>,
+)
+
+<span class="cm"># --- Ingest multiple formats ---</span>
+rag.<span class="fn">ingest</span>(<span class="st">"report.pdf"</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"data.xlsx"</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"slides.pptx"</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"photo.jpg"</span>)           <span class="cm"># OCR via multimodal LLM</span>
+count = rag.<span class="fn">ingest_dir</span>(<span class="st">"./documents/"</span>)   <span class="cm"># Batch ingest, returns file count</span>
+
+<span class="cm"># --- Build knowledge graph communities (run after bulk ingestion) ---</span>
+communities = rag.<span class="fn">build_communities</span>()
+<span class="nb">print</span>(<span class="st">f"Built </span><span class="nm">{communities}</span><span class="st"> communities"</span>)
+
+<span class="cm"># --- Query ---</span>
+answer = rag.<span class="fn">query</span>(<span class="st">"What are the key findings?"</span>)
+result = rag.<span class="fn">query_with_sources</span>(<span class="st">"Who is the CEO?"</span>, method=<span class="st">"hybrid_graph"</span>)
+<span class="nb">print</span>(result[<span class="st">"answer"</span>])
+<span class="kw">for</span> src <span class="kw">in</span> result[<span class="st">"sources"</span>]:
+    <span class="nb">print</span>(src[<span class="st">"doc_id"</span>], src[<span class="st">"source_path"</span>])
+
+<span class="cm"># --- Per-query method override ---</span>
+summary = rag.<span class="fn">query</span>(<span class="st">"Summarize all themes"</span>, method=<span class="st">"microsoft_graphrag"</span>)
+
+<span class="cm"># --- Retrieval only (no LLM call) ---</span>
+results = rag.<span class="fn">retrieve</span>(<span class="st">"quarterly revenue"</span>, top_k=<span class="nm">5</span>)
+<span class="kw">for</span> r <span class="kw">in</span> results:
+    <span class="nb">print</span>(<span class="st">f"[</span><span class="nm">{r.score:.3f}</span><span class="st">] </span><span class="nm">{r.chunk.text[:120]}</span><span class="st">..."</span>)
+
+<span class="cm"># --- Lifecycle management ---</span>
+rag.<span class="fn">confirm</span>(<span class="st">"report_2024"</span>)       <span class="cm"># Mark as authoritative</span>
+rag.<span class="fn">deprecate</span>(<span class="st">"old_report_2022"</span>) <span class="cm"># Exclude from retrieval</span>
+
+conflicts = rag.<span class="fn">detect_conflicts</span>(<span class="st">"Apple Inc"</span>)
+pruned = rag.<span class="fn">prune</span>(threshold=<span class="nm">0.4</span>)
+<span class="nb">print</span>(<span class="st">f"Pruned </span><span class="nm">{pruned}</span><span class="st"> low-confidence items"</span>)
+
+report = rag.<span class="fn">health_report</span>()
+<span class="cm"># {"entities": 1243, "relations": 892, "chunks": 3421, "communities": 47,</span>
+<span class="cm">#  "documents": 28, "deprecated": 2, "confirmed": 5}</span>
+
+<span class="cm"># --- Custom plugin: register a loader for a proprietary format ---</span>
+<span class="kw">from</span> my_loaders <span class="kw">import</span> <span class="cl">MyCustomLoader</span>
+rag.<span class="fn">register_loader</span>(<span class="st">".myformat"</span>, <span class="cl">MyCustomLoader</span>)
+rag.<span class="fn">ingest</span>(<span class="st">"data.myformat"</span>)  <span class="cm"># Now handled by MyCustomLoader</span>
+
+<span class="cm"># --- Custom retriever registered and used immediately ---</span>
+<span class="kw">from</span> my_retrievers <span class="kw">import</span> <span class="cl">HybridBM25Retriever</span>
+rag.<span class="fn">register_retriever</span>(<span class="st">"bm25_hybrid"</span>, <span class="cl">HybridBM25Retriever</span>)
+answer = rag.<span class="fn">query</span>(<span class="st">"latest financials"</span>, method=<span class="st">"bm25_hybrid"</span>)</code></pre>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- See Also -->
+    <section id="see-also">
+      <h2>See Also</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:8px;">
+        <a href="config.html" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s,transform .2s;text-decoration:none;" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+          <div style="font-size:18px;margin-bottom:8px;">&#9881;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Configuration</div>
+          <div style="font-size:12px;color:var(--text-muted);">LibraryConfig and provider dataclasses</div>
+        </a>
+        <a href="retrievers.html" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s,transform .2s;text-decoration:none;" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+          <div style="font-size:18px;margin-bottom:8px;">&#128301;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Retrievers</div>
+          <div style="font-size:12px;color:var(--text-muted);">All RAG method implementations</div>
+        </a>
+        <a href="loaders.html" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s,transform .2s;text-decoration:none;" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+          <div style="font-size:18px;margin-bottom:8px;">&#128196;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Loaders</div>
+          <div style="font-size:12px;color:var(--text-muted);">File format loaders and BaseLoader</div>
+        </a>
+        <a href="stores.html" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s,transform .2s;text-decoration:none;" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+          <div style="font-size:18px;margin-bottom:8px;">&#128452;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Stores</div>
+          <div style="font-size:12px;color:var(--text-muted);">Vector and graph store backends</div>
+        </a>
+        <a href="index.html" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s,transform .2s;text-decoration:none;" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+          <div style="font-size:18px;margin-bottom:8px;">&#128218;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">API Index</div>
+          <div style="font-size:12px;color:var(--text-muted);">All modules at a glance</div>
+        </a>
+        <a href="../getting-started.html" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s,transform .2s;text-decoration:none;" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)'">
+          <div style="font-size:18px;margin-bottom:8px;">&#128640;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Getting Started</div>
+          <div style="font-size:12px;color:var(--text-muted);">Installation and first query</div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOC Sidebar -->
+  <aside class="guide-toc">
+    <div class="guide-toc-title">On This Page</div>
+    <a href="#constructor">Constructor</a>
+    <a href="#valid-values" class="toc-sub">Valid values</a>
+    <a href="#ingestion">Ingestion Methods</a>
+    <a href="#ingest" class="toc-sub">ingest()</a>
+    <a href="#ingest-dir" class="toc-sub">ingest_dir()</a>
+    <a href="#ingest-text" class="toc-sub">ingest_text()</a>
+    <a href="#build-communities" class="toc-sub">build_communities()</a>
+    <a href="#query">Query Methods</a>
+    <a href="#query-method" class="toc-sub">query()</a>
+    <a href="#query-with-sources" class="toc-sub">query_with_sources()</a>
+    <a href="#retrieve" class="toc-sub">retrieve()</a>
+    <a href="#lifecycle">Lifecycle Methods</a>
+    <a href="#confirm" class="toc-sub">confirm()</a>
+    <a href="#deprecate" class="toc-sub">deprecate()</a>
+    <a href="#detect-conflicts" class="toc-sub">detect_conflicts()</a>
+    <a href="#prune" class="toc-sub">prune()</a>
+    <a href="#health-report" class="toc-sub">health_report()</a>
+    <a href="#plugin-registration">Plugin Registration</a>
+    <a href="#example">Full Example</a>
+    <a href="#see-also">See Also</a>
+  </aside>
+
+</div><!-- end guide-layout -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <span>&#169; 2025 raglib. MIT License.</span>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Highlight active TOC item on scroll
+  const tocLinks = document.querySelectorAll('.guide-toc a');
+  const anchors = Array.from(document.querySelectorAll('section[id], div[id], .method-block[id]'));
+
+  function onScroll() {
+    let current = '';
+    for (const el of anchors) {
+      if (window.scrollY >= el.offsetTop - 110) current = el.id;
+    }
+    tocLinks.forEach(a => {
+      const href = a.getAttribute('href');
+      a.classList.toggle('active', href === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>
