@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration — raglib API</title>
+  <meta name="description" content="Complete reference for LibraryConfig and all provider configuration dataclasses in raglib." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg:          #0d1117;
+      --bg-card:     #161b22;
+      --bg-code:     #1c2128;
+      --border:      #30363d;
+      --border-light:#21262d;
+      --text:        #e6edf3;
+      --text-muted:  #7d8590;
+      --text-dim:    #484f58;
+      --accent:      #58a6ff;
+      --accent-2:    #bc8cff;
+      --accent-3:    #3fb950;
+      --accent-4:    #f78166;
+      --accent-5:    #ffa657;
+      --accent-6:    #79c0ff;
+      --radius:      10px;
+      --radius-sm:   6px;
+      --font:        'Inter', system-ui, sans-serif;
+      --mono:        'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: var(--text); }
+    .nav-logo .logo-icon { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #58a6ff, #bc8cff); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+    .nav-github { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); color: var(--text) !important; font-size: 13px; font-weight: 500; transition: border-color .2s, background .2s; }
+    .nav-github:hover { border-color: var(--accent); text-decoration: none !important; }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Layout */
+    .page-layout { display: grid; grid-template-columns: 1fr 200px; gap: 48px; max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+    .page-content { min-width: 0; }
+    .page-toc { position: sticky; top: 80px; font-size: 12px; align-self: start; }
+    .page-toc-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 10px; }
+    .page-toc a { display: block; padding: 3px 0 3px 8px; color: var(--text-muted); font-size: 12px; border-left: 2px solid transparent; }
+    .page-toc a:hover { color: var(--accent); text-decoration: none; }
+    .page-toc a.active { color: var(--accent); border-left-color: var(--accent); }
+    .page-toc .toc-sub { padding-left: 20px; font-size: 11px; }
+    @media (max-width: 900px) { .page-layout { grid-template-columns: 1fr; } .page-toc { display: none; } }
+
+    /* Typography */
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 10px; }
+    h1 { font-size: 36px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+    h2 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 14px; margin-top: 56px; padding-top: 16px; }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; margin-top: 32px; color: var(--accent-6); }
+    p { margin-bottom: 16px; color: var(--text); }
+
+    /* Code blocks */
+    .code-block { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+    .code-lang { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dots .dot-r { background: #ff5f57; }
+    .code-dots .dot-y { background: #febc2e; }
+    .code-dots .dot-g { background: #28c840; }
+    pre { padding: 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; tab-size: 2; }
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+    code { font-family: var(--mono); font-size: 13px; background: var(--bg-code); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--accent-6); }
+
+    /* Syntax highlighting */
+    .kw  { color: #ff7b72; }
+    .st  { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .cl  { color: #ffa657; }
+    .nm  { color: #79c0ff; }
+    .nb  { color: #3fb950; }
+    .dc  { color: #8b949e; font-style: italic; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg-card); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    td code { font-size: 12px; }
+
+    /* Provider config cards grid */
+    .provider-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .provider-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .provider-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .provider-card-header .provider-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .provider-card-header h4 { font-size: 14px; font-weight: 600; margin: 0; }
+    .provider-card-header .badge { margin-left: auto; }
+    .provider-card pre { padding: 14px 18px; font-size: 12px; }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3);  background: rgba(88,166,255,.07); }
+    .badge-green  { color: #3fb950; border-color: rgba(63,185,80,.3);   background: rgba(63,185,80,.07); }
+    .badge-purple { color: #bc8cff; border-color: rgba(188,140,255,.3); background: rgba(188,140,255,.07); }
+    .badge-orange { color: #ffa657; border-color: rgba(255,166,87,.3);  background: rgba(255,166,87,.07); }
+    .badge-gray   { color: #8b949e; border-color: rgba(139,148,158,.3); background: rgba(139,148,158,.07); }
+
+    /* Admonitions */
+    .admonition { border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 24px; display: flex; gap: 12px; }
+    .admonition-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .admonition-body { font-size: 13px; line-height: 1.6; }
+    .admonition-body strong { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .admonition-note { background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.25); }
+    .admonition-note .admonition-body strong { color: var(--accent); }
+    .admonition-tip  { background: rgba(63,185,80,.08);  border: 1px solid rgba(63,185,80,.25); }
+    .admonition-tip  .admonition-body strong { color: var(--accent-3); }
+
+    /* Section divider */
+    .section-divider { border: none; border-top: 1px solid var(--border-light); margin: 48px 0; }
+
+    /* Page header */
+    .page-header { padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px; }
+    .page-header p { color: var(--text-muted); font-size: 16px; margin: 0; }
+
+    :target { scroll-margin-top: 80px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none">
+      <div class="logo-icon">⚡</div>
+      raglib
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag" class="nav-github">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="page-layout">
+
+  <!-- Main Content -->
+  <main class="page-content">
+
+    <!-- Page Header -->
+    <div class="page-header" id="top">
+      <div class="section-label">API Reference</div>
+      <h1>Configuration</h1>
+      <p>LibraryConfig and all provider configuration dataclasses for raglib.</p>
+    </div>
+
+    <!-- LibraryConfig -->
+    <section id="libraryconfig">
+      <h2>LibraryConfig</h2>
+      <p>The top-level configuration dataclass. Pass an instance to <code>RAGLibrary(config=...)</code> to control every aspect of the pipeline. All fields have sensible defaults so you only need to override what you care about.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig
+
+<span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">LibraryConfig</span>:
+    <span class="cm"># Pipeline component selectors</span>
+    rag_method:   <span class="nm">str</span> = <span class="st">"hybrid_graph"</span>
+    chunker:      <span class="nm">str</span> = <span class="st">"sentence"</span>
+    embedder:     <span class="nm">str</span> = <span class="st">"gemini"</span>
+    vector_store: <span class="nm">str</span> = <span class="st">"chroma"</span>
+    graph_store:  <span class="nm">str</span> = <span class="st">"neo4j"</span>
+    llm:          <span class="nm">str</span> = <span class="st">"gemini"</span>
+    extraction:   <span class="nm">str</span> = <span class="st">"hybrid"</span>
+    ocr:          <span class="nm">str</span> = <span class="st">"gemini_vision"</span>
+    page_index:   <span class="nm">str</span> = <span class="st">"hybrid"</span>
+
+    <span class="cm"># Provider sub-configs</span>
+    gemini:       <span class="cl">GeminiConfig</span>      = <span class="fn">field</span>(default_factory=<span class="cl">GeminiConfig</span>)
+    openai:       <span class="cl">OpenAIConfig</span>      = <span class="fn">field</span>(default_factory=<span class="cl">OpenAIConfig</span>)
+    anthropic:    <span class="cl">AnthropicConfig</span>   = <span class="fn">field</span>(default_factory=<span class="cl">AnthropicConfig</span>)
+    azure_openai: <span class="cl">AzureOpenAIConfig</span> = <span class="fn">field</span>(default_factory=<span class="cl">AzureOpenAIConfig</span>)
+    bedrock:      <span class="cl">BedrockConfig</span>     = <span class="fn">field</span>(default_factory=<span class="cl">BedrockConfig</span>)
+    cohere:       <span class="cl">CohereConfig</span>      = <span class="fn">field</span>(default_factory=<span class="cl">CohereConfig</span>)
+    ollama:       <span class="cl">OllamaConfig</span>      = <span class="fn">field</span>(default_factory=<span class="cl">OllamaConfig</span>)
+    vertex_ai:    <span class="cl">VertexAIConfig</span>    = <span class="fn">field</span>(default_factory=<span class="cl">VertexAIConfig</span>)
+    neo4j:        <span class="cl">Neo4jConfig</span>       = <span class="fn">field</span>(default_factory=<span class="cl">Neo4jConfig</span>)
+    chroma:       <span class="cl">ChromaConfig</span>      = <span class="fn">field</span>(default_factory=<span class="cl">ChromaConfig</span>)
+    qdrant:       <span class="cl">QdrantConfig</span>      = <span class="fn">field</span>(default_factory=<span class="cl">QdrantConfig</span>)
+    pinecone:     <span class="cl">PineconeConfig</span>    = <span class="fn">field</span>(default_factory=<span class="cl">PineconeConfig</span>)</code></pre>
+      </div>
+
+      <h3>Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>rag_method</code></td>
+              <td><code>str</code></td>
+              <td><code>"hybrid_graph"</code></td>
+              <td>RAG pipeline strategy. Options: <code>"naive"</code>, <code>"vector"</code>, <code>"graph"</code>, <code>"hybrid_graph"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>chunker</code></td>
+              <td><code>str</code></td>
+              <td><code>"sentence"</code></td>
+              <td>Text chunking strategy. See <a href="chunkers.html">Chunkers</a> for all options.</td>
+            </tr>
+            <tr>
+              <td><code>embedder</code></td>
+              <td><code>str</code></td>
+              <td><code>"gemini"</code></td>
+              <td>Embedding provider key. Options: <code>"gemini"</code>, <code>"openai"</code>, <code>"cohere"</code>, <code>"ollama"</code>, <code>"bedrock"</code>, <code>"vertex_ai"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>vector_store</code></td>
+              <td><code>str</code></td>
+              <td><code>"chroma"</code></td>
+              <td>Vector store backend. Options: <code>"chroma"</code>, <code>"qdrant"</code>, <code>"pinecone"</code>, <code>"milvus"</code>, <code>"pgvector"</code>, <code>"weaviate"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>graph_store</code></td>
+              <td><code>str</code></td>
+              <td><code>"neo4j"</code></td>
+              <td>Graph database backend. Options: <code>"neo4j"</code>, <code>"in_memory"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>llm</code></td>
+              <td><code>str</code></td>
+              <td><code>"gemini"</code></td>
+              <td>Language model provider for generation. Options: <code>"gemini"</code>, <code>"openai"</code>, <code>"anthropic"</code>, <code>"azure_openai"</code>, <code>"bedrock"</code>, <code>"cohere"</code>, <code>"ollama"</code>, <code>"vertex_ai"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>extraction</code></td>
+              <td><code>str</code></td>
+              <td><code>"hybrid"</code></td>
+              <td>Entity/relationship extraction mode. Options: <code>"llm"</code>, <code>"spacy"</code>, <code>"hybrid"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>ocr</code></td>
+              <td><code>str</code></td>
+              <td><code>"gemini_vision"</code></td>
+              <td>OCR backend for image-heavy documents. Options: <code>"gemini_vision"</code>, <code>"aws_textract"</code>, <code>"google_vision"</code>, <code>"tesseract"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>page_index</code></td>
+              <td><code>str</code></td>
+              <td><code>"hybrid"</code></td>
+              <td>Page-level indexing strategy. Options: <code>"dense"</code>, <code>"sparse"</code>, <code>"hybrid"</code>.</td>
+            </tr>
+            <tr>
+              <td><code>gemini</code></td>
+              <td><code>GeminiConfig</code></td>
+              <td><code>GeminiConfig()</code></td>
+              <td>Gemini provider settings (API key, models, temperature).</td>
+            </tr>
+            <tr>
+              <td><code>openai</code></td>
+              <td><code>OpenAIConfig</code></td>
+              <td><code>OpenAIConfig()</code></td>
+              <td>OpenAI provider settings.</td>
+            </tr>
+            <tr>
+              <td><code>anthropic</code></td>
+              <td><code>AnthropicConfig</code></td>
+              <td><code>AnthropicConfig()</code></td>
+              <td>Anthropic Claude provider settings.</td>
+            </tr>
+            <tr>
+              <td><code>azure_openai</code></td>
+              <td><code>AzureOpenAIConfig</code></td>
+              <td><code>AzureOpenAIConfig()</code></td>
+              <td>Azure OpenAI deployment settings.</td>
+            </tr>
+            <tr>
+              <td><code>bedrock</code></td>
+              <td><code>BedrockConfig</code></td>
+              <td><code>BedrockConfig()</code></td>
+              <td>AWS Bedrock region and model settings.</td>
+            </tr>
+            <tr>
+              <td><code>cohere</code></td>
+              <td><code>CohereConfig</code></td>
+              <td><code>CohereConfig()</code></td>
+              <td>Cohere provider settings.</td>
+            </tr>
+            <tr>
+              <td><code>ollama</code></td>
+              <td><code>OllamaConfig</code></td>
+              <td><code>OllamaConfig()</code></td>
+              <td>Ollama local server settings.</td>
+            </tr>
+            <tr>
+              <td><code>vertex_ai</code></td>
+              <td><code>VertexAIConfig</code></td>
+              <td><code>VertexAIConfig()</code></td>
+              <td>Google Vertex AI project and location settings.</td>
+            </tr>
+            <tr>
+              <td><code>neo4j</code></td>
+              <td><code>Neo4jConfig</code></td>
+              <td><code>Neo4jConfig()</code></td>
+              <td>Neo4j connection settings (URI, credentials, database).</td>
+            </tr>
+            <tr>
+              <td><code>chroma</code></td>
+              <td><code>ChromaConfig</code></td>
+              <td><code>ChromaConfig()</code></td>
+              <td>ChromaDB persistence directory and collection name.</td>
+            </tr>
+            <tr>
+              <td><code>qdrant</code></td>
+              <td><code>QdrantConfig</code></td>
+              <td><code>QdrantConfig()</code></td>
+              <td>Qdrant server URL, API key, and collection settings.</td>
+            </tr>
+            <tr>
+              <td><code>pinecone</code></td>
+              <td><code>PineconeConfig</code></td>
+              <td><code>PineconeConfig()</code></td>
+              <td>Pinecone index, environment, and namespace settings.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Provider Configs -->
+    <section id="provider-configs">
+      <h2>Provider Config Dataclasses</h2>
+      <p>Each provider sub-config is a plain Python <code>@dataclass</code> with typed fields. Fields without defaults are required when that provider is active.</p>
+
+      <!-- LLM / Embedding Providers -->
+      <h3 id="gemini-config">GeminiConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>embedder="gemini"</code> or <code>llm="gemini"</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">GeminiConfig</span>:
+    api_key:          <span class="nm">str</span>   = <span class="st">""</span>                        <span class="cm"># Required — GEMINI_API_KEY</span>
+    embedding_model:  <span class="nm">str</span>   = <span class="st">"text-embedding-004"</span>
+    generation_model: <span class="nm">str</span>   = <span class="st">"gemini-2.0-flash"</span>
+    temperature:      <span class="nm">float</span> = <span class="nb">0.1</span></code></pre>
+      </div>
+
+      <h3 id="openai-config">OpenAIConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>embedder="openai"</code> or <code>llm="openai"</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">OpenAIConfig</span>:
+    api_key:          <span class="nm">str</span>   = <span class="st">""</span>                          <span class="cm"># Required — OPENAI_API_KEY</span>
+    embedding_model:  <span class="nm">str</span>   = <span class="st">"text-embedding-3-small"</span>
+    generation_model: <span class="nm">str</span>   = <span class="st">"gpt-4o"</span>
+    temperature:      <span class="nm">float</span> = <span class="nb">0.1</span></code></pre>
+      </div>
+
+      <h3 id="anthropic-config">AnthropicConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>llm="anthropic"</code>. Anthropic models are generation-only; use a different provider for embeddings.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">AnthropicConfig</span>:
+    api_key:     <span class="nm">str</span>   = <span class="st">""</span>                               <span class="cm"># Required — ANTHROPIC_API_KEY</span>
+    model:       <span class="nm">str</span>   = <span class="st">"claude-3-5-sonnet-20241022"</span>
+    max_tokens:  <span class="nm">int</span>   = <span class="nb">4096</span>
+    temperature: <span class="nm">float</span> = <span class="nb">0.1</span></code></pre>
+      </div>
+
+      <h3 id="azure-config">AzureOpenAIConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>llm="azure_openai"</code> or <code>embedder="azure_openai"</code>. All fields except <code>api_version</code> are required.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">AzureOpenAIConfig</span>:
+    endpoint:             <span class="nm">str</span> = <span class="st">""</span>                        <span class="cm"># Required — e.g. https://my.openai.azure.com/</span>
+    api_key:              <span class="nm">str</span> = <span class="st">""</span>                        <span class="cm"># Required — AZURE_OPENAI_API_KEY</span>
+    api_version:          <span class="nm">str</span> = <span class="st">"2024-02-15-preview"</span>
+    deployment_name:      <span class="nm">str</span> = <span class="st">""</span>                        <span class="cm"># Required — chat deployment</span>
+    embedding_deployment: <span class="nm">str</span> = <span class="st">""</span>                        <span class="cm"># Required — embedding deployment</span></code></pre>
+      </div>
+
+      <h3 id="bedrock-config">BedrockConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>llm="bedrock"</code> or <code>embedder="bedrock"</code>. Uses boto3 credentials from the environment.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">BedrockConfig</span>:
+    region:           <span class="nm">str</span> = <span class="st">"us-east-1"</span>
+    embedding_model:  <span class="nm">str</span> = <span class="st">"amazon.titan-embed-text-v2:0"</span>
+    generation_model: <span class="nm">str</span> = <span class="st">"anthropic.claude-3-5-sonnet-20241022-v2:0"</span></code></pre>
+      </div>
+
+      <h3 id="cohere-config">CohereConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>llm="cohere"</code> or <code>embedder="cohere"</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">CohereConfig</span>:
+    api_key:          <span class="nm">str</span> = <span class="st">""</span>                            <span class="cm"># Required — CO_API_KEY</span>
+    embedding_model:  <span class="nm">str</span> = <span class="st">"embed-english-v3.0"</span>
+    generation_model: <span class="nm">str</span> = <span class="st">"command-r-plus"</span>
+    input_type:       <span class="nm">str</span> = <span class="st">"search_document"</span>             <span class="cm"># or "search_query" at query time</span></code></pre>
+      </div>
+
+      <h3 id="ollama-config">OllamaConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>llm="ollama"</code> or <code>embedder="ollama"</code>. Runs fully locally — no API key required.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">OllamaConfig</span>:
+    base_url:         <span class="nm">str</span> = <span class="st">"http://localhost:11434"</span>
+    embedding_model:  <span class="nm">str</span> = <span class="st">"nomic-embed-text"</span>
+    generation_model: <span class="nm">str</span> = <span class="st">"llama3"</span></code></pre>
+      </div>
+
+      <h3 id="vertex-config">VertexAIConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>llm="vertex_ai"</code> or <code>embedder="vertex_ai"</code>. Requires ADC or service account credentials.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">VertexAIConfig</span>:
+    project:          <span class="nm">str</span> = <span class="st">""</span>                            <span class="cm"># Required — GCP project ID</span>
+    location:         <span class="nm">str</span> = <span class="st">"us-central1"</span>
+    embedding_model:  <span class="nm">str</span> = <span class="st">"text-embedding-005"</span>
+    generation_model: <span class="nm">str</span> = <span class="st">"gemini-1.5-pro"</span></code></pre>
+      </div>
+
+      <!-- Store Configs -->
+      <h3 id="neo4j-config">Neo4jConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>graph_store="neo4j"</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">Neo4jConfig</span>:
+    uri:      <span class="nm">str</span> = <span class="st">"bolt://localhost:7687"</span>
+    user:     <span class="nm">str</span> = <span class="st">"neo4j"</span>
+    password: <span class="nm">str</span> = <span class="st">""</span>                                   <span class="cm"># Required — NEO4J_PASSWORD</span>
+    database: <span class="nm">str</span> = <span class="st">"neo4j"</span></code></pre>
+      </div>
+
+      <h3 id="chroma-config">ChromaConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>vector_store="chroma"</code>. Data is persisted locally — no server required.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">ChromaConfig</span>:
+    persist_directory: <span class="nm">str</span> = <span class="st">".chroma"</span>
+    collection_name:   <span class="nm">str</span> = <span class="st">"raglib"</span></code></pre>
+      </div>
+
+      <h3 id="qdrant-config">QdrantConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>vector_store="qdrant"</code>. Supports both self-hosted and Qdrant Cloud.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">QdrantConfig</span>:
+    url:             <span class="nm">str</span>            = <span class="st">"http://localhost:6333"</span>
+    api_key:         <span class="nm">str</span> | <span class="nm">None</span>    = <span class="nb">None</span>                  <span class="cm"># Required for Qdrant Cloud</span>
+    collection_name: <span class="nm">str</span>            = <span class="st">"raglib"</span>
+    on_disk:         <span class="nm">bool</span>           = <span class="nb">True</span>                  <span class="cm"># Persist vectors to disk</span></code></pre>
+      </div>
+
+      <h3 id="pinecone-config">PineconeConfig</h3>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Used when <code>vector_store="pinecone"</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="nb">@dataclass</span>
+<span class="kw">class</span> <span class="cl">PineconeConfig</span>:
+    api_key:     <span class="nm">str</span> = <span class="st">""</span>                                <span class="cm"># Required — PINECONE_API_KEY</span>
+    index_name:  <span class="nm">str</span> = <span class="st">"raglib"</span>
+    environment: <span class="nm">str</span> = <span class="st">"us-east-1-aws"</span>
+    namespace:   <span class="nm">str</span> = <span class="st">""</span>                                <span class="cm"># Optional namespace within index</span></code></pre>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Usage Example -->
+    <section id="usage-example">
+      <h2>Usage Example</h2>
+      <p>Mix and match providers freely. The example below uses OpenAI for embeddings and generation with Qdrant as the vector store:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> RAGLibrary
+<span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig, OpenAIConfig, QdrantConfig
+
+config = <span class="cl">LibraryConfig</span>(
+    embedder=<span class="st">"openai"</span>,
+    vector_store=<span class="st">"qdrant"</span>,
+    llm=<span class="st">"openai"</span>,
+    openai=<span class="cl">OpenAIConfig</span>(
+        api_key=<span class="st">"sk-..."</span>,
+        generation_model=<span class="st">"gpt-4o"</span>,
+    ),
+    qdrant=<span class="cl">QdrantConfig</span>(
+        url=<span class="st">"http://localhost:6333"</span>,
+        collection_name=<span class="st">"my_docs"</span>,
+    ),
+)
+
+rag = <span class="cl">RAGLibrary</span>(config=config)
+
+<span class="cm"># Ingest documents</span>
+rag.<span class="fn">ingest</span>(<span class="st">"./documents/"</span>)
+
+<span class="cm"># Query</span>
+result = rag.<span class="fn">query</span>(<span class="st">"What are the key findings?"</span>)
+<span class="fn">print</span>(result.answer)</code></pre>
+      </div>
+
+      <div class="admonition admonition-tip">
+        <div class="admonition-icon">💡</div>
+        <div class="admonition-body">
+          <strong>Tip</strong>
+          You can also pass provider keys via environment variables (e.g. <code>OPENAI_API_KEY</code>, <code>GEMINI_API_KEY</code>) and omit <code>api_key</code> from the config entirely. raglib reads these automatically when the field is left as its empty-string default.
+        </div>
+      </div>
+
+      <p>For a fully offline setup using Ollama and Chroma:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> RAGLibrary
+<span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig, OllamaConfig, ChromaConfig
+
+config = <span class="cl">LibraryConfig</span>(
+    embedder=<span class="st">"ollama"</span>,
+    vector_store=<span class="st">"chroma"</span>,
+    llm=<span class="st">"ollama"</span>,
+    graph_store=<span class="st">"in_memory"</span>,
+    ollama=<span class="cl">OllamaConfig</span>(
+        base_url=<span class="st">"http://localhost:11434"</span>,
+        generation_model=<span class="st">"llama3"</span>,
+    ),
+    chroma=<span class="cl">ChromaConfig</span>(persist_directory=<span class="st">"./.raglib_data"</span>),
+)
+
+rag = <span class="cl">RAGLibrary</span>(config=config)</code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOC Sidebar -->
+  <aside class="page-toc">
+    <div class="page-toc-title">On This Page</div>
+    <a href="#libraryconfig">LibraryConfig</a>
+    <a href="#provider-configs">Provider Configs</a>
+    <a href="#gemini-config" class="toc-sub">GeminiConfig</a>
+    <a href="#openai-config" class="toc-sub">OpenAIConfig</a>
+    <a href="#anthropic-config" class="toc-sub">AnthropicConfig</a>
+    <a href="#azure-config" class="toc-sub">AzureOpenAIConfig</a>
+    <a href="#bedrock-config" class="toc-sub">BedrockConfig</a>
+    <a href="#cohere-config" class="toc-sub">CohereConfig</a>
+    <a href="#ollama-config" class="toc-sub">OllamaConfig</a>
+    <a href="#vertex-config" class="toc-sub">VertexAIConfig</a>
+    <a href="#neo4j-config" class="toc-sub">Neo4jConfig</a>
+    <a href="#chroma-config" class="toc-sub">ChromaConfig</a>
+    <a href="#qdrant-config" class="toc-sub">QdrantConfig</a>
+    <a href="#pinecone-config" class="toc-sub">PineconeConfig</a>
+    <a href="#usage-example">Usage Example</a>
+  </aside>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <span>raglib v2.0.0 · MIT License · Built with ❤️</span>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

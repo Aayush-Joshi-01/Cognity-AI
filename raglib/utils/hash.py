@@ -1,4 +1,6 @@
 """SHA-256 document change detection utilities."""
+from __future__ import annotations
+
 import hashlib
 import json
 from pathlib import Path

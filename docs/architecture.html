@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture — raglib</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --border: #30363d; --border-light: #21262d;
+      --text: #e6edf3; --text-muted: #7d8590; --text-dim: #484f58;
+      --accent: #58a6ff; --accent-2: #bc8cff; --accent-3: #3fb950;
+      --accent-4: #f78166; --accent-5: #ffa657; --accent-6: #79c0ff;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: var(--text); }
+    .nav-logo .logo-icon { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #58a6ff, #bc8cff); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+    .nav-github { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); color: var(--text) !important; font-size: 13px; font-weight: 500; transition: border-color .2s, background .2s; }
+    .nav-github:hover { border-color: var(--accent); text-decoration: none !important; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Guide Layout */
+    .guide-layout { display: grid; grid-template-columns: 1fr 200px; gap: 48px; max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+    .guide-content { max-width: 720px; }
+    .guide-toc { position: sticky; top: 80px; font-size: 12px; }
+    .guide-toc-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); margin-bottom: 10px; }
+    .guide-toc a { display: block; padding: 3px 0; color: var(--text-muted); font-size: 12px; border-left: 2px solid transparent; padding-left: 8px; }
+    .guide-toc a:hover { color: var(--accent); text-decoration: none; }
+    .guide-toc a.active { color: var(--accent); border-left-color: var(--accent); }
+    @media (max-width: 900px) { .guide-layout { grid-template-columns: 1fr; } .guide-toc { display: none; } }
+
+    /* Typography */
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 10px; }
+    h2 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 14px; margin-top: 56px; padding-top: 16px; }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; margin-top: 28px; }
+    p { margin-bottom: 16px; color: var(--text); }
+
+    /* Code blocks */
+    .code-block { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+    .code-lang { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dots .dot-r { background: #ff5f57; }
+    .code-dots .dot-y { background: #febc2e; }
+    .code-dots .dot-g { background: #28c840; }
+    pre { padding: 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; tab-size: 2; }
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+    code { font-family: var(--mono); font-size: 13px; background: var(--bg-code); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--accent-6); }
+
+    /* Syntax */
+    .kw  { color: #ff7b72; }
+    .st  { color: #a5d6ff; }
+    .cm  { color: #8b949e; font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .cl  { color: #ffa657; }
+    .nm  { color: #79c0ff; }
+    .nb  { color: #3fb950; }
+
+    /* Pipeline diagram */
+    .pipeline-diagram { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; overflow-x: auto; }
+    .pipeline-diagram pre { padding: 0; font-size: 13px; line-height: 1.8; font-family: var(--mono); color: var(--text); background: none; border: none; }
+    .pipe-arrow { color: var(--accent); }
+    .pipe-box { color: var(--accent-5); }
+    .pipe-label { color: var(--text-muted); }
+    .pipe-store { color: var(--accent-3); }
+    .pipe-opt { color: var(--accent-2); }
+
+    /* Badge */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3); background: rgba(88,166,255,.07); }
+    .badge-green  { color: #3fb950; border-color: rgba(63,185,80,.3);  background: rgba(63,185,80,.07); }
+    .badge-purple { color: #bc8cff; border-color: rgba(188,140,255,.3);background: rgba(188,140,255,.07); }
+    .badge-orange { color: #ffa657; border-color: rgba(255,166,87,.3); background: rgba(255,166,87,.07); }
+
+    /* Tag pills for provider lists */
+    .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid; }
+    .pill-blue   { color: #58a6ff; border-color: rgba(88,166,255,.3); background: rgba(88,166,255,.07); }
+    .pill-green  { color: #3fb950; border-color: rgba(63,185,80,.3);  background: rgba(63,185,80,.07); }
+    .pill-purple { color: #bc8cff; border-color: rgba(188,140,255,.3);background: rgba(188,140,255,.07); }
+    .pill-orange { color: #ffa657; border-color: rgba(255,166,87,.3); background: rgba(255,166,87,.07); }
+    .pill-red    { color: #f78166; border-color: rgba(247,129,102,.3); background: rgba(247,129,102,.07); }
+
+    /* Info cards / fallback chain */
+    .info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px; }
+    .info-card h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .info-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 0; }
+
+    /* Fallback chain */
+    .fallback-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; font-size: 13px; font-family: var(--mono); }
+    .fallback-item { padding: 4px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
+    .fallback-arrow { color: var(--text-dim); font-size: 16px; }
+    .fallback-item.unavailable { color: var(--accent-4); border-color: rgba(247,129,102,.3); background: rgba(247,129,102,.05); text-decoration: line-through; }
+    .fallback-item.selected { color: var(--accent-3); border-color: rgba(63,185,80,.4); background: rgba(63,185,80,.07); }
+
+    /* Directory tree */
+    .dir-tree { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 24px; }
+    .dir-tree pre { padding: 0; font-size: 13px; line-height: 1.9; font-family: var(--mono); color: var(--text); }
+    .dir-folder { color: var(--accent-5); }
+    .dir-file { color: var(--accent-6); }
+    .dir-comment { color: var(--text-muted); font-style: italic; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg-card); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    td code { font-size: 12px; }
+
+    /* Admonitions */
+    .admonition { border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 24px; display: flex; gap: 12px; }
+    .admonition-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .admonition-body { font-size: 13px; line-height: 1.6; }
+    .admonition-body strong { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .admonition-note { background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.25); }
+    .admonition-note .admonition-body strong { color: var(--accent); }
+    .admonition-tip  { background: rgba(63,185,80,.08); border: 1px solid rgba(63,185,80,.25); }
+    .admonition-tip  .admonition-body strong { color: var(--accent-3); }
+
+    /* Next steps cards */
+    .next-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 24px; }
+    .next-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: border-color .2s, transform .2s; }
+    .next-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+    .next-card-icon { font-size: 24px; margin-bottom: 10px; }
+    .next-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+    .next-card p { font-size: 12px; color: var(--text-muted); margin-bottom: 0; }
+
+    /* Divider */
+    .section-divider { border: none; border-top: 1px solid var(--border-light); margin: 48px 0; }
+
+    :target { scroll-margin-top: 80px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+    @media (max-width: 768px) { .nav-links { display: none; } }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none">
+      <div class="logo-icon">&#9889;</div>
+      raglib
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="getting-started.html">Get Started</a>
+      <a href="api/index.html">API Docs</a>
+      <a href="architecture.html" class="nav-active">Architecture</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag" class="nav-github">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="guide-layout">
+
+  <!-- Main Content -->
+  <main class="guide-content">
+
+    <!-- Page Header -->
+    <div style="padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px;">
+      <div class="section-label">Documentation</div>
+      <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;">Architecture</h1>
+      <p style="color:var(--text-muted);font-size:16px;">How raglib is structured — from file ingestion through graph-augmented retrieval to answer synthesis.</p>
+    </div>
+
+    <!-- Section 1: Overview -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p style="color:var(--text-muted);">raglib is a <strong style="color:var(--text)">plugin-based, modular RAG library</strong>. Every layer of the stack — loaders, chunkers, embedders, vector stores, graph stores, retrievers, generators — is swappable via string keys registered in a central <code>PluginRegistry</code>.</p>
+      <p style="color:var(--text-muted);">You configure raglib with a <code>LibraryConfig</code> object. The <code>ComponentFactory</code> reads those keys and instantiates the correct implementations, applying a <strong style="color:var(--text)">smart fallback chain</strong> when a preferred backend is unavailable (e.g., Neo4j offline falls back to NetworkX; a missing Anthropic API key falls back to <code>sentence_transformers</code>).</p>
+
+      <div class="pill-list">
+        <span class="pill pill-blue">Plugin-based</span>
+        <span class="pill pill-green">Smart defaults</span>
+        <span class="pill pill-purple">Auto-detect backends</span>
+        <span class="pill pill-orange">Zero vendor lock-in</span>
+        <span class="pill pill-red">Incremental ingestion</span>
+      </div>
+
+      <div class="admonition admonition-note">
+        <div class="admonition-icon">&#8505;&#65039;</div>
+        <div class="admonition-body">
+          <strong>Design principle</strong>
+          All public behaviour is accessed through the <code>RAGLibrary</code> facade in <code>raglib/library.py</code>. Internal components are wired together by <code>ComponentFactory</code> — you never instantiate them directly unless you are writing a plugin.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section 2: Ingestion Pipeline -->
+    <section id="ingestion">
+      <h2>Ingestion Pipeline</h2>
+      <p style="color:var(--text-muted);">When you call <code>rag.ingest()</code> or <code>rag.ingest_dir()</code>, a document travels through the following stages before landing in the vector store and graph store.</p>
+
+      <div class="pipeline-diagram">
+        <pre><span class="pipe-box">File / Directory</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">LoaderFactory</span> <span class="pipe-arrow">&#9658;</span> <span class="pipe-label">Format Loader (PDF, DOCX, XLSX, PPTX, HTML, CSV, JSON, Image...)</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">HybridPageIndex</span>  <span class="pipe-label">(structural page numbers + regex fallback)</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">Chunker</span>          <span class="pipe-label">(sentence | fixed | semantic | recursive | parent-child | hybrid)</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">NLP Extractor</span>    <span class="pipe-label">(spaCy entities, relations, SVO triples)</span>
+      <span class="pipe-arrow">&#8595;</span> <span class="pipe-opt">[optional]</span>
+<span class="pipe-box">LLM Augmenter</span>    <span class="pipe-label">(fill semantic gaps via LLM)</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">Embedder</span>         <span class="pipe-label">(gemini | openai | vertex_ai | bedrock | cohere | sentence_transformers | ollama)</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-store">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+<span class="pipe-store">&#9474;  Vector Store        &#9474;</span>  <span class="pipe-arrow">&#9668;</span><span class="pipe-label">&#9472;&#9472; upsert chunks + community embeddings</span>
+<span class="pipe-store">&#9474;  (chroma/qdrant/...) &#9474;</span>
+<span class="pipe-store">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>
+<span class="pipe-store">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+<span class="pipe-store">&#9474;  Graph Store         &#9474;</span>  <span class="pipe-arrow">&#9668;</span><span class="pipe-label">&#9472;&#9472; upsert entities, relations, chunks</span>
+<span class="pipe-store">&#9474;  (neo4j/networkx/...) &#9474;</span>
+<span class="pipe-store">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">Hash Store</span>       <span class="pipe-label">(SHA-256 &#8594; skip unchanged docs on re-ingest)</span></pre>
+      </div>
+
+      <h3>Loaders</h3>
+      <p style="color:var(--text-muted);">The <code>LoaderFactory</code> selects a format loader based on the file extension. Each loader returns a list of <code>Document</code> objects with raw text, metadata, and (for paginated formats) a page map.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Format</th><th>Loader class</th><th>Extra dep</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>PDF</td><td><code>PDFLoader</code></td><td><code>raglib[pdf]</code></td></tr>
+            <tr><td>DOCX / DOC</td><td><code>DocxLoader</code></td><td><code>raglib[office]</code></td></tr>
+            <tr><td>XLSX / XLS</td><td><code>XlsxLoader</code></td><td><code>raglib[office]</code></td></tr>
+            <tr><td>PPTX / PPT</td><td><code>PptxLoader</code></td><td><code>raglib[office]</code></td></tr>
+            <tr><td>HTML</td><td><code>HTMLLoader</code></td><td>built-in</td></tr>
+            <tr><td>CSV</td><td><code>CSVLoader</code></td><td>built-in</td></tr>
+            <tr><td>JSON / YAML</td><td><code>JSONLoader</code></td><td>built-in</td></tr>
+            <tr><td>Images (PNG, JPG, WEBP...)</td><td><code>ImageLoader</code></td><td><code>raglib[ocr]</code></td></tr>
+            <tr><td>Audio (MP3, WAV, M4A...)</td><td><code>AudioLoader</code></td><td><code>raglib[audio]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Chunking Strategies</h3>
+      <p style="color:var(--text-muted);">Six chunking strategies are available and configurable via <code>LibraryConfig.chunker</code>. The default is <code>hybrid</code>, which combines sentence boundaries with a fixed token ceiling.</p>
+
+      <div class="pill-list">
+        <span class="pill pill-blue">sentence</span>
+        <span class="pill pill-blue">fixed</span>
+        <span class="pill pill-purple">semantic</span>
+        <span class="pill pill-purple">recursive</span>
+        <span class="pill pill-orange">parent-child</span>
+        <span class="pill pill-green">hybrid (default)</span>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section 3: Retrieval & Query -->
+    <section id="retrieval">
+      <h2>Retrieval &amp; Query</h2>
+      <p style="color:var(--text-muted);">At query time, raglib routes the question through either the full <strong style="color:var(--text)">HybridGraphRetriever</strong> (4-channel) or the lighter <strong style="color:var(--text)">NaiveRetriever</strong> (vector-only). An optional <code>AdaptiveRetriever</code> can classify queries and choose the right path automatically.</p>
+
+      <div class="pipeline-diagram">
+        <pre><span class="pipe-box">Query String</span>
+      <span class="pipe-arrow">&#8595;</span>
+ <span class="pipe-store">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+ <span class="pipe-store">&#9474;   AdaptiveRetriever (optional query classifier)    &#9474;</span>
+ <span class="pipe-store">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>
+            <span class="pipe-arrow">&#8595;</span>                               <span class="pipe-arrow">&#8595;</span>
+   <span class="pipe-box">HybridGraphRetriever</span>               <span class="pipe-box">NaiveRetriever</span>
+  <span class="pipe-store">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>               <span class="pipe-label">(vector only)</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">CH1: Vector      </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">CH2: Graph sub   </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">CH3: Community   </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">CH4: Bridge      </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>
+           <span class="pipe-arrow">&#8595;</span>
+    <span class="pipe-box">RRF</span> <span class="pipe-label">(Reciprocal Rank Fusion)</span>
+           <span class="pipe-arrow">&#8595;</span>
+    <span class="pipe-box">Generator</span> <span class="pipe-label">(LLM answer synthesis)</span>
+           <span class="pipe-arrow">&#8595;</span>
+    <span class="pipe-box">Answer + Sources</span></pre>
+      </div>
+
+      <h3>The Four Retrieval Channels</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Channel</th><th>What it retrieves</th><th>Best for</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue">CH1 Vector</span></td>
+              <td>Top-k semantically similar chunks from the vector store</td>
+              <td>Precise factual questions</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">CH2 Graph sub</span></td>
+              <td>1-hop and 2-hop entity subgraph around query entities</td>
+              <td>Relational / multi-hop reasoning</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">CH3 Community</span></td>
+              <td>Community summary chunks that cover entity clusters</td>
+              <td>Broad "tell me about X" summaries</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-orange">CH4 Bridge</span></td>
+              <td>Chunks that bridge two otherwise disconnected subgraphs</td>
+              <td>Cross-domain synthesis</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admonition admonition-tip">
+        <div class="admonition-icon">&#128161;</div>
+        <div class="admonition-body">
+          <strong>RRF weighting</strong>
+          Reciprocal Rank Fusion merges the four channel result lists into a single ranked list with no channel-specific score normalisation required. Channel weights are configurable via <code>LibraryConfig.retriever_weights</code>.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section 4: Plugin Registry -->
+    <section id="registry">
+      <h2>Plugin Registry</h2>
+      <p style="color:var(--text-muted);"><code>PluginRegistry</code> is a central dictionary that maps string keys to implementation classes. <code>ComponentFactory</code> reads <code>LibraryConfig</code>, looks up the requested key, and instantiates the class — applying a fallback chain when the preferred backend is unavailable.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        </div>
+        <pre><code><span class="cm"># All registries follow the same pattern</span>
+<span class="cl">PluginRegistry</span>.<span class="fn">register_embedder</span>(<span class="st">"my_embedder"</span>, <span class="cl">MyEmbedder</span>)
+<span class="cl">PluginRegistry</span>.<span class="fn">register_vector_store</span>(<span class="st">"my_store"</span>, <span class="cl">MyVectorStore</span>)
+<span class="cl">PluginRegistry</span>.<span class="fn">register_graph_store</span>(<span class="st">"my_graph"</span>, <span class="cl">MyGraphStore</span>)
+<span class="cl">PluginRegistry</span>.<span class="fn">register_retriever</span>(<span class="st">"my_retriever"</span>, <span class="cl">MyRetriever</span>)
+<span class="cl">PluginRegistry</span>.<span class="fn">register_generator</span>(<span class="st">"my_gen"</span>, <span class="cl">MyGenerator</span>)
+<span class="cl">PluginRegistry</span>.<span class="fn">register_chunker</span>(<span class="st">"my_chunker"</span>, <span class="cl">MyChunker</span>)
+<span class="cl">PluginRegistry</span>.<span class="fn">register_loader</span>(<span class="st">"my_fmt"</span>, <span class="st">".myfmt"</span>, <span class="cl">MyLoader</span>)</code></pre>
+      </div>
+
+      <h3>Fallback Chains</h3>
+      <p style="color:var(--text-muted);"><code>ComponentFactory</code> tests availability at instantiation time. If the preferred backend raises an <code>ImportError</code> or a connection error, it steps to the next option in the fallback chain.</p>
+
+      <p style="color:var(--text-muted); margin-bottom: 8px;"><strong style="color:var(--text);">Graph store</strong> — when Neo4j is unreachable:</p>
+      <div class="fallback-chain">
+        <span class="fallback-item unavailable">neo4j</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item">memgraph</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item">arangodb</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item selected">networkx (in-memory)</span>
+      </div>
+
+      <p style="color:var(--text-muted); margin-bottom: 8px;"><strong style="color:var(--text);">Embedder</strong> — when Anthropic API key is missing:</p>
+      <div class="fallback-chain">
+        <span class="fallback-item unavailable">anthropic</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item">openai</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item selected">sentence_transformers (local)</span>
+      </div>
+
+      <p style="color:var(--text-muted); margin-bottom: 8px;"><strong style="color:var(--text);">Vector store</strong> — when Pinecone is unavailable:</p>
+      <div class="fallback-chain">
+        <span class="fallback-item unavailable">pinecone</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item">qdrant</span>
+        <span class="fallback-arrow">&#8594;</span>
+        <span class="fallback-item selected">chroma (local)</span>
+      </div>
+
+      <div class="admonition admonition-note">
+        <div class="admonition-icon">&#8505;&#65039;</div>
+        <div class="admonition-body">
+          <strong>Disabling fallback</strong>
+          Set <code>LibraryConfig.strict_backends = True</code> to raise an error immediately instead of falling back. Useful in production to avoid silent degradation.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section 5: Multimodal Path -->
+    <section id="multimodal">
+      <h2>Multimodal Path</h2>
+      <p style="color:var(--text-muted);">raglib handles non-text content embedded inside documents. When a DOCX, PPTX, or PDF file contains embedded images, those images are extracted as raw bytes and routed through the OCR subsystem before the text pipeline continues.</p>
+
+      <div class="pipeline-diagram">
+        <pre><span class="pipe-box">DOCX / PPTX / PDF</span> <span class="pipe-label">(contains embedded images)</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">Format Loader</span> <span class="pipe-label">&#8212; extracts image bytes at each page/slide position</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">OCR Subsystem</span>
+  <span class="pipe-store">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">1. gemini_vision (multimodal LLM)  </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">2. openai_vision (GPT-4o)          </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">3. anthropic_vision (Claude)        </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">4. aws_textract                     </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">5. azure_vision                     </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9474;</span> <span class="pipe-label">6. tesseract (local fallback)       </span><span class="pipe-store">&#9474;</span>
+  <span class="pipe-store">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-box">OCR text</span> <span class="pipe-label">&#8212; injected into the chunk at the image's original position</span>
+      <span class="pipe-arrow">&#8595;</span>
+<span class="pipe-label">Rejoins the normal ingestion pipeline (NLP &#8594; Embed &#8594; Store)</span></pre>
+      </div>
+
+      <h3>Audio Transcription</h3>
+      <p style="color:var(--text-muted);">Audio files and video files with audio tracks are routed through the transcription subsystem before ingestion. Three providers are supported, tried in order of configuration priority:</p>
+      <div class="pill-list">
+        <span class="pill pill-orange">AWS Transcribe</span>
+        <span class="pill pill-blue">Google STT</span>
+        <span class="pill pill-green">OpenAI Whisper</span>
+      </div>
+      <p style="color:var(--text-muted);">Transcribed text is treated as a first-class document and passes through the same chunking, extraction, and embedding stages as any text file.</p>
+
+      <div class="admonition admonition-tip">
+        <div class="admonition-icon">&#128161;</div>
+        <div class="admonition-body">
+          <strong>Experimental flag</strong>
+          Multimodal RAG (image embedding, video frame extraction, cross-modal retrieval) is available under <code>LibraryConfig.experimental_multimodal = True</code>. API stability is not guaranteed across minor versions.
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Section 6: Package Structure -->
+    <section id="package-structure">
+      <h2>Package Structure</h2>
+      <p style="color:var(--text-muted);">The top-level layout of the <code>raglib/</code> package. Each sub-package contains an <code>__init__.py</code> that re-exports the public interface and a <code>base.py</code> that defines the abstract base class for that component type.</p>
+
+      <div class="dir-tree">
+        <pre><span class="dir-folder">raglib/</span>
+<span class="dir-file">&#9500;&#9472;&#9472; library.py</span>        <span class="dir-comment"># RAGLibrary facade &#8212; the only class users touch directly</span>
+<span class="dir-file">&#9500;&#9472;&#9472; registry.py</span>       <span class="dir-comment"># PluginRegistry &#8212; global map of string keys to classes</span>
+<span class="dir-file">&#9500;&#9472;&#9472; factory.py</span>        <span class="dir-comment"># ComponentFactory &#8212; wires LibraryConfig into live objects</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; models/</span>           <span class="dir-comment"># Pydantic dataclasses: Document, Entity, Chunk, RetrievalResult</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; config/</span>           <span class="dir-comment"># LibraryConfig + typed provider config dataclasses</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; loaders/</span>          <span class="dir-comment"># File format loaders (PDF, DOCX, XLSX, PPTX, HTML, CSV, JSON...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; ocr/</span>              <span class="dir-comment"># OCR providers (Gemini Vision, GPT-4o, Claude, Tesseract...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; chunkers/</span>         <span class="dir-comment"># Chunking strategies (sentence, fixed, semantic, hybrid...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; page_index/</span>       <span class="dir-comment"># Page/slide/sheet number extraction strategies</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; extractors/</span>       <span class="dir-comment"># NLP + LLM knowledge extraction (entities, relations, triples)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; embedders/</span>        <span class="dir-comment"># Embedding providers (Gemini, OpenAI, Cohere, ST, Ollama...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; generators/</span>       <span class="dir-comment"># LLM answer generators (Gemini, OpenAI, Anthropic, Bedrock...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; stores/vector/</span>    <span class="dir-comment"># Vector store backends (Chroma, Qdrant, Pinecone, FAISS...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; stores/graph/</span>     <span class="dir-comment"># Graph store backends (Neo4j, NetworkX, Memgraph, ArangoDB...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; retrievers/</span>       <span class="dir-comment"># RAG methodologies (hybrid-graph, naive, adaptive, dense...)</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; pipeline/</span>         <span class="dir-comment"># Ingestion orchestration + incremental knowledge updater</span>
+<span class="dir-folder">&#9500;&#9472;&#9472; multimodal/</span>       <span class="dir-comment"># Experimental: image / video / audio RAG</span>
+<span class="dir-folder">&#9492;&#9472;&#9472; utils/</span>            <span class="dir-comment"># RRF, SHA-256 hashing, token counting, async helpers</span></pre>
+      </div>
+
+      <h3>Dependency Groups</h3>
+      <p style="color:var(--text-muted);">raglib uses <code>pyproject.toml</code> optional dependency groups so you only install what you need:</p>
+      <div class="pill-list">
+        <span class="pill pill-blue">raglib[pdf]</span>
+        <span class="pill pill-blue">raglib[office]</span>
+        <span class="pill pill-blue">raglib[nlp]</span>
+        <span class="pill pill-green">raglib[openai]</span>
+        <span class="pill pill-green">raglib[anthropic]</span>
+        <span class="pill pill-green">raglib[gemini]</span>
+        <span class="pill pill-purple">raglib[neo4j]</span>
+        <span class="pill pill-purple">raglib[qdrant]</span>
+        <span class="pill pill-orange">raglib[audio]</span>
+        <span class="pill pill-orange">raglib[ocr]</span>
+        <span class="pill pill-red">raglib[all]</span>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Next Steps -->
+    <section id="next-steps">
+      <h2>Next Steps</h2>
+      <p style="color:var(--text-muted);">Now that you understand the architecture, here's where to go next.</p>
+      <div class="next-cards">
+        <a href="getting-started.html" class="next-card">
+          <div class="next-card-icon">&#128640;</div>
+          <h4>Get Started</h4>
+          <p>Install raglib and run your first ingestion and query pipeline in minutes.</p>
+        </a>
+        <a href="api/index.html" class="next-card">
+          <div class="next-card-icon">&#128214;</div>
+          <h4>API Reference</h4>
+          <p>Full documentation for every class, method, and configuration parameter.</p>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Sticky TOC -->
+  <aside class="guide-toc">
+    <div class="guide-toc-title">On this page</div>
+    <a href="#overview">Overview</a>
+    <a href="#ingestion">Ingestion Pipeline</a>
+    <a href="#retrieval">Retrieval &amp; Query</a>
+    <a href="#registry">Plugin Registry</a>
+    <a href="#multimodal">Multimodal Path</a>
+    <a href="#package-structure">Package Structure</a>
+    <a href="#next-steps">Next Steps</a>
+  </aside>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <span>raglib v2.0.0 &middot; MIT License &middot; Built with &#10084;&#65039;</span>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="getting-started.html">Get Started</a>
+      <a href="api/index.html">API Docs</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="https://github.com/joshi-aayush/graph-rag">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Highlight active TOC link on scroll
+  (function() {
+    const tocLinks = document.querySelectorAll('.guide-toc a');
+    const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href')));
+
+    function onScroll() {
+      let current = '';
+      sections.forEach(sec => {
+        if (sec && window.scrollY >= sec.offsetTop - 100) {
+          current = '#' + sec.id;
+        }
+      });
+      tocLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === current);
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+
+</body>
+</html>
