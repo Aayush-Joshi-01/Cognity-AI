@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Embedders — raglib API</title>
+  <title>Embedders — cognity-ai API</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -246,7 +246,7 @@
             <tr>
               <td><code>gemini</code> <span class="badge badge-blue">DEFAULT</span></td>
               <td><code>GeminiEmbedder</code></td>
-              <td><code>raglib[gemini]</code></td>
+              <td><code>cognity-ai[gemini]</code></td>
               <td><code>text-embedding-004</code></td>
               <td>768</td>
               <td>Best default; free tier available</td>
@@ -254,7 +254,7 @@
             <tr>
               <td><code>vertex_ai</code></td>
               <td><code>VertexAIEmbedder</code></td>
-              <td><code>raglib[vertex-ai]</code></td>
+              <td><code>cognity-ai[vertex-ai]</code></td>
               <td><code>text-embedding-005</code></td>
               <td>768</td>
               <td>Google Cloud; requires project</td>
@@ -262,7 +262,7 @@
             <tr>
               <td><code>openai</code></td>
               <td><code>OpenAIEmbedder</code></td>
-              <td><code>raglib[openai]</code></td>
+              <td><code>cognity-ai[openai]</code></td>
               <td><code>text-embedding-3-small</code></td>
               <td>1536</td>
               <td>Also supports <code>text-embedding-3-large</code> (3072)</td>
@@ -270,7 +270,7 @@
             <tr>
               <td><code>azure_openai</code></td>
               <td><code>AzureOpenAIEmbedder</code></td>
-              <td><code>raglib[azure]</code></td>
+              <td><code>cognity-ai[azure]</code></td>
               <td>Azure-deployed model</td>
               <td>varies</td>
               <td>Enterprise Azure environments</td>
@@ -278,7 +278,7 @@
             <tr>
               <td><code>bedrock</code></td>
               <td><code>BedrockEmbedder</code></td>
-              <td><code>raglib[bedrock]</code></td>
+              <td><code>cognity-ai[bedrock]</code></td>
               <td><code>amazon.titan-embed-text-v2:0</code></td>
               <td>1024</td>
               <td>AWS-native; no API key needed</td>
@@ -286,7 +286,7 @@
             <tr>
               <td><code>cohere</code></td>
               <td><code>CohereEmbedder</code></td>
-              <td><code>raglib[cohere]</code></td>
+              <td><code>cognity-ai[cohere]</code></td>
               <td><code>embed-english-v3.0</code></td>
               <td>1024</td>
               <td>Also multilingual variant</td>
@@ -294,7 +294,7 @@
             <tr>
               <td><code>sentence_transformers</code></td>
               <td><code>SentenceTransformerEmbedder</code></td>
-              <td><code>raglib[sentence-transformers]</code></td>
+              <td><code>cognity-ai[sentence-transformers]</code></td>
               <td><code>all-MiniLM-L6-v2</code></td>
               <td>384</td>
               <td>Fully local; no API; good offline default</td>
@@ -302,7 +302,7 @@
             <tr>
               <td><code>ollama</code></td>
               <td><code>OllamaEmbedder</code></td>
-              <td><code>raglib[ollama]</code></td>
+              <td><code>cognity-ai[ollama]</code></td>
               <td><code>nomic-embed-text</code></td>
               <td>768</td>
               <td>Local Ollama server required</td>
@@ -332,7 +332,7 @@
           <span class="code-lang">python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> <span class="nm">raglib</span> <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+        <pre><code><span class="kw">from</span> <span class="nm">cognity-ai</span> <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 <span class="cm"># Gemini (default)</span>
 <span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(embedder=<span class="st">"gemini"</span>, gemini_api_key=<span class="st">"AIza..."</span>)

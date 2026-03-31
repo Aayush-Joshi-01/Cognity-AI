@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Generators — raglib API</title>
+  <title>Generators — cognity-ai API</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -231,56 +231,56 @@
             <tr>
               <td><code>gemini</code> <span class="badge badge-blue">DEFAULT</span></td>
               <td><code>GeminiGenerator</code></td>
-              <td><code>raglib[gemini]</code></td>
+              <td><code>cognity-ai[gemini]</code></td>
               <td><code>gemini-2.0-flash</code></td>
               <td>Fast, cheap, multimodal</td>
             </tr>
             <tr>
               <td><code>vertex_ai</code></td>
               <td><code>VertexAIGenerator</code></td>
-              <td><code>raglib[vertex-ai]</code></td>
+              <td><code>cognity-ai[vertex-ai]</code></td>
               <td><code>gemini-1.5-pro</code></td>
               <td>Google Cloud enterprise</td>
             </tr>
             <tr>
               <td><code>openai</code></td>
               <td><code>OpenAIGenerator</code></td>
-              <td><code>raglib[openai]</code></td>
+              <td><code>cognity-ai[openai]</code></td>
               <td><code>gpt-4o</code></td>
               <td>High quality; also <code>gpt-4o-mini</code></td>
             </tr>
             <tr>
               <td><code>azure_openai</code></td>
               <td><code>AzureOpenAIGenerator</code></td>
-              <td><code>raglib[azure]</code></td>
+              <td><code>cognity-ai[azure]</code></td>
               <td>Azure GPT-4o</td>
               <td>Azure-hosted GPT models</td>
             </tr>
             <tr>
               <td><code>anthropic</code></td>
               <td><code>AnthropicGenerator</code></td>
-              <td><code>raglib[anthropic]</code></td>
+              <td><code>cognity-ai[anthropic]</code></td>
               <td><code>claude-3-5-sonnet-20241022</code></td>
               <td>Strong reasoning; also <code>claude-3-7-sonnet</code></td>
             </tr>
             <tr>
               <td><code>bedrock</code></td>
               <td><code>BedrockGenerator</code></td>
-              <td><code>raglib[bedrock]</code></td>
+              <td><code>cognity-ai[bedrock]</code></td>
               <td><code>anthropic.claude-3-5-sonnet-20241022-v2:0</code></td>
               <td>AWS-native; also Titan, Llama, Mistral</td>
             </tr>
             <tr>
               <td><code>cohere</code></td>
               <td><code>CohereGenerator</code></td>
-              <td><code>raglib[cohere]</code></td>
+              <td><code>cognity-ai[cohere]</code></td>
               <td><code>command-r-plus</code></td>
               <td>Retrieval-augmented generation optimized</td>
             </tr>
             <tr>
               <td><code>ollama</code></td>
               <td><code>OllamaGenerator</code></td>
-              <td><code>raglib[ollama]</code></td>
+              <td><code>cognity-ai[ollama]</code></td>
               <td><code>llama3</code></td>
               <td>Local; any Ollama-supported model</td>
             </tr>
@@ -301,7 +301,7 @@
           <span class="code-lang">python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> <span class="nm">raglib</span> <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+        <pre><code><span class="kw">from</span> <span class="nm">cognity-ai</span> <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 <span class="cm"># Anthropic (Claude)</span>
 <span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(llm=<span class="st">"anthropic"</span>, anthropic_api_key=<span class="st">"sk-ant-..."</span>)

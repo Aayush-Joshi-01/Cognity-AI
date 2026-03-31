@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>raglib — Modular RAG Library</title>
+  <title>cognity-ai — Modular RAG Library</title>
   <meta name="description" content="raglib: Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format." />
 
   <!-- Fonts -->
@@ -1209,28 +1209,28 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
             <td>512 / 768</td>
             <td>Image + Text</td>
             <td>General image-text retrieval, zero-shot classification</td>
-            <td><code>raglib[clip]</code></td>
+            <td><code>cognity-ai[clip]</code></td>
           </tr>
           <tr>
             <td><code>SigLIPEmbedder</code></td>
             <td>1152</td>
             <td>Image + Text</td>
             <td>Higher accuracy image understanding, multilingual</td>
-            <td><code>raglib[clip]</code></td>
+            <td><code>cognity-ai[clip]</code></td>
           </tr>
           <tr>
             <td><code>ImageBindEmbedder</code></td>
             <td>1024</td>
             <td>Image + Text + Audio + Video + IMU + Depth</td>
             <td>Cross-modal retrieval across 6 modalities in one space</td>
-            <td><code>raglib[multimodal]</code></td>
+            <td><code>cognity-ai[multimodal]</code></td>
           </tr>
           <tr>
             <td><code>BLIP2Embedder</code></td>
             <td>256</td>
             <td>Image + Text</td>
             <td>Document images, charts, screenshots with rich captions</td>
-            <td><code>raglib[multimodal]</code></td>
+            <td><code>cognity-ai[multimodal]</code></td>
           </tr>
         </tbody>
       </table>
@@ -1253,31 +1253,31 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
             <td>Whisper (local)</td>
             <td><code>WhisperLocalTranscriber</code></td>
             <td>Offline — runs on CPU or CUDA GPU</td>
-            <td><code>raglib[whisper]</code></td>
+            <td><code>cognity-ai[whisper]</code></td>
           </tr>
           <tr>
             <td>OpenAI Whisper API</td>
             <td><code>WhisperAPITranscriber</code></td>
             <td>Cloud — <code>whisper-1</code> model</td>
-            <td><code>raglib[openai]</code></td>
+            <td><code>cognity-ai[openai]</code></td>
           </tr>
           <tr>
             <td>AssemblyAI</td>
             <td><code>AssemblyAITranscriber</code></td>
             <td>Cloud — speaker diarisation, topic detection</td>
-            <td><code>raglib[multimodal]</code></td>
+            <td><code>cognity-ai[multimodal]</code></td>
           </tr>
           <tr>
             <td>Deepgram</td>
             <td><code>DeepgramTranscriber</code></td>
             <td>Cloud — real-time streaming + batch</td>
-            <td><code>raglib[multimodal]</code></td>
+            <td><code>cognity-ai[multimodal]</code></td>
           </tr>
           <tr>
             <td>Google Speech-to-Text</td>
             <td><code>GoogleSTTTranscriber</code></td>
             <td>Cloud — 125+ languages, medical models</td>
-            <td><code>raglib[vertex-ai]</code></td>
+            <td><code>cognity-ai[vertex-ai]</code></td>
           </tr>
         </tbody>
       </table>
@@ -1291,16 +1291,16 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
         <span class="code-lang">shell — multimodal extras</span>
       </div>
       <pre><code><span class="cm"># CLIP image embedder (CLIP + SigLIP)</span>
-pip install <span class="st">raglib[clip]</span>
+pip install <span class="st">cognity-ai[clip]</span>
 
 <span class="cm"># Video frame extraction (ffmpeg-python + keyframe sampler)</span>
-pip install <span class="st">raglib[video]</span>
+pip install <span class="st">cognity-ai[video]</span>
 
 <span class="cm"># Local Whisper transcription (runs fully offline)</span>
-pip install <span class="st">raglib[whisper]</span>
+pip install <span class="st">cognity-ai[whisper]</span>
 
 <span class="cm"># Full multimodal bundle — all of the above + ImageBind + BLIP-2 + cloud transcribers</span>
-pip install <span class="st">raglib[multimodal]</span></code></pre>
+pip install <span class="st">cognity-ai[multimodal]</span></code></pre>
     </div>
   </div>
 </section>
@@ -1310,7 +1310,7 @@ pip install <span class="st">raglib[multimodal]</span></code></pre>
   <div class="container footer-inner">
     <div style="display:flex;align-items:center;gap:10px">
       <div class="logo-icon" style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#58a6ff,#bc8cff);display:flex;align-items:center;justify-content:center;font-size:11px">⚡</div>
-      <span><strong>raglib</strong> v2.0.0 &mdash; MIT License</span>
+      <span><strong>cognity-ai</strong> v2.0.0 &mdash; MIT License</span>
     </div>
     <div class="footer-links">
       <a href="https://github.com/yourname/graph-rag">GitHub</a>

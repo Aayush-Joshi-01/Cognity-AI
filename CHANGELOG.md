@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [2.0.0] - 2026-03-19
 
 ### Added — Core Library
-- **`raglib` package** — complete modular rewrite of `hybrid_rag` into a provider-agnostic library
+- **`cognity-ai` package** — complete modular rewrite of `hybrid_rag` into a provider-agnostic library
 - **`RAGLibrary` facade** — single unified entry point for all RAG operations: ingest, query, lifecycle
 - **Plugin registry** — `PluginRegistry` for registering custom loaders, embedders, generators, retrievers
 - **`ComponentFactory`** — auto-wires all components from string keys with smart fallback logic
@@ -84,8 +84,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - `hybrid_rag/main.py` — `build_pipeline()` now emits `DeprecationWarning` and delegates to `RAGLibrary`
-- All models split into `raglib/models/document.py`, `models/knowledge.py`, `models/retrieval.py`
-- All configs split into `raglib/config/base.py` (`LibraryConfig`) + `config/providers.py` (all provider configs)
+- All models split into `cognity-ai/models/document.py`, `models/knowledge.py`, `models/retrieval.py`
+- All configs split into `cognity-ai/config/base.py` (`LibraryConfig`) + `config/providers.py` (all provider configs)
 - `NLPProcessor` split: extraction → `extractors/nlp.py`, chunking → `chunkers/sentence.py`, page index → `page_index/regex_index.py`
 - `GeminiExtractor` split: embeddings → `embedders/gemini.py`, generation → `generators/gemini.py`, augmentation → `extractors/hybrid.py`, OCR → `ocr/gemini_vision.py`
 - `GraphManager` → `stores/graph/neo4j.py` (implements `BaseGraphStore`)
@@ -96,7 +96,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Deprecated
 - `hybrid_rag.main.build_pipeline()` — replaced by `RAGLibrary`; will be removed in a future version
-- Direct imports from `hybrid_rag.*` — use `raglib.*` instead
+- Direct imports from `hybrid_rag.*` — use `cognity-ai.*` instead
 
 ---
 

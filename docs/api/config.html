@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration — raglib API</title>
+  <title>Configuration — cognity-ai API</title>
   <meta name="description" content="Complete reference for LibraryConfig and all provider configuration dataclasses in raglib." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -525,7 +525,7 @@
         <pre><code><span class="nb">@dataclass</span>
 <span class="kw">class</span> <span class="cl">ChromaConfig</span>:
     persist_directory: <span class="nm">str</span> = <span class="st">".chroma"</span>
-    collection_name:   <span class="nm">str</span> = <span class="st">"raglib"</span></code></pre>
+    collection_name:   <span class="nm">str</span> = <span class="st">"cognity-ai"</span></code></pre>
       </div>
 
       <h3 id="qdrant-config">QdrantConfig</h3>
@@ -539,7 +539,7 @@
 <span class="kw">class</span> <span class="cl">QdrantConfig</span>:
     url:             <span class="nm">str</span>            = <span class="st">"http://localhost:6333"</span>
     api_key:         <span class="nm">str</span> | <span class="nm">None</span>    = <span class="nb">None</span>                  <span class="cm"># Required for Qdrant Cloud</span>
-    collection_name: <span class="nm">str</span>            = <span class="st">"raglib"</span>
+    collection_name: <span class="nm">str</span>            = <span class="st">"cognity-ai"</span>
     on_disk:         <span class="nm">bool</span>           = <span class="nb">True</span>                  <span class="cm"># Persist vectors to disk</span></code></pre>
       </div>
 
@@ -553,7 +553,7 @@
         <pre><code><span class="nb">@dataclass</span>
 <span class="kw">class</span> <span class="cl">PineconeConfig</span>:
     api_key:     <span class="nm">str</span> = <span class="st">""</span>                                <span class="cm"># Required — PINECONE_API_KEY</span>
-    index_name:  <span class="nm">str</span> = <span class="st">"raglib"</span>
+    index_name:  <span class="nm">str</span> = <span class="st">"cognity-ai"</span>
     environment: <span class="nm">str</span> = <span class="st">"us-east-1-aws"</span>
     namespace:   <span class="nm">str</span> = <span class="st">""</span>                                <span class="cm"># Optional namespace within index</span></code></pre>
       </div>
@@ -658,7 +658,7 @@ rag = <span class="cl">RAGLibrary</span>(config=config)</code></pre>
 <!-- FOOTER -->
 <footer>
   <div class="container footer-inner">
-    <span>raglib v2.0.0 · MIT License · Built with ❤️</span>
+    <span>cognity-ai v2.0.0 · MIT License · Built with ❤️</span>
     <div class="footer-links">
       <a href="../index.html">Home</a>
       <a href="../getting-started.html">Get Started</a>

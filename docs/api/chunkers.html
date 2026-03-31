@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chunkers — cognity-ai API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --border: #30363d; --border-light: #21262d;
+      --text: #e6edf3; --text-muted: #7d8590; --text-dim: #484f58;
+      --accent: #58a6ff; --accent-2: #bc8cff; --accent-3: #3fb950;
+      --accent-4: #f78166; --accent-5: #ffa657; --accent-6: #79c0ff;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(12px); }
+    .nav-inner { display: flex; align-items: center; gap: 32px; height: 60px; }
+    .nav-logo { font-weight: 700; font-size: 17px; color: var(--text); letter-spacing: -.3px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; margin-left: auto; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav-links a:hover, .nav-links a.nav-active { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+
+    /* Layout */
+    .page-layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; padding: 48px 0 80px; align-items: start; }
+    @media (max-width: 900px) { .page-layout { grid-template-columns: 1fr; } .toc { display: none; } }
+
+    /* TOC */
+    .toc { position: sticky; top: 80px; }
+    .toc-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-bottom: 12px; }
+    .toc-links { display: flex; flex-direction: column; gap: 4px; }
+    .toc-links a { font-size: 13px; color: var(--text-muted); padding: 3px 8px; border-radius: var(--radius-sm); transition: all .15s; border-left: 2px solid transparent; }
+    .toc-links a:hover { color: var(--text); text-decoration: none; }
+    .toc-links a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,.06); }
+    .toc-links a.sub { padding-left: 20px; font-size: 12px; }
+
+    /* Content */
+    .content { min-width: 0; }
+    .page-header { margin-bottom: 48px; }
+    .breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+    .breadcrumb a { color: var(--text-muted); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .page-title { font-size: 36px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 12px; }
+    .page-subtitle { color: var(--text-muted); font-size: 17px; }
+
+    section { margin-bottom: 60px; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); scroll-margin-top: 80px; }
+    h3 { font-size: 17px; font-weight: 600; margin: 28px 0 12px; color: var(--accent-6); }
+    p { color: var(--text-muted); margin-bottom: 16px; }
+
+    /* Code */
+    pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; margin: 16px 0 24px; }
+    code { font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--text); }
+    :not(pre) > code { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: 4px; padding: 2px 6px; font-size: 12.5px; color: var(--accent-6); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin: 16px 0 28px; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-card); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); font-size: 13.5px; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td code { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 5px; font-size: 12px; color: var(--accent-6); }
+
+    /* Chunker cards */
+    .chunker-grid { display: grid; gap: 20px; margin-top: 24px; }
+    .chunker-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .chunker-card.default { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(88,166,255,.15); }
+    .chunker-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .chunker-key { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent); background: rgba(88,166,255,.1); padding: 3px 10px; border-radius: var(--radius-sm); }
+    .chunker-class { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+    .badge-default { background: rgba(63,185,80,.15); color: var(--accent-3); border: 1px solid rgba(63,185,80,.3); border-radius: 20px; font-size: 11px; font-weight: 600; padding: 2px 8px; margin-left: auto; }
+    .chunker-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 16px; }
+    .config-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .config-list li { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 3px 10px; font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+
+    /* Comparison table highlight */
+    .best { color: var(--accent-3); font-weight: 600; }
+    .good { color: var(--accent-5); }
+    .ok { color: var(--text-muted); }
+
+    /* Alert/note box */
+    .note { background: rgba(88,166,255,.07); border: 1px solid rgba(88,166,255,.2); border-radius: var(--radius); padding: 16px 20px; margin: 20px 0; font-size: 14px; color: var(--text-muted); }
+    .note strong { color: var(--accent); }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 32px 0; margin-top: 64px; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); font-size: 13px; }
+    .footer-links a:hover { color: var(--accent); text-decoration: none; }
+    .footer-copy { color: var(--text-dim); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none"><span>cognity</span>-ai</a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-layout">
+    <aside class="toc">
+      <div class="toc-title">On this page</div>
+      <nav class="toc-links">
+        <a href="#base">BaseChunker ABC</a>
+        <a href="#semantic-chunk">SemanticChunk Model</a>
+        <a href="#strategies">All Strategies</a>
+        <a href="#sentence" class="sub">sentence (default)</a>
+        <a href="#fixed" class="sub">fixed</a>
+        <a href="#semantic" class="sub">semantic</a>
+        <a href="#recursive" class="sub">recursive</a>
+        <a href="#parent-child" class="sub">parent_child</a>
+        <a href="#hybrid" class="sub">hybrid</a>
+        <a href="#comparison">Comparison Table</a>
+        <a href="#config">Configuration</a>
+        <a href="#custom">Custom Chunker</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="page-header">
+        <div class="breadcrumb"><a href="index.html">API Reference</a> › Chunkers</div>
+        <h1 class="page-title">Chunkers</h1>
+        <p class="page-subtitle">Text chunking strategies — control how documents are split into retrievable pieces.</p>
+      </div>
+
+      <section id="base">
+        <h2>BaseChunker ABC</h2>
+        <p>All chunkers implement <code>BaseChunker</code>. You can use the string key when constructing <code>RAGLibrary</code>, or import and instantiate a chunker directly.</p>
+        <pre><code>from abc import ABC, abstractmethod
+from cognity_ai.models import SemanticChunk, PageInfo
+
+class BaseChunker(ABC):
+    @abstractmethod
+    def chunk(
+        self,
+        text: str,
+        doc_id: str,
+        pages: list[PageInfo] | None = None,
+    ) -> list[SemanticChunk]:
+        """
+        Split text into chunks.
+
+        Args:
+            text:    Full document text.
+            doc_id:  Source document identifier.
+            pages:   Page boundary metadata from HybridPageIndex (optional).
+
+        Returns:
+            list[SemanticChunk] — ordered chunks with metadata.
+        """
+        ...</code></pre>
+      </section>
+
+      <section id="semantic-chunk">
+        <h2>SemanticChunk Model</h2>
+        <p>Every chunker returns a list of <code>SemanticChunk</code> dataclass instances:</p>
+        <pre><code>from cognity_ai.models import SemanticChunk
+
+@dataclass
+class SemanticChunk:
+    id: str                      # "{doc_id}_chunk_{n}"
+    doc_id: str                  # parent document ID
+    text: str                    # chunk text
+    embedding: list[float] | None  # populated after embed_batch()
+    metadata: dict               # page_number, section, char_start, char_end
+    entities: list[str]          # entity names extracted from this chunk
+    is_parent: bool              # True for parent chunks (parent_child strategy)
+    parent_id: str | None        # set on child chunks pointing to their parent</code></pre>
+      </section>
+
+      <section id="strategies">
+        <h2>All Strategies</h2>
+
+        <div class="chunker-grid">
+
+          <div class="chunker-card default" id="sentence">
+            <div class="chunker-header">
+              <span class="chunker-key">sentence</span>
+              <span class="chunker-class">SentenceChunker</span>
+              <span class="badge-default">DEFAULT</span>
+            </div>
+            <p class="chunker-desc">Splits on sentence boundaries detected by spaCy, then groups sentences into chunks within a token budget. Preserves complete sentences — no mid-sentence cuts. Best balance of quality and speed for most text.</p>
+            <div class="config-list">
+              <li>max_tokens=512</li>
+              <li>overlap_sentences=1</li>
+            </div>
+            <pre><code>from cognity_ai.chunkers import SentenceChunker
+
+chunker = SentenceChunker(max_tokens=512, overlap_sentences=1)
+chunks = chunker.chunk(text, doc_id="my_doc", pages=pages)
+print(chunks[0].text)        # complete sentence(s)
+print(chunks[0].metadata)    # {"page_number": 1, "char_start": 0, ...}</code></pre>
+          </div>
+
+          <div class="chunker-card" id="fixed">
+            <div class="chunker-header">
+              <span class="chunker-key">fixed</span>
+              <span class="chunker-class">FixedChunker</span>
+            </div>
+            <p class="chunker-desc">Splits text into fixed-size token windows with a configurable overlap. Fast and predictable. Chunks may cut mid-sentence. Good for structured or tabular text where sentence boundaries are less meaningful.</p>
+            <div class="config-list">
+              <li>chunk_size=512</li>
+              <li>overlap=64</li>
+            </div>
+            <pre><code>from cognity_ai.chunkers import FixedChunker
+
+chunker = FixedChunker(chunk_size=512, overlap=64)
+chunks = chunker.chunk(text, doc_id="my_doc")</code></pre>
+          </div>
+
+          <div class="chunker-card" id="semantic">
+            <div class="chunker-header">
+              <span class="chunker-key">semantic</span>
+              <span class="chunker-class">SemanticChunker</span>
+            </div>
+            <p class="chunker-desc">Groups consecutive sentences by embedding cosine similarity. A new chunk starts when similarity drops below the threshold. Produces topically coherent chunks but requires an embedder during ingestion — slower than sentence/fixed.</p>
+            <div class="config-list">
+              <li>similarity_threshold=0.8</li>
+              <li>max_tokens=1024</li>
+            </div>
+            <pre><code>from cognity_ai.chunkers import SemanticChunker
+from cognity_ai.embedders import GeminiEmbedder
+
+chunker = SemanticChunker(
+    embedder=GeminiEmbedder(api_key="..."),
+    similarity_threshold=0.8,
+    max_tokens=1024,
+)
+chunks = chunker.chunk(text, doc_id="my_doc")</code></pre>
+          </div>
+
+          <div class="chunker-card" id="recursive">
+            <div class="chunker-header">
+              <span class="chunker-key">recursive</span>
+              <span class="chunker-class">RecursiveChunker</span>
+            </div>
+            <p class="chunker-desc">Recursively splits on a priority list of separators (<code>\n\n</code>, <code>\n</code>, <code>. </code>, <code> </code>) until chunks fit within the token budget. Inspired by LangChain's recursive splitter. Good for markdown and code.</p>
+            <div class="config-list">
+              <li>chunk_size=512</li>
+              <li>overlap=64</li>
+              <li>separators=["\n\n", "\n", ". ", " "]</li>
+            </div>
+            <pre><code>from cognity_ai.chunkers import RecursiveChunker
+
+chunker = RecursiveChunker(
+    chunk_size=512,
+    overlap=64,
+    separators=["\n\n", "\n", ". ", " "],
+)
+chunks = chunker.chunk(text, doc_id="my_doc")</code></pre>
+          </div>
+
+          <div class="chunker-card" id="parent-child">
+            <div class="chunker-header">
+              <span class="chunker-key">parent_child</span>
+              <span class="chunker-class">ParentChildChunker</span>
+            </div>
+            <p class="chunker-desc">Produces two levels of chunks: small <em>child</em> chunks for retrieval (precise similarity matching) and large <em>parent</em> chunks returned as context to the LLM. Use with <code>ParentChildRetriever</code>. Best for long documents where you need precise retrieval but rich context.</p>
+            <div class="config-list">
+              <li>child_size=256</li>
+              <li>parent_size=1024</li>
+              <li>child_overlap=32</li>
+            </div>
+            <pre><code>from cognity_ai import RAGLibrary
+
+# Must pair chunker + retriever
+rag = RAGLibrary(chunker="parent_child", rag_method="parent_child")
+rag.ingest("long_report.pdf")
+answer = rag.query("What were the Q3 results?")</code></pre>
+          </div>
+
+          <div class="chunker-card" id="hybrid">
+            <div class="chunker-header">
+              <span class="chunker-key">hybrid</span>
+              <span class="chunker-class">HybridChunker</span>
+            </div>
+            <p class="chunker-desc">Two-pass approach: sentence-boundary primary chunking followed by a semantic similarity regrouping pass. Merges adjacent chunks that are topically similar and splits those that diverge. Best quality; moderate speed overhead.</p>
+            <div class="config-list">
+              <li>max_tokens=512</li>
+              <li>similarity_threshold=0.75</li>
+              <li>overlap_sentences=1</li>
+            </div>
+            <pre><code>from cognity_ai import RAGLibrary
+
+rag = RAGLibrary(chunker="hybrid", embedder="openai", openai_api_key="sk-...")</code></pre>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="comparison">
+        <h2>Comparison Table</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Retrieval Quality</th>
+                <th>Context Coherence</th>
+                <th>Speed</th>
+                <th>Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>sentence</code></td>
+                <td class="best">Excellent</td>
+                <td class="best">Excellent</td>
+                <td class="best">Fast</td>
+                <td>General purpose, default choice</td>
+              </tr>
+              <tr>
+                <td><code>fixed</code></td>
+                <td class="good">Good</td>
+                <td class="ok">Fair</td>
+                <td class="best">Fastest</td>
+                <td>Structured/tabular text, CSV, JSON</td>
+              </tr>
+              <tr>
+                <td><code>semantic</code></td>
+                <td class="best">Excellent</td>
+                <td class="best">Excellent</td>
+                <td class="ok">Slow (embedding per sentence)</td>
+                <td>High-quality ingestion, topic-dense corpora</td>
+              </tr>
+              <tr>
+                <td><code>recursive</code></td>
+                <td class="good">Good</td>
+                <td class="good">Good</td>
+                <td class="best">Fast</td>
+                <td>Markdown, code files, hierarchical text</td>
+              </tr>
+              <tr>
+                <td><code>parent_child</code></td>
+                <td class="best">Excellent</td>
+                <td class="best">Excellent</td>
+                <td class="good">Moderate</td>
+                <td>Long documents needing precise retrieval + broad context</td>
+              </tr>
+              <tr>
+                <td><code>hybrid</code></td>
+                <td class="best">Best</td>
+                <td class="best">Best</td>
+                <td class="ok">Moderate–slow</td>
+                <td>Quality-critical pipelines with budget for two passes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="config">
+        <h2>Configuration</h2>
+        <p>Set the chunker via the <code>chunker</code> string key or through <code>LibraryConfig</code>:</p>
+        <pre><code>from cognity_ai import RAGLibrary
+from cognity_ai.config import LibraryConfig
+
+# Via string key (simplest)
+rag = RAGLibrary(chunker="sentence")
+rag = RAGLibrary(chunker="parent_child", rag_method="parent_child")
+
+# Via LibraryConfig (full control)
+config = LibraryConfig(chunker="hybrid")
+rag = RAGLibrary(config=config)
+
+# Direct instantiation (advanced)
+from cognity_ai.chunkers import HybridChunker
+from cognity_ai.embedders import OpenAIEmbedder
+
+chunker = HybridChunker(
+    embedder=OpenAIEmbedder(api_key="sk-..."),
+    max_tokens=768,
+    similarity_threshold=0.78,
+)
+chunks = chunker.chunk(document.text, doc_id="doc_1", pages=document.page_map)</code></pre>
+
+        <div class="note">
+          <strong>Tip:</strong> The <code>semantic</code> and <code>hybrid</code> chunkers require an embedder during chunking (not just during retrieval). Make sure the embedder is configured before calling <code>ingest()</code> with these strategies.
+        </div>
+      </section>
+
+      <section id="custom">
+        <h2>Custom Chunker</h2>
+        <p>Implement <code>BaseChunker</code> and register it:</p>
+        <pre><code>from cognity_ai.chunkers.base import BaseChunker
+from cognity_ai.models import SemanticChunk, PageInfo
+from cognity_ai import RAGLibrary
+
+class ParagraphChunker(BaseChunker):
+    """Split on double-newlines — simple paragraph-based chunking."""
+
+    def chunk(
+        self,
+        text: str,
+        doc_id: str,
+        pages: list[PageInfo] | None = None,
+    ) -> list[SemanticChunk]:
+        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+        return [
+            SemanticChunk(
+                id=f"{doc_id}_chunk_{i}",
+                doc_id=doc_id,
+                text=para,
+                embedding=None,
+                metadata={"char_start": text.index(para)},
+                entities=[],
+                is_parent=False,
+                parent_id=None,
+            )
+            for i, para in enumerate(paragraphs)
+        ]
+
+# Register and use
+rag = RAGLibrary()
+rag.register_chunker("paragraph", ParagraphChunker)
+
+# Or pass instance directly via config
+from cognity_ai.config import LibraryConfig
+config = LibraryConfig(chunker="paragraph")
+rag = RAGLibrary(config=config)
+rag.ingest("document.txt")</code></pre>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+    <span class="footer-copy">cognity-ai v2.0.0 — MIT License</span>
+  </div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('.toc-links a');
+  const sections = Array.from(tocLinks).map(l => {
+    const id = l.getAttribute('href').replace('#', '');
+    return document.getElementById(id);
+  }).filter(Boolean);
+  window.addEventListener('scroll', () => {
+    let current = null;
+    for (const s of sections) {
+      if (window.scrollY >= s.offsetTop - 100) current = s;
+    }
+    tocLinks.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + (current && current.id));
+    });
+  }, { passive: true });
+</script>
+</body>
+</html>
