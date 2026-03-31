@@ -154,7 +154,7 @@
   <div class="container nav-inner">
     <a href="../index.html" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">&#9889;</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="../index.html">Home</a>
@@ -186,11 +186,11 @@
         <a href="index.html" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);">API Reference</a>
       </div>
       <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;font-family:var(--mono);">RAGLibrary</h1>
-      <p style="color:var(--text-muted);font-size:16px;">The primary facade class for raglib. Single entry-point for ingestion, querying, knowledge lifecycle management, and plugin registration.</p>
+      <p style="color:var(--text-muted);font-size:16px;">The primary facade class for cognity-ai. Single entry-point for ingestion, querying, knowledge lifecycle management, and plugin registration.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <span class="badge badge-blue">Class</span>
         <span class="badge badge-green">Stable API</span>
-        <span class="badge badge-orange">raglib.__init__</span>
+        <span class="badge badge-orange">cognity_ai.__init__</span>
       </div>
     </div>
 
@@ -675,7 +675,7 @@
     <!-- Lifecycle Methods -->
     <section id="lifecycle">
       <h2>Lifecycle Methods</h2>
-      <p style="color:var(--text-muted);">raglib tracks the authority and freshness of each ingested document. Lifecycle methods let you mark sources as authoritative, retire outdated knowledge, detect conflicts, and prune low-confidence information.</p>
+      <p style="color:var(--text-muted);">cognity-ai tracks the authority and freshness of each ingested document. Lifecycle methods let you mark sources as authoritative, retire outdated knowledge, detect conflicts, and prune low-confidence information.</p>
 
       <div id="confirm" class="method-block">
         <div class="method-header">
@@ -800,12 +800,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td><code>register_loader</code></td><td class="td-desc">File extension incl. dot, e.g. <code>".xyz"</code></td><td><code>BaseLoader</code></td><td><code>raglib.loaders</code></td></tr>
-            <tr><td><code>register_embedder</code></td><td class="td-desc">Snake-case string, e.g. <code>"my_embedder"</code></td><td><code>BaseEmbedder</code></td><td><code>raglib.embedders</code></td></tr>
-            <tr><td><code>register_generator</code></td><td class="td-desc">Snake-case string</td><td><code>BaseGenerator</code></td><td><code>raglib.generators</code></td></tr>
-            <tr><td><code>register_retriever</code></td><td class="td-desc">Snake-case string</td><td><code>BaseRetriever</code></td><td><code>raglib.retrievers</code></td></tr>
-            <tr><td><code>register_vector_store</code></td><td class="td-desc">Snake-case string</td><td><code>BaseVectorStore</code></td><td><code>raglib.stores</code></td></tr>
-            <tr><td><code>register_graph_store</code></td><td class="td-desc">Snake-case string</td><td><code>BaseGraphStore</code></td><td><code>raglib.stores</code></td></tr>
+            <tr><td><code>register_loader</code></td><td class="td-desc">File extension incl. dot, e.g. <code>".xyz"</code></td><td><code>BaseLoader</code></td><td><code>cognity_ai.loaders</code></td></tr>
+            <tr><td><code>register_embedder</code></td><td class="td-desc">Snake-case string, e.g. <code>"my_embedder"</code></td><td><code>BaseEmbedder</code></td><td><code>cognity_ai.embedders</code></td></tr>
+            <tr><td><code>register_generator</code></td><td class="td-desc">Snake-case string</td><td><code>BaseGenerator</code></td><td><code>cognity_ai.generators</code></td></tr>
+            <tr><td><code>register_retriever</code></td><td class="td-desc">Snake-case string</td><td><code>BaseRetriever</code></td><td><code>cognity_ai.retrievers</code></td></tr>
+            <tr><td><code>register_vector_store</code></td><td class="td-desc">Snake-case string</td><td><code>BaseVectorStore</code></td><td><code>cognity_ai.stores</code></td></tr>
+            <tr><td><code>register_graph_store</code></td><td class="td-desc">Snake-case string</td><td><code>BaseGraphStore</code></td><td><code>cognity_ai.stores</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -831,7 +831,7 @@
           <span class="code-lang">python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+        <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 <span class="cm"># --- Minimal setup: zero-config, auto-detects available backends ---</span>
 rag = <span class="cl">RAGLibrary</span>()
@@ -970,7 +970,7 @@ answer = rag.<span class="fn">query</span>(<span class="st">"latest financials"<
 <!-- FOOTER -->
 <footer>
   <div class="container footer-inner">
-    <span>&#169; 2025 raglib. MIT License.</span>
+    <span>&#169; 2025 cognity-ai. MIT License.</span>
     <div class="footer-links">
       <a href="../index.html">Home</a>
       <a href="../getting-started.html">Get Started</a>

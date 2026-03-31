@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Configuration — cognity-ai API</title>
-  <meta name="description" content="Complete reference for LibraryConfig and all provider configuration dataclasses in raglib." />
+  <meta name="description" content="Complete reference for LibraryConfig and all provider configuration dataclasses in cognity-ai." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -158,7 +158,7 @@
   <div class="container nav-inner">
     <a href="../index.html" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">⚡</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="../index.html">Home</a>
@@ -186,7 +186,7 @@
     <div class="page-header" id="top">
       <div class="section-label">API Reference</div>
       <h1>Configuration</h1>
-      <p>LibraryConfig and all provider configuration dataclasses for raglib.</p>
+      <p>LibraryConfig and all provider configuration dataclasses for cognity-ai.</p>
     </div>
 
     <!-- LibraryConfig -->
@@ -199,7 +199,7 @@
           <span class="code-lang">Python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig
+        <pre><code><span class="kw">from</span> cognity_ai.config <span class="kw">import</span> LibraryConfig
 
 <span class="nb">@dataclass</span>
 <span class="kw">class</span> <span class="cl">LibraryConfig</span>:
@@ -571,8 +571,8 @@
           <span class="code-lang">Python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> RAGLibrary
-<span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig, OpenAIConfig, QdrantConfig
+        <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> RAGLibrary
+<span class="kw">from</span> cognity_ai.config <span class="kw">import</span> LibraryConfig, OpenAIConfig, QdrantConfig
 
 config = <span class="cl">LibraryConfig</span>(
     embedder=<span class="st">"openai"</span>,
@@ -602,7 +602,7 @@ result = rag.<span class="fn">query</span>(<span class="st">"What are the key fi
         <div class="admonition-icon">💡</div>
         <div class="admonition-body">
           <strong>Tip</strong>
-          You can also pass provider keys via environment variables (e.g. <code>OPENAI_API_KEY</code>, <code>GEMINI_API_KEY</code>) and omit <code>api_key</code> from the config entirely. raglib reads these automatically when the field is left as its empty-string default.
+          You can also pass provider keys via environment variables (e.g. <code>OPENAI_API_KEY</code>, <code>GEMINI_API_KEY</code>) and omit <code>api_key</code> from the config entirely. cognity-ai reads these automatically when the field is left as its empty-string default.
         </div>
       </div>
 
@@ -612,8 +612,8 @@ result = rag.<span class="fn">query</span>(<span class="st">"What are the key fi
           <span class="code-lang">Python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> RAGLibrary
-<span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig, OllamaConfig, ChromaConfig
+        <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> RAGLibrary
+<span class="kw">from</span> cognity_ai.config <span class="kw">import</span> LibraryConfig, OllamaConfig, ChromaConfig
 
 config = <span class="cl">LibraryConfig</span>(
     embedder=<span class="st">"ollama"</span>,
@@ -624,7 +624,7 @@ config = <span class="cl">LibraryConfig</span>(
         base_url=<span class="st">"http://localhost:11434"</span>,
         generation_model=<span class="st">"llama3"</span>,
     ),
-    chroma=<span class="cl">ChromaConfig</span>(persist_directory=<span class="st">"./.raglib_data"</span>),
+    chroma=<span class="cl">ChromaConfig</span>(persist_directory=<span class="st">"./.cognity_ai_data"</span>),
 )
 
 rag = <span class="cl">RAGLibrary</span>(config=config)</code></pre>

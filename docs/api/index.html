@@ -120,7 +120,7 @@
   <div class="container nav-inner">
     <a href="../index.html" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">&#9889;</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="../index.html">Home</a>
@@ -148,7 +148,7 @@
     <div style="padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px;">
       <div class="section-label">Reference</div>
       <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;">API Reference</h1>
-      <p style="color:var(--text-muted);font-size:16px;">Complete API reference for raglib. All public classes, methods, and configuration options.</p>
+      <p style="color:var(--text-muted);font-size:16px;">Complete API reference for cognity-ai. All public classes, methods, and configuration options.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <span class="badge badge-blue">Python 3.11+</span>
         <span class="badge badge-green">Stable</span>
@@ -159,7 +159,7 @@
     <!-- Module Overview -->
     <section id="modules">
       <h2>Modules</h2>
-      <p style="color:var(--text-muted);">raglib is organized into focused modules. Each module exposes a clean public API. Click any card to see the full reference for that module.</p>
+      <p style="color:var(--text-muted);">cognity-ai is organized into focused modules. Each module exposes a clean public API. Click any card to see the full reference for that module.</p>
 
       <div class="api-grid">
 
@@ -178,7 +178,7 @@
           <div class="api-card-name">Configuration</div>
           <div class="api-card-desc"><code>LibraryConfig</code> and all provider config dataclasses for embedders, stores, generators, and OCR providers.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.config</code>
+            <code style="font-size:11px;">cognity_ai.config</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -188,7 +188,7 @@
           <div class="api-card-name">Loaders</div>
           <div class="api-card-desc">File format loaders for PDF, DOCX, XLSX, PPTX, images, HTML, Markdown, plain text, and more via <code>LoaderFactory</code>.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.loaders</code>
+            <code style="font-size:11px;">cognity_ai.loaders</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -198,7 +198,7 @@
           <div class="api-card-name">Chunkers</div>
           <div class="api-card-desc">Text chunking strategies including sentence-aware, fixed-size, semantic, recursive, parent-child, and hybrid chunkers.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.chunkers</code>
+            <code style="font-size:11px;">cognity_ai.chunkers</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -208,7 +208,7 @@
           <div class="api-card-name">Embedders</div>
           <div class="api-card-desc">Embedding providers: Gemini, Vertex AI, OpenAI, Azure OpenAI, Amazon Bedrock, Cohere, SentenceTransformers, and Ollama.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.embedders</code>
+            <code style="font-size:11px;">cognity_ai.embedders</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -218,7 +218,7 @@
           <div class="api-card-name">Generators</div>
           <div class="api-card-desc">LLM answer generators backed by Gemini, OpenAI, Anthropic Claude, Azure, Bedrock, Cohere, and local Ollama models.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.generators</code>
+            <code style="font-size:11px;">cognity_ai.generators</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -228,7 +228,7 @@
           <div class="api-card-name">OCR</div>
           <div class="api-card-desc">OCR providers powered by multimodal LLM vision: Gemini Vision, OpenAI Vision, Anthropic Vision, Azure, Bedrock, and Tesseract.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.ocr</code>
+            <code style="font-size:11px;">cognity_ai.ocr</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -238,7 +238,7 @@
           <div class="api-card-name">Stores</div>
           <div class="api-card-desc">Vector store backends (Chroma, Qdrant, Pinecone, FAISS, Weaviate, Milvus, PgVector, Azure Search) and graph store backends.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.stores</code>
+            <code style="font-size:11px;">cognity_ai.stores</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -248,7 +248,7 @@
           <div class="api-card-name">Retrievers</div>
           <div class="api-card-desc">RAG retrieval methodologies: hybrid graph, naive, vector-only, graph-only, parent-child, multi-query, Microsoft GraphRAG, and adaptive.</div>
           <div class="api-card-footer">
-            <code style="font-size:11px;">raglib.retrievers</code>
+            <code style="font-size:11px;">cognity_ai.retrievers</code>
             <span class="api-card-arrow">&#8594;</span>
           </div>
         </a>
@@ -269,16 +269,16 @@
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
         <pre><code><span class="cm"># Core facade — start here</span>
-<span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+<span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 <span class="cm"># Full configuration via dataclasses</span>
-<span class="kw">from</span> raglib.config <span class="kw">import</span> <span class="cl">LibraryConfig</span>
+<span class="kw">from</span> cognity_ai.config <span class="kw">import</span> <span class="cl">LibraryConfig</span>
 
 <span class="cm"># Loader factory for custom pipelines</span>
-<span class="kw">from</span> raglib.loaders <span class="kw">import</span> <span class="cl">LoaderFactory</span>
+<span class="kw">from</span> cognity_ai.loaders <span class="kw">import</span> <span class="cl">LoaderFactory</span>
 
 <span class="cm"># Core data models</span>
-<span class="kw">from</span> raglib.models <span class="kw">import</span> <span class="cl">Document</span>, <span class="cl">SemanticChunk</span>, <span class="cl">RetrievalResult</span></code></pre>
+<span class="kw">from</span> cognity_ai.models <span class="kw">import</span> <span class="cl">Document</span>, <span class="cl">SemanticChunk</span>, <span class="cl">RetrievalResult</span></code></pre>
       </div>
 
       <h3>Base classes for plugin authors</h3>
@@ -289,11 +289,11 @@
           <span class="code-lang">python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> raglib.loaders <span class="kw">import</span> <span class="cl">BaseLoader</span>
-<span class="kw">from</span> raglib.embedders <span class="kw">import</span> <span class="cl">BaseEmbedder</span>
-<span class="kw">from</span> raglib.generators <span class="kw">import</span> <span class="cl">BaseGenerator</span>
-<span class="kw">from</span> raglib.retrievers <span class="kw">import</span> <span class="cl">BaseRetriever</span>
-<span class="kw">from</span> raglib.stores <span class="kw">import</span> <span class="cl">BaseVectorStore</span>, <span class="cl">BaseGraphStore</span></code></pre>
+        <pre><code><span class="kw">from</span> cognity_ai.loaders <span class="kw">import</span> <span class="cl">BaseLoader</span>
+<span class="kw">from</span> cognity_ai.embedders <span class="kw">import</span> <span class="cl">BaseEmbedder</span>
+<span class="kw">from</span> cognity_ai.generators <span class="kw">import</span> <span class="cl">BaseGenerator</span>
+<span class="kw">from</span> cognity_ai.retrievers <span class="kw">import</span> <span class="cl">BaseRetriever</span>
+<span class="kw">from</span> cognity_ai.stores <span class="kw">import</span> <span class="cl">BaseVectorStore</span>, <span class="cl">BaseGraphStore</span></code></pre>
       </div>
     </section>
 
@@ -302,7 +302,7 @@
     <!-- Data Models -->
     <section id="data-models">
       <h2>Core Data Models</h2>
-      <p style="color:var(--text-muted);">All data exchanged between components uses these typed dataclasses from <code>raglib.models</code>.</p>
+      <p style="color:var(--text-muted);">All data exchanged between components uses these typed dataclasses from <code>cognity_ai.models</code>.</p>
 
       <h3>Document</h3>
       <p>Represents a raw ingested source document before chunking.</p>
@@ -409,7 +409,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="container footer-inner">
-    <span>&#169; 2025 raglib. MIT License.</span>
+    <span>&#169; 2025 cognity-ai. MIT License.</span>
     <div class="footer-links">
       <a href="../index.html">Home</a>
       <a href="../getting-started.html">Get Started</a>

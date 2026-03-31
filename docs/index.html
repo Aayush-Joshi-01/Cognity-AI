@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>cognity-ai — Modular RAG Library</title>
-  <meta name="description" content="raglib: Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format." />
+  <meta name="description" content="cognity-ai: Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format." />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -391,17 +391,16 @@
   <div class="container nav-inner">
     <a href="#" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">⚡</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="#quickstart">Quick Start</a>
-      <a href="#providers">Providers</a>
-      <a href="#methods">RAG Methods</a>
-      <a href="#pipeline">Pipeline</a>
-      <a href="#api">API</a>
       <a href="#install">Install</a>
-      <a href="#multimodal">Multimodal</a>
-      <a href="https://github.com/yourname/graph-rag" class="nav-github">
+      <a href="getting-started.html">Get Started</a>
+      <a href="api/index.html">API Docs</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="https://github.com/Aayush-Joshi-01/Cognity-AI" class="nav-github">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
         </svg>
@@ -414,7 +413,7 @@
 <!-- ── HERO ─────────────────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="container">
-    <div class="hero-badge">⚡ v2.0 — Now with raglib</div>
+    <div class="hero-badge">⚡ v2.0 — Now with cognity-ai</div>
     <h1>
       The RAG library that<br>
       <span class="grad">works with everything</span>
@@ -424,15 +423,15 @@
       One API. Smart defaults. Drop it into any AI agent.
     </p>
     <div class="hero-actions">
-      <a href="#quickstart" class="btn btn-primary">
+      <a href="getting-started.html" class="btn btn-primary">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.54 5.96l-4 6a.75.75 0 01-1.28-.78L9.38 7.5H5.75a.75.75 0 01-.64-1.14l4-6a.75.75 0 011.28.78L7.27 5.5h3.69a.75.75 0 01.58 1.23-.8.8 0 01-.58.23z"/></svg>
         Get Started
       </a>
-      <a href="#api" class="btn btn-outline">
+      <a href="api/index.html" class="btn btn-outline">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0114.25 16H1.75A1.75 1.75 0 010 14.25V1.75zM1.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25V1.75a.25.25 0 00-.25-.25H1.75zM11.5 6a.5.5 0 000 1H13a.5.5 0 000-1h-1.5zm0 3a.5.5 0 000 1H13a.5.5 0 000-1h-1.5zm-8-3a.5.5 0 000 1h1.5a.5.5 0 000-1H3.5zm0 3a.5.5 0 000 1h1.5a.5.5 0 000-1H3.5z"/></svg>
         API Reference
       </a>
-      <a href="https://github.com/yourname/graph-rag" class="btn btn-outline">
+      <a href="https://github.com/Aayush-Joshi-01/Cognity-AI" class="btn btn-outline">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         View Source
       </a>
@@ -456,7 +455,7 @@
   <div class="container">
     <div class="section-label">What's inside</div>
     <h2>Everything you need for production RAG</h2>
-    <p class="section-sub">raglib handles the plumbing so your agent handles the intelligence.</p>
+    <p class="section-sub">cognity-ai handles the plumbing so your agent handles the intelligence.</p>
 
     <div class="features-grid">
       <div class="feature-card">
@@ -523,7 +522,7 @@
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           <span class="code-lang">python</span>
         </div>
-        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+        <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 <span class="cm"># Smart defaults: Gemini LLM + embedder, Neo4j graph, ChromaDB vector</span>
 rag = <span class="cl">RAGLibrary</span>(
@@ -557,7 +556,7 @@ result = rag.<span class="fn">query_with_sources</span>(<span class="st">"Who fo
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           <span class="code-lang">python</span>
         </div>
-        <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+        <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 rag = <span class="cl">RAGLibrary</span>(
     <span class="nm">llm</span>=<span class="st">"openai"</span>,
@@ -580,8 +579,8 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What are the paymen
           <span class="code-lang">python</span>
         </div>
         <pre><code><span class="cm"># 100% offline — no API keys, no cloud services</span>
-<span class="cm"># pip install -e ".[sentence-transformers,faiss,networkx,nlp]"</span>
-<span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+<span class="cm"># pip install "cognity-ai[sentence-transformers,faiss,networkx,nlp]"</span>
+<span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 rag = <span class="cl">RAGLibrary</span>(
     <span class="nm">llm</span>=<span class="st">"ollama"</span>,             <span class="cm"># local Ollama server</span>
@@ -900,9 +899,9 @@ multi_hop = rag.<span class="fn">query</span>(<span class="st">"Compare AI safet
         <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         <span class="code-lang">python — custom plugin example</span>
       </div>
-      <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
-<span class="kw">from</span> raglib.loaders.base <span class="kw">import</span> <span class="cl">BaseLoader</span>
-<span class="kw">from</span> raglib.models.document <span class="kw">import</span> <span class="cl">Document</span>
+      <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+<span class="kw">from</span> cognity_ai.loaders.base <span class="kw">import</span> <span class="cl">BaseLoader</span>
+<span class="kw">from</span> cognity_ai.models.document <span class="kw">import</span> <span class="cl">Document</span>
 
 <span class="kw">class</span> <span class="cl">MyLoader</span>(<span class="cl">BaseLoader</span>):
     <span class="kw">def</span> <span class="fn">load</span>(<span class="nm">self</span>, <span class="nm">path</span>: <span class="cl">str</span>) -> <span class="cl">list</span>[<span class="cl">Document</span>]:
@@ -928,7 +927,7 @@ rag.<span class="fn">ingest</span>(<span class="st">"proprietary_file.myext"</sp
     <div class="install-grid">
       <div class="install-card">
         <h4>Default (recommended)</h4>
-        <pre><code>pip install -e ".[default]"
+        <pre><code>pip install "cognity-ai[default]"
 
 # Includes:
 # Gemini LLM + embedder
@@ -940,15 +939,15 @@ rag.<span class="fn">ingest</span>(<span class="st">"proprietary_file.myext"</sp
       </div>
       <div class="install-card">
         <h4>OpenAI + Qdrant stack</h4>
-        <pre><code>pip install -e ".[openai,qdrant,pdf,nlp]"</code></pre>
+        <pre><code>pip install "cognity-ai[openai,qdrant,pdf,nlp]"</code></pre>
         <h4 style="margin-top:16px">Anthropic + Pinecone</h4>
-        <pre><code>pip install -e ".[anthropic,pinecone,office]"</code></pre>
+        <pre><code>pip install "cognity-ai[anthropic,pinecone,office]"</code></pre>
         <h4 style="margin-top:16px">AWS Bedrock + FAISS</h4>
-        <pre><code>pip install -e ".[bedrock,faiss,pdf]"</code></pre>
+        <pre><code>pip install "cognity-ai[bedrock,faiss,pdf]"</code></pre>
       </div>
       <div class="install-card">
         <h4>Fully offline (zero API cost)</h4>
-        <pre><code>pip install -e "[sentence-transformers,faiss,networkx,nlp,ocr-local]"
+        <pre><code>pip install "cognity-ai[sentence-transformers,faiss,networkx,nlp,ocr-local]"
 
 # Then start Ollama:
 ollama pull llama3
@@ -956,7 +955,7 @@ ollama serve</code></pre>
       </div>
       <div class="install-card">
         <h4>All providers + stores + loaders</h4>
-        <pre><code>pip install -e ".[all]"
+        <pre><code>pip install "cognity-ai[all]"
 
 # After install, download spaCy model:
 python -m spacy download en_core_web_trf
@@ -1027,7 +1026,7 @@ answer = c[<span class="st">"retriever"</span>].<span class="fn">query</span>(
       <div>
         <p style="font-size:12px;color:var(--accent-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">After (new)</p>
         <div class="code-block">
-          <pre><code><span class="kw">from</span> raglib <span class="kw">import</span> <span class="cl">RAGLibrary</span>
+          <pre><code><span class="kw">from</span> cognity_ai <span class="kw">import</span> <span class="cl">RAGLibrary</span>
 
 rag = <span class="cl">RAGLibrary</span>(
     <span class="nm">gemini_api_key</span>=<span class="st">"..."</span>,
@@ -1058,7 +1057,7 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
     </div>
 
     <p class="section-sub" style="margin-bottom:40px">
-      Extend raglib beyond text: ingest images, videos, and audio files using multimodal embedding models and
+      Extend cognity-ai beyond text: ingest images, videos, and audio files using multimodal embedding models and
       transcription providers. This module is in active development and ships as an optional add-on that must
       be installed separately. Feedback and bug reports are welcome.
     </p>
@@ -1111,10 +1110,10 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           <span class="code-lang">python — Image RAG</span>
         </div>
-        <pre><code><span class="kw">from</span> raglib.embedders.clip <span class="kw">import</span> <span class="cl">CLIPEmbedder</span>
-<span class="kw">from</span> raglib.stores.vector.chroma_multimodal <span class="kw">import</span> <span class="cl">ChromaMultimodalStore</span>
-<span class="kw">from</span> raglib.pipeline.image <span class="kw">import</span> <span class="cl">ImageIngestionPipeline</span>
-<span class="kw">from</span> raglib.retrievers.multimodal <span class="kw">import</span> <span class="cl">ImageRetriever</span>
+        <pre><code><span class="kw">from</span> cognity_ai.embedders.clip <span class="kw">import</span> <span class="cl">CLIPEmbedder</span>
+<span class="kw">from</span> cognity_ai.stores.vector.chroma_multimodal <span class="kw">import</span> <span class="cl">ChromaMultimodalStore</span>
+<span class="kw">from</span> cognity_ai.pipeline.image <span class="kw">import</span> <span class="cl">ImageIngestionPipeline</span>
+<span class="kw">from</span> cognity_ai.retrievers.multimodal <span class="kw">import</span> <span class="cl">ImageRetriever</span>
 
 <span class="cm"># Set up multimodal components</span>
 <span class="nm">embedder</span> = <span class="cl">CLIPEmbedder</span>(<span class="nm">model</span>=<span class="st">"openai/clip-vit-base-patch32"</span>)
@@ -1139,10 +1138,10 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           <span class="code-lang">python — Video RAG</span>
         </div>
-        <pre><code><span class="kw">from</span> raglib.embedders.clip <span class="kw">import</span> <span class="cl">CLIPEmbedder</span>
-<span class="kw">from</span> raglib.ocr.whisper_local <span class="kw">import</span> <span class="cl">WhisperLocalTranscriber</span>
-<span class="kw">from</span> raglib.pipeline.video <span class="kw">import</span> <span class="cl">VideoIngestionPipeline</span>
-<span class="kw">from</span> raglib.retrievers.video <span class="kw">import</span> <span class="cl">VideoRetriever</span>
+        <pre><code><span class="kw">from</span> cognity_ai.embedders.clip <span class="kw">import</span> <span class="cl">CLIPEmbedder</span>
+<span class="kw">from</span> cognity_ai.ocr.whisper_local <span class="kw">import</span> <span class="cl">WhisperLocalTranscriber</span>
+<span class="kw">from</span> cognity_ai.pipeline.video <span class="kw">import</span> <span class="cl">VideoIngestionPipeline</span>
+<span class="kw">from</span> cognity_ai.retrievers.video <span class="kw">import</span> <span class="cl">VideoRetriever</span>
 
 <span class="cm"># Extract keyframes (visual) + transcribe speech</span>
 <span class="nm">embedder</span>     = <span class="cl">CLIPEmbedder</span>(<span class="nm">model</span>=<span class="st">"openai/clip-vit-large-patch14"</span>)
@@ -1169,9 +1168,9 @@ answer = rag.<span class="fn">query</span>(<span class="st">"What is X?"</span>)
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           <span class="code-lang">python — Audio RAG</span>
         </div>
-        <pre><code><span class="kw">from</span> raglib.ocr.whisper_local <span class="kw">import</span> <span class="cl">WhisperLocalTranscriber</span>
-<span class="kw">from</span> raglib.pipeline.audio <span class="kw">import</span> <span class="cl">AudioIngestionPipeline</span>
-<span class="kw">from</span> raglib.retrievers.audio <span class="kw">import</span> <span class="cl">AudioRetriever</span>
+        <pre><code><span class="kw">from</span> cognity_ai.ocr.whisper_local <span class="kw">import</span> <span class="cl">WhisperLocalTranscriber</span>
+<span class="kw">from</span> cognity_ai.pipeline.audio <span class="kw">import</span> <span class="cl">AudioIngestionPipeline</span>
+<span class="kw">from</span> cognity_ai.retrievers.audio <span class="kw">import</span> <span class="cl">AudioRetriever</span>
 
 <span class="cm"># Transcribe audio locally — no API keys required</span>
 <span class="nm">transcriber</span> = <span class="cl">WhisperLocalTranscriber</span>(<span class="nm">model_size</span>=<span class="st">"large-v3"</span>, <span class="nm">language</span>=<span class="st">"en"</span>)
@@ -1313,10 +1312,10 @@ pip install <span class="st">cognity-ai[multimodal]</span></code></pre>
       <span><strong>cognity-ai</strong> v2.0.0 &mdash; MIT License</span>
     </div>
     <div class="footer-links">
-      <a href="https://github.com/yourname/graph-rag">GitHub</a>
-      <a href="https://github.com/yourname/graph-rag/blob/main/API.md">API Docs</a>
-      <a href="https://github.com/yourname/graph-rag/blob/main/ARCHITECTURE.md">Architecture</a>
-      <a href="https://github.com/yourname/graph-rag/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/Aayush-Joshi-01/Cognity-AI">GitHub</a>
+      <a href="api/index.html">API Docs</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="changelog.html">Changelog</a>
     </div>
   </div>
 </footer>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stores — cognity-ai API</title>
-  <meta name="description" content="raglib API reference for vector stores and graph stores — BaseVectorStore, BaseGraphStore, and all provider implementations." />
+  <meta name="description" content="cognity-ai API reference for vector stores and graph stores — BaseVectorStore, BaseGraphStore, and all provider implementations." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -164,7 +164,7 @@
   <div class="container nav-inner">
     <a href="../index.html" class="nav-logo">
       <div class="logo-icon">&#9889;</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="../index.html">Home</a>
@@ -271,7 +271,7 @@
             <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           </div>
           <pre><code><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
-<span class="kw">from</span> raglib.models <span class="kw">import</span> SemanticChunk, RetrievalResult, CommunityInfo
+<span class="kw">from</span> cognity_ai.models <span class="kw">import</span> SemanticChunk, RetrievalResult, CommunityInfo
 
 <span class="kw">class</span> <span class="cl">BaseVectorStore</span>(ABC):
     @abstractmethod
@@ -483,7 +483,7 @@
             <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
           </div>
           <pre><code><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
-<span class="kw">from</span> raglib.models <span class="kw">import</span> Entity, Relation, RetrievalResult
+<span class="kw">from</span> cognity_ai.models <span class="kw">import</span> Entity, Relation, RetrievalResult
 
 <span class="kw">class</span> <span class="cl">BaseGraphStore</span>(ABC):
     @abstractmethod
@@ -598,14 +598,14 @@
 <span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(vector_store=<span class="st">"qdrant"</span>)
 
 <span class="cm"># Qdrant cloud</span>
-<span class="kw">from</span> raglib.config <span class="kw">import</span> LibraryConfig, QdrantConfig
+<span class="kw">from</span> cognity_ai.config <span class="kw">import</span> LibraryConfig, QdrantConfig
 <span class="nm">config</span> = <span class="cl">LibraryConfig</span>(
     vector_store=<span class="st">"qdrant"</span>,
     qdrant=<span class="cl">QdrantConfig</span>(url=<span class="st">"https://xyz.qdrant.tech"</span>, api_key=<span class="st">"..."</span>),
 )
 
 <span class="cm"># pgvector</span>
-<span class="kw">from</span> raglib.config <span class="kw">import</span> PgVectorConfig
+<span class="kw">from</span> cognity_ai.config <span class="kw">import</span> PgVectorConfig
 <span class="nm">config</span> = <span class="cl">LibraryConfig</span>(
     vector_store=<span class="st">"pgvector"</span>,
     pgvector=<span class="cl">PgVectorConfig</span>(
@@ -658,7 +658,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="container footer-inner">
-    <span>&copy; 2026 raglib</span>
+    <span>&copy; 2026 cognity-ai</span>
     <div class="footer-links">
       <a href="../index.html">Home</a>
       <a href="../getting-started.html">Get Started</a>
