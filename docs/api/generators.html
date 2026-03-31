@@ -132,7 +132,7 @@
   <div class="container nav-inner">
     <a href="../index.html" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">&#9889;</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="../index.html">Home</a>
@@ -341,7 +341,7 @@
           <span class="code-lang">python</span>
           <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         </div>
-        <pre><code><span class="kw">from</span> <span class="nm">raglib.config</span> <span class="kw">import</span> <span class="cl">LibraryConfig</span>, <span class="cl">AnthropicConfig</span>
+        <pre><code><span class="kw">from</span> <span class="nm">cognity_ai.config</span> <span class="kw">import</span> <span class="cl">LibraryConfig</span>, <span class="cl">AnthropicConfig</span>
 
 <span class="nm">config</span> = <span class="cl">LibraryConfig</span>(
     llm=<span class="st">"anthropic"</span>,
@@ -355,7 +355,7 @@
 <span class="nm">rag</span> = <span class="cl">RAGLibrary</span>(config=<span class="nm">config</span>)</code></pre>
       </div>
 
-      <p style="color:var(--text-muted);">Each provider has a corresponding config dataclass (<code>GeminiConfig</code>, <code>OpenAIConfig</code>, <code>BedrockConfig</code>, etc.) with provider-specific fields. Refer to the <code>raglib.config</code> module for the full set of available fields per provider.</p>
+      <p style="color:var(--text-muted);">Each provider has a corresponding config dataclass (<code>GeminiConfig</code>, <code>OpenAIConfig</code>, <code>BedrockConfig</code>, etc.) with provider-specific fields. Refer to the <code>cognity_ai.config</code> module for the full set of available fields per provider.</p>
 
       <div class="admonition admonition-tip">
         <div class="admonition-icon">&#128161;</div>
@@ -382,7 +382,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="container footer-inner">
-    <span>raglib &copy; 2026</span>
+    <span>cognity-ai &copy; 2026</span>
     <div class="footer-links">
       <a href="../index.html">Home</a>
       <a href="../getting-started.html">Get Started</a>

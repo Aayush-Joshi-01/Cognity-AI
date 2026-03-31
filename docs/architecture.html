@@ -176,7 +176,7 @@
   <div class="container nav-inner">
     <a href="index.html" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">&#9889;</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="index.html">Home</a>
@@ -204,14 +204,14 @@
     <div style="padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px;">
       <div class="section-label">Documentation</div>
       <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;">Architecture</h1>
-      <p style="color:var(--text-muted);font-size:16px;">How raglib is structured — from file ingestion through graph-augmented retrieval to answer synthesis.</p>
+      <p style="color:var(--text-muted);font-size:16px;">How cognity-ai is structured — from file ingestion through graph-augmented retrieval to answer synthesis.</p>
     </div>
 
     <!-- Section 1: Overview -->
     <section id="overview">
       <h2>Overview</h2>
-      <p style="color:var(--text-muted);">raglib is a <strong style="color:var(--text)">plugin-based, modular RAG library</strong>. Every layer of the stack — loaders, chunkers, embedders, vector stores, graph stores, retrievers, generators — is swappable via string keys registered in a central <code>PluginRegistry</code>.</p>
-      <p style="color:var(--text-muted);">You configure raglib with a <code>LibraryConfig</code> object. The <code>ComponentFactory</code> reads those keys and instantiates the correct implementations, applying a <strong style="color:var(--text)">smart fallback chain</strong> when a preferred backend is unavailable (e.g., Neo4j offline falls back to NetworkX; a missing Anthropic API key falls back to <code>sentence_transformers</code>).</p>
+      <p style="color:var(--text-muted);">cognity-ai is a <strong style="color:var(--text)">plugin-based, modular RAG library</strong>. Every layer of the stack — loaders, chunkers, embedders, vector stores, graph stores, retrievers, generators — is swappable via string keys registered in a central <code>PluginRegistry</code>.</p>
+      <p style="color:var(--text-muted);">You configure cognity-ai with a <code>LibraryConfig</code> object. The <code>ComponentFactory</code> reads those keys and instantiates the correct implementations, applying a <strong style="color:var(--text)">smart fallback chain</strong> when a preferred backend is unavailable (e.g., Neo4j offline falls back to NetworkX; a missing Anthropic API key falls back to <code>sentence_transformers</code>).</p>
 
       <div class="pill-list">
         <span class="pill pill-blue">Plugin-based</span>
@@ -225,7 +225,7 @@
         <div class="admonition-icon">&#8505;&#65039;</div>
         <div class="admonition-body">
           <strong>Design principle</strong>
-          All public behaviour is accessed through the <code>RAGLibrary</code> facade in <code>raglib/library.py</code>. Internal components are wired together by <code>ComponentFactory</code> — you never instantiate them directly unless you are writing a plugin.
+          All public behaviour is accessed through the <code>RAGLibrary</code> facade in <code>cognity_ai/library.py</code>. Internal components are wired together by <code>ComponentFactory</code> — you never instantiate them directly unless you are writing a plugin.
         </div>
       </div>
     </section>
@@ -304,7 +304,7 @@
     <!-- Section 3: Retrieval & Query -->
     <section id="retrieval">
       <h2>Retrieval &amp; Query</h2>
-      <p style="color:var(--text-muted);">At query time, raglib routes the question through either the full <strong style="color:var(--text)">HybridGraphRetriever</strong> (4-channel) or the lighter <strong style="color:var(--text)">NaiveRetriever</strong> (vector-only). An optional <code>AdaptiveRetriever</code> can classify queries and choose the right path automatically.</p>
+      <p style="color:var(--text-muted);">At query time, cognity-ai routes the question through either the full <strong style="color:var(--text)">HybridGraphRetriever</strong> (4-channel) or the lighter <strong style="color:var(--text)">NaiveRetriever</strong> (vector-only). An optional <code>AdaptiveRetriever</code> can classify queries and choose the right path automatically.</p>
 
       <div class="pipeline-diagram">
         <pre><span class="pipe-box">Query String</span>
@@ -436,7 +436,7 @@
     <!-- Section 5: Multimodal Path -->
     <section id="multimodal">
       <h2>Multimodal Path</h2>
-      <p style="color:var(--text-muted);">raglib handles non-text content embedded inside documents. When a DOCX, PPTX, or PDF file contains embedded images, those images are extracted as raw bytes and routed through the OCR subsystem before the text pipeline continues.</p>
+      <p style="color:var(--text-muted);">cognity-ai handles non-text content embedded inside documents. When a DOCX, PPTX, or PDF file contains embedded images, those images are extracted as raw bytes and routed through the OCR subsystem before the text pipeline continues.</p>
 
       <div class="pipeline-diagram">
         <pre><span class="pipe-box">DOCX / PPTX / PDF</span> <span class="pipe-label">(contains embedded images)</span>
@@ -481,10 +481,10 @@
     <!-- Section 6: Package Structure -->
     <section id="package-structure">
       <h2>Package Structure</h2>
-      <p style="color:var(--text-muted);">The top-level layout of the <code>raglib/</code> package. Each sub-package contains an <code>__init__.py</code> that re-exports the public interface and a <code>base.py</code> that defines the abstract base class for that component type.</p>
+      <p style="color:var(--text-muted);">The top-level layout of the <code>cognity_ai/</code> package. Each sub-package contains an <code>__init__.py</code> that re-exports the public interface and a <code>base.py</code> that defines the abstract base class for that component type.</p>
 
       <div class="dir-tree">
-        <pre><span class="dir-folder">raglib/</span>
+        <pre><span class="dir-folder">cognity_ai/</span>
 <span class="dir-file">&#9500;&#9472;&#9472; library.py</span>        <span class="dir-comment"># RAGLibrary facade &#8212; the only class users touch directly</span>
 <span class="dir-file">&#9500;&#9472;&#9472; registry.py</span>       <span class="dir-comment"># PluginRegistry &#8212; global map of string keys to classes</span>
 <span class="dir-file">&#9500;&#9472;&#9472; factory.py</span>        <span class="dir-comment"># ComponentFactory &#8212; wires LibraryConfig into live objects</span>
@@ -506,7 +506,7 @@
       </div>
 
       <h3>Dependency Groups</h3>
-      <p style="color:var(--text-muted);">raglib uses <code>pyproject.toml</code> optional dependency groups so you only install what you need:</p>
+      <p style="color:var(--text-muted);">cognity-ai uses <code>pyproject.toml</code> optional dependency groups so you only install what you need:</p>
       <div class="pill-list">
         <span class="pill pill-blue">cognity-ai[pdf]</span>
         <span class="pill pill-blue">cognity-ai[office]</span>
@@ -532,7 +532,7 @@
         <a href="getting-started.html" class="next-card">
           <div class="next-card-icon">&#128640;</div>
           <h4>Get Started</h4>
-          <p>Install raglib and run your first ingestion and query pipeline in minutes.</p>
+          <p>Install cognity-ai and run your first ingestion and query pipeline in minutes.</p>
         </a>
         <a href="api/index.html" class="next-card">
           <div class="next-card-icon">&#128214;</div>

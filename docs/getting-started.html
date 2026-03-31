@@ -156,7 +156,7 @@
   <div class="container nav-inner">
     <a href="index.html" class="nav-logo" style="text-decoration:none">
       <div class="logo-icon">⚡</div>
-      raglib
+      cognity-ai
     </a>
     <div class="nav-links">
       <a href="getting-started.html" class="nav-active">Get Started</a>
@@ -183,13 +183,13 @@
     <div style="padding: 48px 0 32px; border-bottom: 1px solid var(--border-light); margin-bottom: 48px;">
       <div class="section-label">Documentation</div>
       <h1 style="font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;">Getting Started</h1>
-      <p style="color:var(--text-muted);font-size:16px;">Install raglib, configure your providers, and run your first RAG query.</p>
+      <p style="color:var(--text-muted);font-size:16px;">Install cognity-ai, configure your providers, and run your first RAG query.</p>
     </div>
 
     <!-- Section 1: Installation -->
     <section id="installation">
       <h2>Installation</h2>
-      <p style="color:var(--text-muted);">raglib requires <strong style="color:var(--text)">Python 3.11+</strong>. Choose an install profile that matches your stack, or install everything at once.</p>
+      <p style="color:var(--text-muted);">cognity-ai requires <strong style="color:var(--text)">Python 3.11+</strong>. Choose an install profile that matches your stack, or install everything at once.</p>
 
       <div class="tabs" id="install-tabs">
         <button class="tab active" onclick="switchTab('install-tabs','install-default',this)">Default</button>
@@ -416,7 +416,7 @@ pip install -e <span class="st">".[all]"</span></code></pre>
     <!-- Section 4: File Formats -->
     <section id="formats">
       <h2>File Format Support</h2>
-      <p style="color:var(--text-muted);">raglib ships with loaders for 14 file formats out of the box.</p>
+      <p style="color:var(--text-muted);">cognity-ai ships with loaders for 14 file formats out of the box.</p>
 
       <div class="table-wrap">
         <table>
@@ -457,7 +457,7 @@ pip install -e <span class="st">".[all]"</span></code></pre>
     <!-- Section 5: OCR -->
     <section id="ocr">
       <h2>OCR Configuration</h2>
-      <p style="color:var(--text-muted);">raglib uses a fallback chain for OCR. If the primary provider fails (missing key, rate limit, unsupported format), it automatically tries the next in chain.</p>
+      <p style="color:var(--text-muted);">cognity-ai uses a fallback chain for OCR. If the primary provider fails (missing key, rate limit, unsupported format), it automatically tries the next in chain.</p>
 
       <div class="table-wrap">
         <table>
@@ -496,7 +496,7 @@ pip install -e <span class="st">".[all]"</span></code></pre>
     <!-- Section 6: Knowledge Graph -->
     <section id="knowledge-graph">
       <h2>Knowledge Graph</h2>
-      <p style="color:var(--text-muted);">During ingestion, raglib extracts entities and relationships from every document and builds a knowledge graph. The graph enables structured traversal and global summarization that pure vector search cannot achieve.</p>
+      <p style="color:var(--text-muted);">During ingestion, cognity-ai extracts entities and relationships from every document and builds a knowledge graph. The graph enables structured traversal and global summarization that pure vector search cannot achieve.</p>
 
       <h3>Entity &amp; Relation Extraction</h3>
       <p style="color:var(--text-muted);">The <code>HybridExtractor</code> runs spaCy NLP first (fast, local, free) and uses LLM augmentation only for semantic gaps that NLP misses — causal links, temporal dependencies, implicit associations.</p>
@@ -525,7 +525,7 @@ pip install -e <span class="st">".[all]"</span></code></pre>
     <!-- Section 7: Incremental Updates -->
     <section id="incremental">
       <h2>Incremental Updates</h2>
-      <p style="color:var(--text-muted);">raglib computes a SHA-256 hash of every ingested file. On re-ingest, unchanged files are skipped with zero API calls. Only modified or new files are processed.</p>
+      <p style="color:var(--text-muted);">cognity-ai computes a SHA-256 hash of every ingested file. On re-ingest, unchanged files are skipped with zero API calls. Only modified or new files are processed.</p>
 
       <div class="code-block">
         <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div></div>
@@ -556,13 +556,13 @@ pip install -e <span class="st">".[all]"</span></code></pre>
     <!-- Section 8: Plugin System -->
     <section id="plugins">
       <h2>Plugin System</h2>
-      <p style="color:var(--text-muted);">Every component in raglib is an ABC registered in the <code>PluginRegistry</code>. You can register custom loaders, embedders, chunkers, generators, and retrievers by string key — your code drops into the pipeline without touching any core files.</p>
+      <p style="color:var(--text-muted);">Every component in cognity-ai is an ABC registered in the <code>PluginRegistry</code>. You can register custom loaders, embedders, chunkers, generators, and retrievers by string key — your code drops into the pipeline without touching any core files.</p>
 
       <div class="code-block">
         <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div></div>
-        <pre><code><span class="kw">from</span> <span class="nm">raglib.loaders.base</span> <span class="kw">import</span> <span class="cl">BaseLoader</span>
-<span class="kw">from</span> <span class="nm">raglib.registry</span> <span class="kw">import</span> <span class="cl">PluginRegistry</span>
-<span class="kw">from</span> <span class="nm">raglib.models.document</span> <span class="kw">import</span> <span class="cl">Document</span>
+        <pre><code><span class="kw">from</span> <span class="nm">cognity_ai.loaders.base</span> <span class="kw">import</span> <span class="cl">BaseLoader</span>
+<span class="kw">from</span> <span class="nm">cognity_ai.registry</span> <span class="kw">import</span> <span class="cl">PluginRegistry</span>
+<span class="kw">from</span> <span class="nm">cognity_ai.models.document</span> <span class="kw">import</span> <span class="cl">Document</span>
 
 <span class="kw">class</span> <span class="cl">MyNotionLoader</span>(<span class="cl">BaseLoader</span>):
     <span class="st">"""Load pages from Notion via API."""</span>
@@ -598,7 +598,7 @@ pip install -e <span class="st">".[all]"</span></code></pre>
         <a href="api/index.html" class="next-card">
           <div class="next-card-icon">📖</div>
           <h4>API Reference</h4>
-          <p>Full documentation for every class, method, and parameter in raglib.</p>
+          <p>Full documentation for every class, method, and parameter in cognity-ai.</p>
         </a>
         <a href="architecture.html" class="next-card">
           <div class="next-card-icon">🏗️</div>

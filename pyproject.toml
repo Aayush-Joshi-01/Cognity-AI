@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "cognity-ai"
@@ -293,11 +293,11 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/aayushjoshi-12/graph-rag"
-Documentation = "https://aayushjoshi-12.github.io/graph-rag"
-Repository = "https://github.com/aayushjoshi-12/graph-rag"
-"Bug Tracker" = "https://github.com/aayushjoshi-12/graph-rag/issues"
-Changelog = "https://github.com/aayushjoshi-12/graph-rag/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Aayush-Joshi-01/Cognity-AI"
+Documentation = "https://Aayush-Joshi-01.github.io/Cognity-AI"
+Repository = "https://github.com/Aayush-Joshi-01/Cognity-AI"
+"Bug Tracker" = "https://github.com/Aayush-Joshi-01/Cognity-AI/issues"
+Changelog = "https://github.com/Aayush-Joshi-01/Cognity-AI/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
