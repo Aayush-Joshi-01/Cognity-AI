@@ -1,6 +1,6 @@
-# raglib API Reference
+# cognity-ai API Reference
 
-Complete public API documentation for the `raglib` package.
+Complete public API documentation for the `cognity-ai` package.
 
 ---
 
@@ -48,9 +48,9 @@ Complete public API documentation for the `raglib` package.
 
 ## 1. RAGLibrary — Primary API
 
-**Module:** `raglib/library.py`
+**Module:** `cognity-ai/library.py`
 
-`RAGLibrary` is the single entry point for all raglib operations. It wires together loaders, chunkers, embedders, stores, extractors, and retrievers based on the provided configuration. All component selection is done by name string, making it easy to swap providers without touching application code.
+`RAGLibrary` is the single entry point for all cognity-ai operations. It wires together loaders, chunkers, embedders, stores, extractors, and retrievers based on the provided configuration. All component selection is done by name string, making it easy to swap providers without touching application code.
 
 ### Constructor
 
@@ -95,7 +95,7 @@ RAGLibrary(
 **Minimal usage:**
 
 ```python
-from raglib import RAGLibrary
+from cognity_ai import RAGLibrary
 
 lib = RAGLibrary(
     gemini_api_key="AIza...",
@@ -402,7 +402,7 @@ Return a summary of all registered plugins across all types:
 
 ## 2. Data Models
 
-**Module:** `raglib/models/`
+**Module:** `cognity-ai/models/`
 
 Models are dataclasses (not Pydantic) unless otherwise noted. Legacy code that used Pydantic v2 models from `models.py` will still work; those classes have been migrated here.
 
@@ -410,7 +410,7 @@ Models are dataclasses (not Pydantic) unless otherwise noted. Legacy code that u
 
 ### Document
 
-**Module:** `raglib/models/document.py`
+**Module:** `cognity-ai/models/document.py`
 
 ```python
 @dataclass
@@ -435,7 +435,7 @@ class Document:
 
 ### ImageRef
 
-**Module:** `raglib/models/document.py`
+**Module:** `cognity-ai/models/document.py`
 
 Represents an image embedded within a document, with its position in the extracted text stream.
 
@@ -455,7 +455,7 @@ class ImageRef:
 
 ### Entity
 
-**Module:** `raglib/models/knowledge.py`
+**Module:** `cognity-ai/models/knowledge.py`
 
 ```python
 @dataclass
@@ -474,7 +474,7 @@ class Entity:
 
 ### Relation
 
-**Module:** `raglib/models/knowledge.py`
+**Module:** `cognity-ai/models/knowledge.py`
 
 ```python
 @dataclass
@@ -493,7 +493,7 @@ class Relation:
 
 ### ExtractionResult
 
-**Module:** `raglib/models/knowledge.py`
+**Module:** `cognity-ai/models/knowledge.py`
 
 ```python
 @dataclass
@@ -506,7 +506,7 @@ class ExtractionResult:
 
 ### PageInfo
 
-**Module:** `raglib/models/document.py`
+**Module:** `cognity-ai/models/document.py`
 
 ```python
 @dataclass
@@ -522,7 +522,7 @@ class PageInfo:
 
 ### SemanticChunk
 
-**Module:** `raglib/models/retrieval.py`
+**Module:** `cognity-ai/models/retrieval.py`
 
 ```python
 @dataclass
@@ -546,7 +546,7 @@ The `parent_chunk_id` and `is_parent` fields are only populated when the `parent
 
 ### CommunityInfo
 
-**Module:** `raglib/models/knowledge.py`
+**Module:** `cognity-ai/models/knowledge.py`
 
 ```python
 @dataclass
@@ -565,7 +565,7 @@ class CommunityInfo:
 
 ### RetrievalResult
 
-**Module:** `raglib/models/retrieval.py`
+**Module:** `cognity-ai/models/retrieval.py`
 
 ```python
 @dataclass
@@ -580,7 +580,7 @@ class RetrievalResult:
 
 ### SourceStatus
 
-**Module:** `raglib/models/knowledge.py`
+**Module:** `cognity-ai/models/knowledge.py`
 
 ```python
 from enum import Enum
@@ -595,9 +595,9 @@ class SourceStatus(str, Enum):
 
 ## 3. Configuration
 
-**Module:** `raglib/config/`
+**Module:** `cognity-ai/config/`
 
-All configuration is expressed as dataclasses defined in `raglib/config/base.py`. Provider-specific configs are in `raglib/config/providers.py`. The top-level `LibraryConfig` aggregates all provider configs.
+All configuration is expressed as dataclasses defined in `cognity-ai/config/base.py`. Provider-specific configs are in `cognity-ai/config/providers.py`. The top-level `LibraryConfig` aggregates all provider configs.
 
 ---
 
@@ -618,7 +618,7 @@ All configuration is expressed as dataclasses defined in `raglib/config/base.py`
 Access provider sub-configs via attribute:
 
 ```python
-from raglib.config import LibraryConfig
+from cognity_ai.config import LibraryConfig
 
 cfg = LibraryConfig()
 cfg.gemini.api_key = "AIza..."
@@ -742,11 +742,11 @@ These classes define the contracts that all built-in and custom plugin implement
 
 ### BaseLoader
 
-**Module:** `raglib/loaders/base.py`
+**Module:** `cognity-ai/loaders/base.py`
 
 ```python
 from abc import ABC, abstractmethod
-from raglib.models import Document
+from cognity_ai.models import Document
 
 class BaseLoader(ABC):
 
@@ -768,7 +768,7 @@ Multiple `Document` objects may be returned when a single file contains logicall
 
 ### BaseOCR
 
-**Module:** `raglib/ocr/base.py`
+**Module:** `cognity-ai/ocr/base.py`
 
 ```python
 from abc import ABC, abstractmethod
@@ -791,11 +791,11 @@ class BaseOCR(ABC):
 
 ### BaseChunker
 
-**Module:** `raglib/chunkers/base.py`
+**Module:** `cognity-ai/chunkers/base.py`
 
 ```python
 from abc import ABC, abstractmethod
-from raglib.models import SemanticChunk, PageInfo
+from cognity_ai.models import SemanticChunk, PageInfo
 
 class BaseChunker(ABC):
 
@@ -814,7 +814,7 @@ class BaseChunker(ABC):
 
 ### BaseEmbedder
 
-**Module:** `raglib/embedders/base.py`
+**Module:** `cognity-ai/embedders/base.py`
 
 ```python
 from abc import ABC, abstractmethod
@@ -848,11 +848,11 @@ class BaseEmbedder(ABC):
 
 ### BaseVectorStore
 
-**Module:** `raglib/stores/vector/base.py`
+**Module:** `cognity-ai/stores/vector/base.py`
 
 ```python
 from abc import ABC, abstractmethod
-from raglib.models import SemanticChunk, CommunityInfo, RetrievalResult
+from cognity_ai.models import SemanticChunk, CommunityInfo, RetrievalResult
 
 class BaseVectorStore(ABC):
 
@@ -890,7 +890,7 @@ class BaseVectorStore(ABC):
 
 ### BaseGraphStore
 
-**Module:** `raglib/stores/graph/base.py`
+**Module:** `cognity-ai/stores/graph/base.py`
 
 Defines 16 abstract methods covering the full graph lifecycle:
 
@@ -917,7 +917,7 @@ Defines 16 abstract methods covering the full graph lifecycle:
 
 ### BaseGenerator
 
-**Module:** `raglib/generators/base.py`
+**Module:** `cognity-ai/generators/base.py`
 
 ```python
 from abc import ABC, abstractmethod
@@ -934,11 +934,11 @@ class BaseGenerator(ABC):
 
 ### BaseRetriever
 
-**Module:** `raglib/retrievers/base.py`
+**Module:** `cognity-ai/retrievers/base.py`
 
 ```python
 from abc import ABC, abstractmethod
-from raglib.models import RetrievalResult
+from cognity_ai.models import RetrievalResult
 
 class BaseRetriever(ABC):
 
@@ -963,12 +963,12 @@ class BaseRetriever(ABC):
 
 ## 5. PluginRegistry
 
-**Module:** `raglib/registry.py`
+**Module:** `cognity-ai/registry.py`
 
 `PluginRegistry` is a class with only class methods — no instantiation required. It is the shared registry that `RAGLibrary` consults during component construction. Plugins registered on `PluginRegistry` are immediately available to any `RAGLibrary` instance created afterward.
 
 ```python
-from raglib.registry import PluginRegistry
+from cognity_ai.registry import PluginRegistry
 
 PluginRegistry.register_loader(".myext", MyLoader)
 PluginRegistry.register_chunker("my_chunker", MyChunker)
@@ -1000,20 +1000,20 @@ PluginRegistry.register_ocr("my_ocr", MyOCR)
 
 ## 6. Utility Modules
 
-**Module:** `raglib/utils/`
+**Module:** `cognity-ai/utils/`
 
 ---
 
 ### HashStore
 
-**Module:** `raglib/utils/hash.py`
+**Module:** `cognity-ai/utils/hash.py`
 
 #### `content_hash(text) → str`
 
 Compute the SHA-256 hex digest of a UTF-8 string. Used internally to detect unchanged documents and skip re-ingestion.
 
 ```python
-from raglib.utils.hash import content_hash
+from cognity_ai.utils.hash import content_hash
 digest = content_hash("hello world")
 ```
 
@@ -1032,7 +1032,7 @@ JSON-backed persistent store mapping `doc_id → SHA-256 hash`. Used by the inge
 | `all_doc_ids() → set[str]` | Return all doc IDs currently in the store |
 
 ```python
-from raglib.utils.hash import HashStore
+from cognity_ai.utils.hash import HashStore
 
 store = HashStore("./doc_hashes.json")
 store.set("doc1", content_hash("some text"))
@@ -1044,7 +1044,7 @@ store.is_unchanged("doc1", "other text")  # False
 
 ### reciprocal_rank_fusion
 
-**Module:** `raglib/utils/rrf.py`
+**Module:** `cognity-ai/utils/rrf.py`
 
 ```python
 def reciprocal_rank_fusion(
@@ -1071,7 +1071,7 @@ Final scores are the sum across all lists. Results are returned sorted descendin
 | `k` | `int` | `60` | RRF damping constant |
 
 ```python
-from raglib.utils.rrf import reciprocal_rank_fusion
+from cognity_ai.utils.rrf import reciprocal_rank_fusion
 
 fused = reciprocal_rank_fusion(graph_results, vector_results, weights=[0.6, 0.4])
 ```
@@ -1080,7 +1080,7 @@ fused = reciprocal_rank_fusion(graph_results, vector_results, weights=[0.6, 0.4]
 
 ### Token Counter
 
-**Module:** `raglib/utils/token_counter.py`
+**Module:** `cognity-ai/utils/token_counter.py`
 
 #### `estimate_tokens(text, method="word") → int`
 
@@ -1096,7 +1096,7 @@ Split a long string into segments each containing at most `max_tokens` estimated
 
 ## 7. PDF Utilities
 
-**Module:** `raglib/loaders/pdf_utils.py`
+**Module:** `cognity-ai/loaders/pdf_utils.py`
 
 Standalone helper functions for working with PDF files. These are used internally by the PDF loader but are also importable directly.
 
@@ -1110,7 +1110,7 @@ Standalone helper functions for working with PDF files. These are used internall
 | `pdf_to_images` | `(path, dpi=150) → list[bytes]` | Render each page as a JPEG image (for full-page LLM OCR workflows) |
 
 ```python
-from raglib.loaders.pdf_utils import extract_tables, pdf_to_images
+from cognity_ai.loaders.pdf_utils import extract_tables, pdf_to_images
 
 tables = extract_tables("report.pdf")          # list of DataFrames, one per table found
 images = pdf_to_images("report.pdf", dpi=200)  # list of JPEG bytes, one per page
@@ -1155,7 +1155,7 @@ c["pipeline"].ingest(doc_id="d1", text="...")
 answer = c["retriever"].query("What is X?")
 
 # After
-from raglib import RAGLibrary
+from cognity_ai import RAGLibrary
 lib = RAGLibrary(gemini_api_key="...", neo4j_password="...")
 lib.ingest_text("...", doc_id="d1")
 answer = lib.query("What is X?")

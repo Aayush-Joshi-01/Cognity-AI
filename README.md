@@ -1,4 +1,4 @@
-# raglib
+# cognity-ai
 
 **Modular, provider-agnostic RAG library — any LLM, any vector store, any graph DB, any file format.**
 
@@ -18,7 +18,7 @@
 
 ## Overview
 
-`raglib` is a drop-in RAG (Retrieval-Augmented Generation) service for AI agents. It was extracted and redesigned from the original `hybrid_rag` monolith into a fully modular library — every component is swappable at runtime with zero code changes beyond configuration.
+`cognity-ai` is a drop-in RAG (Retrieval-Augmented Generation) service for AI agents. It was extracted and redesigned from the original `hybrid_rag` monolith into a fully modular library — every component is swappable at runtime with zero code changes beyond configuration.
 
 **What makes it different:**
 
@@ -102,7 +102,7 @@ python -m spacy download en_core_web_sm    # lightweight (~12 MB)
 ### Zero-config start
 
 ```python
-from raglib import RAGLibrary
+from cognity_ai import RAGLibrary
 
 rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
 
@@ -186,23 +186,23 @@ rag = RAGLibrary(ocr="anthropic_vision", anthropic_api_key="...")
 
 ## 🎬 Multimodal RAG (Experimental)
 
-raglib includes an experimental `raglib.multimodal` subpackage for Image, Video, and Audio RAG using multimodal embedders.
+cognity-ai includes an experimental `cognity-ai.multimodal` subpackage for Image, Video, and Audio RAG using multimodal embedders.
 
 ### Multimodal Embedders
 
 | Key | Class | Dims | Modalities | Install |
 |---|---|---|---|---|
-| CLIP | `CLIPEmbedder` | 512/768 | Image + Text | `pip install raglib[clip]` |
-| SigLIP | `SigLIPEmbedder` | 768/1024 | Image + Text | `pip install raglib[siglip]` |
+| CLIP | `CLIPEmbedder` | 512/768 | Image + Text | `pip install cognity-ai[clip]` |
+| SigLIP | `SigLIPEmbedder` | 768/1024 | Image + Text | `pip install cognity-ai[siglip]` |
 | ImageBind | `ImageBindEmbedder` | 1024 | Image + Text + Audio + Video | See [ImageBind](https://github.com/facebookresearch/ImageBind) |
-| BLIP-2 | `BLIP2Embedder` | 256 | Image → Caption | `pip install raglib[blip2]` |
+| BLIP-2 | `BLIP2Embedder` | 256 | Image → Caption | `pip install cognity-ai[blip2]` |
 
 ### Image RAG
 
 ```python
-from raglib.multimodal import ImageIngestionPipeline, ImageRetriever
-from raglib.multimodal.embedders import CLIPEmbedder
-from raglib.multimodal.stores import ChromaMultimodalStore
+from cognity_ai.multimodal import ImageIngestionPipeline, ImageRetriever
+from cognity_ai.multimodal.embedders import CLIPEmbedder
+from cognity_ai.multimodal.stores import ChromaMultimodalStore
 
 embedder = CLIPEmbedder()
 store = ChromaMultimodalStore()
@@ -222,10 +222,10 @@ for r in results:
 ### Video RAG
 
 ```python
-from raglib.multimodal import VideoIngestionPipeline, VideoRetriever
-from raglib.multimodal.embedders import CLIPEmbedder
-from raglib.multimodal.transcribers import WhisperLocalTranscriber
-from raglib.multimodal.stores import ChromaMultimodalStore
+from cognity_ai.multimodal import VideoIngestionPipeline, VideoRetriever
+from cognity_ai.multimodal.embedders import CLIPEmbedder
+from cognity_ai.multimodal.transcribers import WhisperLocalTranscriber
+from cognity_ai.multimodal.stores import ChromaMultimodalStore
 
 embedder = CLIPEmbedder()
 transcriber = WhisperLocalTranscriber(model_size="base")
@@ -250,10 +250,10 @@ for r in results:
 ### Audio RAG
 
 ```python
-from raglib.multimodal import AudioIngestionPipeline, AudioRetriever
-from raglib.multimodal.transcribers import WhisperLocalTranscriber
-from raglib.multimodal.stores import ChromaMultimodalStore
-from raglib.embedders import GeminiEmbedder
+from cognity_ai.multimodal import AudioIngestionPipeline, AudioRetriever
+from cognity_ai.multimodal.transcribers import WhisperLocalTranscriber
+from cognity_ai.multimodal.stores import ChromaMultimodalStore
+from cognity_ai.embedders import GeminiEmbedder
 
 transcriber = WhisperLocalTranscriber(model_size="small")
 store = ChromaMultimodalStore()
@@ -273,8 +273,8 @@ results = retriever.retrieve("discussion about machine learning")
 ### Cross-Modal Retrieval (ImageBind)
 
 ```python
-from raglib.multimodal.retrievers import CrossModalRetriever
-from raglib.multimodal.embedders import ImageBindEmbedder
+from cognity_ai.multimodal.retrievers import CrossModalRetriever
+from cognity_ai.multimodal.embedders import ImageBindEmbedder
 
 # Query with text → find relevant images, video clips, AND audio segments
 retriever = CrossModalRetriever(
@@ -290,7 +290,7 @@ results = retriever.retrieve("product launch announcement")
 
 | Provider | Class | Install |
 |---|---|---|
-| Whisper (local) | `WhisperLocalTranscriber` | `pip install raglib[whisper]` |
+| Whisper (local) | `WhisperLocalTranscriber` | `pip install cognity-ai[whisper]` |
 | OpenAI Whisper API | `WhisperAPITranscriber` | `pip install openai` |
 | Google Speech-to-Text | `GoogleSTTTranscriber` | `pip install google-cloud-speech` |
 | AWS Transcribe | `AWSTranscribeTranscriber` | `pip install boto3` |
@@ -298,12 +298,12 @@ results = retriever.retrieve("product launch announcement")
 ### Install
 
 ```bash
-pip install raglib[clip]          # Image RAG with CLIP
-pip install raglib[siglip]        # Image RAG with SigLIP (higher quality)
-pip install raglib[video]         # Video support (frame extraction, scene detection)
-pip install raglib[audio]         # Audio loading
-pip install raglib[whisper]       # Local Whisper transcription
-pip install raglib[multimodal]    # Everything above
+pip install cognity-ai[clip]          # Image RAG with CLIP
+pip install cognity-ai[siglip]        # Image RAG with SigLIP (higher quality)
+pip install cognity-ai[video]         # Video support (frame extraction, scene detection)
+pip install cognity-ai[audio]         # Audio loading
+pip install cognity-ai[whisper]       # Local Whisper transcription
+pip install cognity-ai[multimodal]    # Everything above
 ```
 
 > **Note:** ImageBind requires manual installation. See the [ImageBind GitHub](https://github.com/facebookresearch/ImageBind) for instructions.
@@ -349,7 +349,7 @@ result = rag.query_with_sources("Who founded Anthropic?", method="hybrid_graph")
 | Ollama | `ollama` | Yes | Yes | llama3, mistral, nomic-embed-text (fully local) |
 | SentenceTransformers | `sentence_transformers` | No | Yes | all-MiniLM-L6-v2 (offline, no API key needed) |
 
-> **Note on Anthropic embeddings:** Anthropic does not provide an embedding API. When `llm="anthropic"` and no explicit `embedder` is set, `raglib` automatically falls back to `sentence_transformers` for embeddings.
+> **Note on Anthropic embeddings:** Anthropic does not provide an embedding API. When `llm="anthropic"` and no explicit `embedder` is set, `cognity-ai` automatically falls back to `sentence_transformers` for embeddings.
 
 ---
 
@@ -382,7 +382,7 @@ result = rag.query_with_sources("Who founded Anthropic?", method="hybrid_graph")
 
 ## Knowledge Lifecycle Management
 
-`raglib` tracks confidence scores for every extracted knowledge triple. Use the lifecycle API to manage knowledge quality over time.
+`cognity-ai` tracks confidence scores for every extracted knowledge triple. Use the lifecycle API to manage knowledge quality over time.
 
 ```python
 # Boost confidence for a confirmed, authoritative source
@@ -409,8 +409,8 @@ print(rag.health_report())
 Every component type is pluggable. Register custom implementations at runtime and they become available via their key string, just like built-in providers.
 
 ```python
-from raglib.loaders.base import BaseLoader
-from raglib.models.document import Document
+from cognity_ai.loaders.base import BaseLoader
+from cognity_ai.models.document import Document
 
 class MyLoader(BaseLoader):
     def load(self, path: str) -> list[Document]:
@@ -437,7 +437,7 @@ The same pattern applies to generators, chunkers, extractors, OCR providers, and
 
 ```
 D:\Graph-RAG\
-├── raglib/                        # Main library package
+├── cognity-ai/                        # Main library package
 │   ├── library.py                 # RAGLibrary — the primary public API
 │   ├── factory.py                 # Component wiring + provider auto-fallback logic
 │   ├── registry.py                # Plugin registry for all component types
@@ -545,10 +545,10 @@ c["pipeline"].ingest(doc_id="d1", text="...", source_name="report")
 answer = c["retriever"].query("What is X?")
 ```
 
-**After (raglib):**
+**After (cognity-ai):**
 
 ```python
-from raglib import RAGLibrary
+from cognity_ai import RAGLibrary
 
 rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
 rag.ingest_text("...", doc_id="d1", source_name="report")

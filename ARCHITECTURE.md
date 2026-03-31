@@ -1,6 +1,6 @@
-# Architecture & Design — raglib
+# Architecture & Design — cognity-ai
 
-Deep dive into the design decisions, algorithms, and data flow patterns powering the raglib modular RAG library.
+Deep dive into the design decisions, algorithms, and data flow patterns powering the cognity-ai modular RAG library.
 
 ---
 
@@ -42,7 +42,7 @@ The library is built on three core principles:
 ## 2. Package Structure
 
 ```
-raglib/
+cognity-ai/
 ├── library.py            RAGLibrary — unified public API facade
 ├── factory.py            build_components() + build_retriever() — wires everything from config
 ├── registry.py           PluginRegistry — class-level dicts for all component types
@@ -188,7 +188,7 @@ rag.register_loader(".myext", MyCustomLoader)
 rag.register_embedder("my_embedder", MyEmbedder)
 ```
 
-**Layer 4 — ComponentFactory.** `factory.py`'s `build_components(cfg: LibraryConfig)` reads the string keys from `LibraryConfig` and instantiates the right classes. It uses explicit lazy imports (`from raglib.embedders.gemini import GeminiEmbedder` inside the `if key == "gemini":` branch) so missing optional dependencies raise `ImportError` only at instantiation time, never at module import time.
+**Layer 4 — ComponentFactory.** `factory.py`'s `build_components(cfg: LibraryConfig)` reads the string keys from `LibraryConfig` and instantiates the right classes. It uses explicit lazy imports (`from cognity_ai.embedders.gemini import GeminiEmbedder` inside the `if key == "gemini":` branch) so missing optional dependencies raise `ImportError` only at instantiation time, never at module import time.
 
 ```
 LibraryConfig(embedder="openai", vector_store="qdrant", graph_store="neo4j", llm="anthropic", ...)
@@ -854,7 +854,7 @@ Hash-based skipping means re-running `rag.ingest_dir()` on an unchanged corpus c
 
 ### Zero-Cost Alternatives
 
-- **Lazy imports** — unused providers cost zero import time and zero memory until first use. Installing `raglib` without, e.g., `pinecone-client` is not an error; the `ImportError` only surfaces when `vector_store="pinecone"` is selected.
+- **Lazy imports** — unused providers cost zero import time and zero memory until first use. Installing `cognity-ai` without, e.g., `pinecone-client` is not an error; the `ImportError` only surfaces when `vector_store="pinecone"` is selected.
 - **`graph_store="none"`** — eliminates the Neo4j server requirement entirely. The pipeline runs in pure vector mode.
 - **`graph_store="networkx"`** — in-memory graph, zero infrastructure cost, zero external server. Suitable for small corpora (tens of thousands of entities) where persistence across sessions is not required.
 - **`vector_store="faiss"`** — fastest local vector search, no server required, persists to a local file. Community search is automatically disabled (FAISS has no metadata storage for per-community retrieval).

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stores — raglib API</title>
+  <title>Stores — cognity-ai API</title>
   <meta name="description" content="raglib API reference for vector stores and graph stores — BaseVectorStore, BaseGraphStore, and all provider implementations." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -210,7 +210,7 @@
         <div class="abc-header">
           <div class="abc-title">Abstract Base Class</div>
           <div class="abc-name">BaseVectorStore</div>
-          <div class="abc-import">from raglib.stores.vector import BaseVectorStore</div>
+          <div class="abc-import">from cognity_ai.stores.vector import BaseVectorStore</div>
         </div>
 
         <ul class="method-list">
@@ -315,56 +315,56 @@
               <tr>
                 <td><code>chroma</code> <span class="default-tag">DEFAULT</span></td>
                 <td><code>ChromaStore</code></td>
-                <td><code>raglib[chroma]</code></td>
+                <td><code>cognity-ai[chroma]</code></td>
                 <td>Local persistent</td>
                 <td>Zero setup; best for dev and small corpora.</td>
               </tr>
               <tr>
                 <td><code>qdrant</code></td>
                 <td><code>QdrantStore</code></td>
-                <td><code>raglib[qdrant]</code></td>
+                <td><code>cognity-ai[qdrant]</code></td>
                 <td>Local or cloud</td>
                 <td>Fast, production-ready; named vector support.</td>
               </tr>
               <tr>
                 <td><code>pinecone</code></td>
                 <td><code>PineconeStore</code></td>
-                <td><code>raglib[pinecone]</code></td>
+                <td><code>cognity-ai[pinecone]</code></td>
                 <td>Cloud-only</td>
                 <td>Fully managed; serverless tier available.</td>
               </tr>
               <tr>
                 <td><code>faiss</code></td>
                 <td><code>FAISSStore</code></td>
-                <td><code>raglib[faiss]</code></td>
+                <td><code>cognity-ai[faiss]</code></td>
                 <td>Local in-memory / disk</td>
                 <td>Fastest local option. Community search disabled — no metadata store. Use with <code>naive</code> or <code>vector_only</code> retrievers.</td>
               </tr>
               <tr>
                 <td><code>weaviate</code></td>
                 <td><code>WeaviateStore</code></td>
-                <td><code>raglib[weaviate]</code></td>
+                <td><code>cognity-ai[weaviate]</code></td>
                 <td>Local or cloud</td>
                 <td>Built-in hybrid BM25 + vector search.</td>
               </tr>
               <tr>
                 <td><code>milvus</code></td>
                 <td><code>MilvusStore</code></td>
-                <td><code>raglib[milvus]</code></td>
+                <td><code>cognity-ai[milvus]</code></td>
                 <td>Local or Zilliz cloud</td>
                 <td>Enterprise scale; GPU index support.</td>
               </tr>
               <tr>
                 <td><code>pgvector</code></td>
                 <td><code>PgVectorStore</code></td>
-                <td><code>raglib[pgvector]</code></td>
+                <td><code>cognity-ai[pgvector]</code></td>
                 <td>PostgreSQL extension</td>
                 <td>SQL + vector in one database; uses <code>asyncpg</code>.</td>
               </tr>
               <tr>
                 <td><code>azure_search</code></td>
                 <td><code>AzureSearchStore</code></td>
-                <td><code>raglib[azure-search]</code></td>
+                <td><code>cognity-ai[azure-search]</code></td>
                 <td>Azure cloud</td>
                 <td>Azure Cognitive Search; suited for Azure enterprise environments.</td>
               </tr>
@@ -401,7 +401,7 @@
         <div class="abc-header">
           <div class="abc-title">Abstract Base Class</div>
           <div class="abc-name">BaseGraphStore</div>
-          <div class="abc-import">from raglib.stores.graph import BaseGraphStore</div>
+          <div class="abc-import">from cognity_ai.stores.graph import BaseGraphStore</div>
         </div>
 
         <ul class="method-list">
@@ -533,35 +533,35 @@
               <tr>
                 <td><code>neo4j</code> <span class="default-tag">DEFAULT</span></td>
                 <td><code>Neo4jStore</code></td>
-                <td><code>raglib[neo4j]</code></td>
+                <td><code>cognity-ai[neo4j]</code></td>
                 <td>Dedicated graph DB</td>
                 <td>Full GDS (Leiden communities) and APOC support. Recommended for production.</td>
               </tr>
               <tr>
                 <td><code>microsoft_graphrag</code></td>
                 <td><code>MicrosoftGraphRAGStore</code></td>
-                <td><code>raglib[microsoft-graphrag]</code></td>
+                <td><code>cognity-ai[microsoft-graphrag]</code></td>
                 <td>Wraps ms/graphrag</td>
                 <td>Official Microsoft GraphRAG local and global search. Requires <code>graphrag&gt;=0.3.0</code>.</td>
               </tr>
               <tr>
                 <td><code>memgraph</code></td>
                 <td><code>MemgraphStore</code></td>
-                <td><code>raglib[memgraph]</code></td>
+                <td><code>cognity-ai[memgraph]</code></td>
                 <td>Open-source graph</td>
                 <td>Neo4j-compatible Cypher dialect; supports in-memory mode for testing.</td>
               </tr>
               <tr>
                 <td><code>arangodb</code></td>
                 <td><code>ArangoDBStore</code></td>
-                <td><code>raglib[arangodb]</code></td>
+                <td><code>cognity-ai[arangodb]</code></td>
                 <td>Multi-model graph</td>
                 <td>AQL queries; graph and document storage in a single database.</td>
               </tr>
               <tr>
                 <td><code>networkx</code></td>
                 <td><code>NetworkXStore</code></td>
-                <td><code>raglib[networkx]</code></td>
+                <td><code>cognity-ai[networkx]</code></td>
                 <td>In-memory Python</td>
                 <td>Zero external dependencies. Community detection disabled. Use for testing and small corpora only.</td>
               </tr>

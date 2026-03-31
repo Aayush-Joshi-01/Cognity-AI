@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OCR — cognity-ai API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --border: #30363d; --border-light: #21262d;
+      --text: #e6edf3; --text-muted: #7d8590; --text-dim: #484f58;
+      --accent: #58a6ff; --accent-2: #bc8cff; --accent-3: #3fb950;
+      --accent-4: #f78166; --accent-5: #ffa657; --accent-6: #79c0ff;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(12px); }
+    .nav-inner { display: flex; align-items: center; gap: 32px; height: 60px; }
+    .nav-logo { font-weight: 700; font-size: 17px; color: var(--text); letter-spacing: -.3px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; margin-left: auto; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav-links a:hover, .nav-links a.nav-active { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+
+    .page-layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; padding: 48px 0 80px; align-items: start; }
+    @media (max-width: 900px) { .page-layout { grid-template-columns: 1fr; } .toc { display: none; } }
+
+    .toc { position: sticky; top: 80px; }
+    .toc-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-bottom: 12px; }
+    .toc-links { display: flex; flex-direction: column; gap: 4px; }
+    .toc-links a { font-size: 13px; color: var(--text-muted); padding: 3px 8px; border-radius: var(--radius-sm); transition: all .15s; border-left: 2px solid transparent; }
+    .toc-links a:hover { color: var(--text); text-decoration: none; }
+    .toc-links a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,.06); }
+    .toc-links a.sub { padding-left: 20px; font-size: 12px; }
+
+    .content { min-width: 0; }
+    .page-header { margin-bottom: 48px; }
+    .breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+    .breadcrumb a { color: var(--text-muted); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .page-title { font-size: 36px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 12px; }
+    .page-subtitle { color: var(--text-muted); font-size: 17px; }
+
+    section { margin-bottom: 60px; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); scroll-margin-top: 80px; }
+    h3 { font-size: 17px; font-weight: 600; margin: 28px 0 12px; color: var(--accent-6); }
+    p { color: var(--text-muted); margin-bottom: 16px; }
+
+    pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; margin: 16px 0 24px; }
+    code { font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--text); }
+    :not(pre) > code { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: 4px; padding: 2px 6px; font-size: 12.5px; color: var(--accent-6); }
+
+    .table-wrap { overflow-x: auto; margin: 16px 0 28px; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-card); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); font-size: 13.5px; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td code { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 5px; font-size: 12px; color: var(--accent-6); }
+
+    /* Fallback chain */
+    .fallback-chain { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin: 24px 0 32px; }
+    .chain-node { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 14px; min-width: 340px; position: relative; }
+    .chain-node.default { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(88,166,255,.15); }
+    .chain-node.fallback { opacity: .8; }
+    .chain-node.local { border-color: var(--accent-3); }
+    .chain-arrow { color: var(--text-dim); font-size: 20px; padding: 4px 0 4px 20px; }
+    .chain-key { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); min-width: 160px; }
+    .chain-label { font-size: 13px; color: var(--text-muted); }
+    .badge { border-radius: 20px; font-size: 11px; font-weight: 600; padding: 2px 8px; white-space: nowrap; }
+    .badge-default { background: rgba(88,166,255,.15); color: var(--accent); border: 1px solid rgba(88,166,255,.3); }
+    .badge-local { background: rgba(63,185,80,.15); color: var(--accent-3); border: 1px solid rgba(63,185,80,.3); }
+    .badge-api { background: rgba(188,140,255,.1); color: var(--accent-2); border: 1px solid rgba(188,140,255,.25); }
+
+    /* Provider cards */
+    .provider-grid { display: grid; gap: 16px; margin-top: 20px; }
+    .provider-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .provider-card.default { border-color: rgba(88,166,255,.4); }
+    .provider-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .provider-key { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); }
+    .provider-class { font-size: 13px; color: var(--text-muted); font-family: var(--mono); }
+    .provider-install { font-family: var(--mono); font-size: 12px; background: var(--bg-code); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 2px 8px; color: var(--accent-5); margin-left: auto; }
+    .provider-desc { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+    .note { background: rgba(88,166,255,.07); border: 1px solid rgba(88,166,255,.2); border-radius: var(--radius); padding: 16px 20px; margin: 20px 0; font-size: 14px; color: var(--text-muted); }
+    .note strong { color: var(--accent); }
+    .warn { background: rgba(247,129,102,.07); border: 1px solid rgba(247,129,102,.2); border-radius: var(--radius); padding: 16px 20px; margin: 20px 0; font-size: 14px; color: var(--text-muted); }
+    .warn strong { color: var(--accent-4); }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0; margin-top: 64px; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); font-size: 13px; }
+    .footer-links a:hover { color: var(--accent); text-decoration: none; }
+    .footer-copy { color: var(--text-dim); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none"><span>cognity</span>-ai</a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-layout">
+    <aside class="toc">
+      <div class="toc-title">On this page</div>
+      <nav class="toc-links">
+        <a href="#base">BaseOCR ABC</a>
+        <a href="#fallback">Fallback Chain</a>
+        <a href="#providers">Providers</a>
+        <a href="#gemini-vision" class="sub">gemini_vision</a>
+        <a href="#openai-vision" class="sub">openai_vision</a>
+        <a href="#anthropic-vision" class="sub">anthropic_vision</a>
+        <a href="#azure-vision" class="sub">azure_vision</a>
+        <a href="#bedrock-vision" class="sub">bedrock_vision</a>
+        <a href="#tesseract" class="sub">tesseract</a>
+        <a href="#table">Provider Table</a>
+        <a href="#image-pipeline">Image Pipeline</a>
+        <a href="#config">Configuration</a>
+        <a href="#direct">Direct Usage</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="page-header">
+        <div class="breadcrumb"><a href="index.html">API Reference</a> › OCR</div>
+        <h1 class="page-title">OCR</h1>
+        <p class="page-subtitle">Optical Character Recognition providers — extract text from images using multimodal LLMs or local Tesseract.</p>
+      </div>
+
+      <section id="base">
+        <h2>BaseOCR ABC</h2>
+        <p>All OCR providers implement <code>BaseOCR</code>. LLM-based providers set <code>supports_multimodal = True</code>, enabling richer understanding of charts, tables, and handwriting.</p>
+        <pre><code>from abc import ABC, abstractmethod
+from pathlib import Path
+
+class BaseOCR(ABC):
+    @abstractmethod
+    def ocr(self, image: str | bytes | Path) -> str:
+        """
+        Extract text from an image.
+
+        Args:
+            image: File path (str or Path) or raw image bytes.
+
+        Returns:
+            Extracted text as a string.
+        """
+        ...
+
+    @property
+    def supports_multimodal(self) -> bool:
+        """True for LLM-based providers that understand layout, tables, charts."""
+        return False</code></pre>
+      </section>
+
+      <section id="fallback">
+        <h2>Fallback Chain</h2>
+        <p>The <code>OCRFactory</code> selects the best available provider at init time. If the primary provider's API key is missing or unavailable, it automatically falls back:</p>
+
+        <div class="fallback-chain">
+          <div class="chain-node default">
+            <span class="chain-key">gemini_vision</span>
+            <span class="chain-label">Gemini 2.0 Flash multimodal</span>
+            <span class="badge badge-default">DEFAULT</span>
+          </div>
+          <div class="chain-arrow">↓ if unavailable</div>
+          <div class="chain-node fallback">
+            <span class="chain-key">openai_vision</span>
+            <span class="chain-label">GPT-4o vision</span>
+            <span class="badge badge-api">API</span>
+          </div>
+          <div class="chain-arrow">↓ if unavailable</div>
+          <div class="chain-node fallback">
+            <span class="chain-key">anthropic_vision</span>
+            <span class="chain-label">Claude 3.5 Sonnet vision</span>
+            <span class="badge badge-api">API</span>
+          </div>
+          <div class="chain-arrow">↓ if unavailable</div>
+          <div class="chain-node local">
+            <span class="chain-key">tesseract</span>
+            <span class="chain-label">Local pytesseract (always available if installed)</span>
+            <span class="badge badge-local">LOCAL</span>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Note:</strong> You can pin a specific provider with <code>ocr="tesseract"</code> (or any key) in the RAGLibrary constructor to skip auto-detection entirely.
+        </div>
+      </section>
+
+      <section id="providers">
+        <h2>Providers</h2>
+
+        <div class="provider-grid">
+
+          <div class="provider-card default" id="gemini-vision">
+            <div class="provider-header">
+              <span class="provider-key">gemini_vision</span>
+              <span class="provider-class">GeminiVisionOCR</span>
+              <span class="badge badge-default">DEFAULT</span>
+              <span class="provider-install">cognity-ai[gemini]</span>
+            </div>
+            <p class="provider-desc">Uses Gemini 2.0 Flash's multimodal capability to read images. Excellent at complex layouts, multi-column text, tables, charts, handwriting, and mixed-language content. Free tier available with Google AI Studio key.</p>
+          </div>
+
+          <div class="provider-card" id="openai-vision">
+            <div class="provider-header">
+              <span class="provider-key">openai_vision</span>
+              <span class="provider-class">OpenAIVisionOCR</span>
+              <span class="badge badge-api">API</span>
+              <span class="provider-install">cognity-ai[openai]</span>
+            </div>
+            <p class="provider-desc">Uses GPT-4o vision. High accuracy on structured documents, forms, and printed text. Also handles diagrams and technical figures well.</p>
+          </div>
+
+          <div class="provider-card" id="anthropic-vision">
+            <div class="provider-header">
+              <span class="provider-key">anthropic_vision</span>
+              <span class="provider-class">AnthropicVisionOCR</span>
+              <span class="badge badge-api">API</span>
+              <span class="provider-install">cognity-ai[anthropic]</span>
+            </div>
+            <p class="provider-desc">Uses Claude 3.5 Sonnet vision. Strong at document understanding with contextual awareness — particularly good at preserving semantic structure (headings, lists, captions).</p>
+          </div>
+
+          <div class="provider-card" id="azure-vision">
+            <div class="provider-header">
+              <span class="provider-key">azure_vision</span>
+              <span class="provider-class">AzureVisionOCR</span>
+              <span class="badge badge-api">API</span>
+              <span class="provider-install">cognity-ai[azure]</span>
+            </div>
+            <p class="provider-desc">Uses Azure OpenAI GPT-4o vision endpoint. Identical model quality to <code>openai_vision</code> but routed through your Azure subscription — preferred for enterprise Azure environments with data residency requirements.</p>
+          </div>
+
+          <div class="provider-card" id="bedrock-vision">
+            <div class="provider-header">
+              <span class="provider-key">bedrock_vision</span>
+              <span class="provider-class">BedrockVisionOCR</span>
+              <span class="badge badge-api">API</span>
+              <span class="provider-install">cognity-ai[bedrock]</span>
+            </div>
+            <p class="provider-desc">Uses Claude via AWS Bedrock multimodal API. Uses IAM credentials — no explicit API key needed. Best for AWS-native deployments where all traffic must stay within AWS.</p>
+          </div>
+
+          <div class="provider-card" id="tesseract">
+            <div class="provider-header">
+              <span class="provider-key">tesseract</span>
+              <span class="provider-class">TesseractOCR</span>
+              <span class="badge badge-local">LOCAL</span>
+              <span class="provider-install">cognity-ai[ocr-local]</span>
+            </div>
+            <p class="provider-desc">Local OCR using pytesseract (wrapper for the Tesseract engine). No API required — fully offline. Best accuracy on clean, printed text. Struggles with complex layouts, handwriting, or low-resolution scans. Requires Tesseract system binary.</p>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="table">
+        <h2>Provider Table</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Key</th><th>Class</th><th>Install</th><th>Method</th><th>Offline?</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>gemini_vision</code></td>
+                <td><code>GeminiVisionOCR</code></td>
+                <td><code>cognity-ai[gemini]</code></td>
+                <td>Gemini 2.0 Flash multimodal</td>
+                <td>No</td>
+                <td>Complex layouts, tables, handwriting</td>
+              </tr>
+              <tr>
+                <td><code>openai_vision</code></td>
+                <td><code>OpenAIVisionOCR</code></td>
+                <td><code>cognity-ai[openai]</code></td>
+                <td>GPT-4o vision</td>
+                <td>No</td>
+                <td>High accuracy, structured forms</td>
+              </tr>
+              <tr>
+                <td><code>anthropic_vision</code></td>
+                <td><code>AnthropicVisionOCR</code></td>
+                <td><code>cognity-ai[anthropic]</code></td>
+                <td>Claude 3.5 Sonnet vision</td>
+                <td>No</td>
+                <td>Document understanding, context-aware</td>
+              </tr>
+              <tr>
+                <td><code>azure_vision</code></td>
+                <td><code>AzureVisionOCR</code></td>
+                <td><code>cognity-ai[azure]</code></td>
+                <td>Azure GPT-4o vision</td>
+                <td>No</td>
+                <td>Enterprise Azure, data residency</td>
+              </tr>
+              <tr>
+                <td><code>bedrock_vision</code></td>
+                <td><code>BedrockVisionOCR</code></td>
+                <td><code>cognity-ai[bedrock]</code></td>
+                <td>AWS Bedrock Claude multimodal</td>
+                <td>No</td>
+                <td>AWS-native, IAM-based auth</td>
+              </tr>
+              <tr>
+                <td><code>tesseract</code></td>
+                <td><code>TesseractOCR</code></td>
+                <td><code>cognity-ai[ocr-local]</code></td>
+                <td>pytesseract (local)</td>
+                <td><strong style="color:var(--accent-3)">Yes</strong></td>
+                <td>No API, fully offline, printed text</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="image-pipeline">
+        <h2>Image Pipeline</h2>
+        <p>OCR is triggered in two scenarios:</p>
+        <h3>1. Direct image ingestion</h3>
+        <p>When you call <code>rag.ingest("photo.jpg")</code>, the <code>ImageLoader</code> routes the file through the configured OCR provider. The extracted text becomes the document's content and flows into the normal chunking + embedding pipeline.</p>
+        <pre><code># Ingest images directly
+rag.ingest("scanned_invoice.png")
+rag.ingest("whiteboard_photo.jpg")
+rag.ingest("receipt.webp")
+
+# Batch ingest a folder with mixed formats
+rag.ingest_dir("./uploads/")  # handles .jpg, .png, .pdf, .docx, etc.</code></pre>
+
+        <h3>2. Embedded images in documents</h3>
+        <p>When PDF, DOCX, or PPTX loaders extract embedded images, the OCR subsystem processes each one and injects the resulting text back into the document at the image's position:</p>
+        <pre><code># The pipeline handles this automatically
+rag.ingest("report_with_charts.pdf")
+# ↳ PdfLoader extracts text + embedded image bytes
+# ↳ Each image → OCRFactory → extracted text
+# ↳ OCR text injected at image position in document
+# ↳ Full text (original + OCR) → chunker → embedder → stores</code></pre>
+
+        <div class="note">
+          <strong>Supported image formats:</strong> <code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>, <code>.bmp</code>, <code>.tiff</code>, <code>.webp</code>, <code>.gif</code>
+        </div>
+      </section>
+
+      <section id="config">
+        <h2>Configuration</h2>
+        <pre><code>from cognity_ai import RAGLibrary
+
+# Use Gemini Vision (default — needs GEMINI_API_KEY or explicit key)
+rag = RAGLibrary(ocr="gemini_vision", gemini_api_key="AIza...")
+
+# Use Claude Vision
+rag = RAGLibrary(ocr="anthropic_vision", anthropic_api_key="sk-ant-...")
+
+# Use GPT-4o vision
+rag = RAGLibrary(ocr="openai_vision", openai_api_key="sk-...")
+
+# Fully offline — no API calls for OCR
+rag = RAGLibrary(ocr="tesseract")
+# Requires: pip install cognity-ai[ocr-local]
+# Requires Tesseract binary:
+#   Ubuntu/Debian: sudo apt install tesseract-ocr
+#   macOS:         brew install tesseract
+#   Windows:       https://github.com/UB-Mannheim/tesseract/wiki
+
+# AWS Bedrock (uses boto3 credential chain)
+rag = RAGLibrary(ocr="bedrock_vision", aws_region="us-east-1")
+
+# Azure OpenAI Vision
+from cognity_ai.config import LibraryConfig, AzureOpenAIConfig
+config = LibraryConfig(
+    ocr="azure_vision",
+    azure_openai=AzureOpenAIConfig(
+        endpoint="https://myinstance.openai.azure.com/",
+        api_key="...",
+        deployment_name="gpt-4o",
+    ),
+)
+rag = RAGLibrary(config=config)</code></pre>
+      </section>
+
+      <section id="direct">
+        <h2>Direct Usage</h2>
+        <p>Use OCR providers directly without <code>RAGLibrary</code>:</p>
+        <pre><code>from cognity_ai.ocr import GeminiVisionOCR, TesseractOCR
+from cognity_ai.ocr.factory import OCRFactory
+from pathlib import Path
+
+# Direct provider
+ocr = GeminiVisionOCR(api_key="AIza...")
+text = ocr.ocr("invoice.jpg")           # file path string
+text = ocr.ocr(Path("scan.png"))        # Path object
+text = ocr.ocr(image_bytes)             # bytes also accepted
+print(ocr.supports_multimodal)          # True
+
+# Local Tesseract
+ocr = TesseractOCR(lang="eng")
+text = ocr.ocr("document.tiff")
+print(ocr.supports_multimodal)          # False
+
+# Auto-select best available
+factory = OCRFactory(
+    gemini_api_key="AIza...",           # will be tried first
+    openai_api_key=None,                # skipped — no key
+)
+ocr = factory.get_ocr()                 # returns GeminiVisionOCR
+text = ocr.ocr("photo.jpg")</code></pre>
+
+        <div class="warn">
+          <strong>Tesseract binary required:</strong> <code>pip install cognity-ai[ocr-local]</code> installs pytesseract (Python wrapper) but you must also install the Tesseract system binary separately. Without the binary, <code>TesseractOCR</code> will raise a <code>TesseractNotFoundError</code>.
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+    <span class="footer-copy">cognity-ai v2.0.0 — MIT License</span>
+  </div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('.toc-links a');
+  const sections = Array.from(tocLinks).map(l => {
+    const id = l.getAttribute('href').replace('#', '');
+    return document.getElementById(id);
+  }).filter(Boolean);
+  window.addEventListener('scroll', () => {
+    let current = null;
+    for (const s of sections) {
+      if (window.scrollY >= s.offsetTop - 100) current = s;
+    }
+    tocLinks.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + (current && current.id));
+    });
+  }, { passive: true });
+</script>
+</body>
+</html>

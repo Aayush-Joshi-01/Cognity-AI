@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrievers — cognity-ai API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg-card: #161b22; --bg-code: #1c2128;
+      --border: #30363d; --border-light: #21262d;
+      --text: #e6edf3; --text-muted: #7d8590; --text-dim: #484f58;
+      --accent: #58a6ff; --accent-2: #bc8cff; --accent-3: #3fb950;
+      --accent-4: #f78166; --accent-5: #ffa657; --accent-6: #79c0ff;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(12px); }
+    .nav-inner { display: flex; align-items: center; gap: 32px; height: 60px; }
+    .nav-logo { font-weight: 700; font-size: 17px; color: var(--text); letter-spacing: -.3px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; margin-left: auto; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav-links a:hover, .nav-links a.nav-active { color: var(--text); text-decoration: none; }
+    .nav-links a.nav-active { color: var(--accent); }
+
+    .page-layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; padding: 48px 0 80px; align-items: start; }
+    @media (max-width: 900px) { .page-layout { grid-template-columns: 1fr; } .toc { display: none; } }
+
+    .toc { position: sticky; top: 80px; }
+    .toc-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-bottom: 12px; }
+    .toc-links { display: flex; flex-direction: column; gap: 4px; }
+    .toc-links a { font-size: 13px; color: var(--text-muted); padding: 3px 8px; border-radius: var(--radius-sm); transition: all .15s; border-left: 2px solid transparent; }
+    .toc-links a:hover { color: var(--text); text-decoration: none; }
+    .toc-links a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,.06); }
+    .toc-links a.sub { padding-left: 20px; font-size: 12px; }
+
+    .content { min-width: 0; }
+    .page-header { margin-bottom: 48px; }
+    .breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+    .breadcrumb a { color: var(--text-muted); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .page-title { font-size: 36px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 12px; }
+    .page-subtitle { color: var(--text-muted); font-size: 17px; }
+
+    section { margin-bottom: 60px; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); scroll-margin-top: 80px; }
+    h3 { font-size: 17px; font-weight: 600; margin: 28px 0 12px; color: var(--accent-6); }
+    p { color: var(--text-muted); margin-bottom: 16px; }
+    ul { color: var(--text-muted); padding-left: 20px; margin-bottom: 16px; }
+    ul li { margin-bottom: 6px; }
+
+    pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; margin: 16px 0 24px; }
+    code { font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--text); }
+    :not(pre) > code { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: 4px; padding: 2px 6px; font-size: 12.5px; color: var(--accent-6); }
+
+    .table-wrap { overflow-x: auto; margin: 16px 0 28px; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--bg-card); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); font-size: 13.5px; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td code { background: var(--bg-code); border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 5px; font-size: 12px; color: var(--accent-6); }
+
+    /* Retriever cards */
+    .retriever-grid { display: grid; gap: 20px; margin-top: 24px; }
+    .retriever-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .retriever-card.default { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(88,166,255,.1); }
+    .retriever-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .retriever-key { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent); background: rgba(88,166,255,.1); padding: 3px 10px; border-radius: var(--radius-sm); }
+    .retriever-class { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+    .badge { border-radius: 20px; font-size: 11px; font-weight: 600; padding: 2px 8px; }
+    .badge-default { background: rgba(63,185,80,.15); color: var(--accent-3); border: 1px solid rgba(63,185,80,.3); }
+    .badge-optin { background: rgba(255,166,87,.1); color: var(--accent-5); border: 1px solid rgba(255,166,87,.25); }
+    .retriever-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 0; }
+
+    /* 4-channel diagram */
+    .channel-diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0 24px; }
+    @media (max-width: 700px) { .channel-diagram { grid-template-columns: 1fr; } }
+    .channel { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .channel-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin-bottom: 6px; }
+    .channel-name { font-weight: 600; color: var(--text); margin-bottom: 4px; font-size: 14px; }
+    .channel-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* Fallback boxes */
+    .fallback-list { display: flex; flex-direction: column; gap: 10px; margin: 16px 0 24px; }
+    .fallback-item { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 14px; color: var(--text-muted); }
+    .fallback-item strong { color: var(--accent-4); }
+    .fallback-arrow { color: var(--accent-3); font-weight: 600; }
+
+    .note { background: rgba(88,166,255,.07); border: 1px solid rgba(88,166,255,.2); border-radius: var(--radius); padding: 16px 20px; margin: 20px 0; font-size: 14px; color: var(--text-muted); }
+    .note strong { color: var(--accent); }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0; margin-top: 64px; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); font-size: 13px; }
+    .footer-links a:hover { color: var(--accent); text-decoration: none; }
+    .footer-copy { color: var(--text-dim); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="../index.html" class="nav-logo" style="text-decoration:none"><span>cognity</span>-ai</a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html" class="nav-active">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-layout">
+    <aside class="toc">
+      <div class="toc-title">On this page</div>
+      <nav class="toc-links">
+        <a href="#base">BaseRetriever ABC</a>
+        <a href="#overview">Overview Table</a>
+        <a href="#methodologies">Methodologies</a>
+        <a href="#hybrid-graph" class="sub">hybrid_graph</a>
+        <a href="#naive" class="sub">naive</a>
+        <a href="#vector-only" class="sub">vector_only</a>
+        <a href="#graph-only" class="sub">graph_only</a>
+        <a href="#parent-child" class="sub">parent_child</a>
+        <a href="#multi-query" class="sub">multi_query</a>
+        <a href="#ms-graphrag" class="sub">microsoft_graphrag</a>
+        <a href="#adaptive" class="sub">adaptive</a>
+        <a href="#fallback">Auto-Fallback Logic</a>
+        <a href="#override">Per-Query Override</a>
+        <a href="#direct">Direct Usage</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="page-header">
+        <div class="breadcrumb"><a href="index.html">API Reference</a> › Retrievers</div>
+        <h1 class="page-title">Retrievers</h1>
+        <p class="page-subtitle">RAG retrieval methodologies — choose how relevant chunks are found for each query.</p>
+      </div>
+
+      <section id="base">
+        <h2>BaseRetriever ABC</h2>
+        <p>All retrievers implement <code>BaseRetriever</code>. The <code>retrieve()</code> method returns raw results; <code>query()</code> and <code>query_with_sources()</code> also run the generator.</p>
+        <pre><code>from abc import ABC, abstractmethod
+from cognity_ai.models import RetrievalResult
+
+class BaseRetriever(ABC):
+    @abstractmethod
+    def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
+        """Return ranked list of relevant chunks — no answer generation."""
+        ...
+
+    def query(self, question: str, top_k: int = 10) -> str:
+        """Retrieve context + generate a natural-language answer."""
+        ...
+
+    def query_with_sources(
+        self, question: str, top_k: int = 10
+    ) -> dict:
+        """
+        Returns:
+            {
+              "answer":  str,
+              "sources": list[dict],          # doc_id, page, score
+              "chunks":  list[RetrievalResult]
+            }
+        """
+        ...</code></pre>
+
+        <pre><code>from cognity_ai.models import RetrievalResult
+
+@dataclass
+class RetrievalResult:
+    chunk_id: str
+    doc_id: str
+    text: str
+    score: float             # relevance score (higher = more relevant)
+    metadata: dict           # page_number, section, source_path, etc.
+    retrieval_channel: str   # "vector" | "graph" | "community" | "bridge"</code></pre>
+      </section>
+
+      <section id="overview">
+        <h2>Overview Table</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Key</th><th>Requires</th><th>Default?</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>hybrid_graph</code></td>
+                <td>Graph store + vector store</td>
+                <td><span style="color:var(--accent-3);font-weight:600">YES (graph available)</span></td>
+                <td>Multi-hop reasoning, entity-rich knowledge bases</td>
+              </tr>
+              <tr>
+                <td><code>naive</code></td>
+                <td>Vector store only</td>
+                <td><span style="color:var(--accent-3);font-weight:600">YES (no graph)</span></td>
+                <td>Quick setup, unstructured documents</td>
+              </tr>
+              <tr>
+                <td><code>vector_only</code></td>
+                <td>Vector store only</td>
+                <td>Opt-in</td>
+                <td>Pure semantic similarity search</td>
+              </tr>
+              <tr>
+                <td><code>graph_only</code></td>
+                <td>Graph store only</td>
+                <td>Opt-in</td>
+                <td>Graph-centric structured queries</td>
+              </tr>
+              <tr>
+                <td><code>parent_child</code></td>
+                <td>Vector store + ParentChildChunker</td>
+                <td>Opt-in</td>
+                <td>Long documents, context preservation</td>
+              </tr>
+              <tr>
+                <td><code>multi_query</code></td>
+                <td>Vector store + LLM</td>
+                <td>Opt-in</td>
+                <td>Complex or ambiguous questions</td>
+              </tr>
+              <tr>
+                <td><code>microsoft_graphrag</code></td>
+                <td>MS GraphRAG store</td>
+                <td>Opt-in</td>
+                <td>MS-style global/local graph search</td>
+              </tr>
+              <tr>
+                <td><code>adaptive</code></td>
+                <td>All (uses subset per query)</td>
+                <td>Opt-in</td>
+                <td>Unknown query type, general-purpose routing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="methodologies">
+        <h2>Methodologies</h2>
+        <div class="retriever-grid">
+
+          <div class="retriever-card default" id="hybrid-graph">
+            <div class="retriever-header">
+              <span class="retriever-key">hybrid_graph</span>
+              <span class="retriever-class">HybridGraphRetriever</span>
+              <span class="badge badge-default">DEFAULT (graph)</span>
+            </div>
+            <p class="retriever-desc">The flagship retriever. Runs 4 independent retrieval channels in parallel and fuses results with Reciprocal Rank Fusion (RRF). Requires a graph store (Neo4j, Memgraph, etc.).</p>
+
+            <div class="channel-diagram">
+              <div class="channel">
+                <div class="channel-num">Channel 1</div>
+                <div class="channel-name">Vector</div>
+                <div class="channel-desc">Top-k semantic similarity search over all chunks</div>
+              </div>
+              <div class="channel">
+                <div class="channel-num">Channel 2</div>
+                <div class="channel-name">Graph Subgraph</div>
+                <div class="channel-desc">Extract named entities from query → traverse 2-hop neighborhood in knowledge graph</div>
+              </div>
+              <div class="channel">
+                <div class="channel-num">Channel 3</div>
+                <div class="channel-name">Community</div>
+                <div class="channel-desc">Embed query → search community summary vectors (global thematic context)</div>
+              </div>
+              <div class="channel">
+                <div class="channel-num">Channel 4</div>
+                <div class="channel-name">Bridge</div>
+                <div class="channel-desc">Fetch chunks linked to entities found in CH2 (bridges graph ↔ vector)</div>
+              </div>
+            </div>
+
+            <p class="retriever-desc">Config: <code>top_k_per_channel=10</code>, <code>rrf_k=60</code>, <code>graph_hops=2</code></p>
+          </div>
+
+          <div class="retriever-card default" id="naive">
+            <div class="retriever-header">
+              <span class="retriever-key">naive</span>
+              <span class="retriever-class">NaiveRetriever</span>
+              <span class="badge badge-default">DEFAULT (no graph)</span>
+            </div>
+            <p class="retriever-desc">Pure embedding similarity search — single-channel vector retrieval. The fastest and simplest option. No graph store required. Auto-selected when no graph store is configured or available.</p>
+          </div>
+
+          <div class="retriever-card" id="vector-only">
+            <div class="retriever-header">
+              <span class="retriever-key">vector_only</span>
+              <span class="retriever-class">VectorOnlyRetriever</span>
+              <span class="badge badge-optin">Opt-in</span>
+            </div>
+            <p class="retriever-desc">Identical to <code>naive</code> but explicitly forces vector-only retrieval even when a graph store is configured. Use when you want the speed of vector search while keeping the graph store available for other operations.</p>
+          </div>
+
+          <div class="retriever-card" id="graph-only">
+            <div class="retriever-header">
+              <span class="retriever-key">graph_only</span>
+              <span class="retriever-class">GraphOnlyRetriever</span>
+              <span class="badge badge-optin">Opt-in</span>
+            </div>
+            <p class="retriever-desc">Graph traversal only — no vector search. Extracts entities from the query, traverses the knowledge graph, and returns linked chunks. Best for entity-lookup questions like "What did Company X acquire?" where graph structure is the answer.</p>
+          </div>
+
+          <div class="retriever-card" id="parent-child">
+            <div class="retriever-header">
+              <span class="retriever-key">parent_child</span>
+              <span class="retriever-class">ParentChildRetriever</span>
+              <span class="badge badge-optin">Opt-in</span>
+            </div>
+            <p class="retriever-desc">Small child chunks are retrieved by embedding similarity (precise match), then the corresponding large parent chunks are returned as context to the LLM. Best for long documents where you need pinpoint retrieval but broad surrounding context. Requires ingestion with <code>chunker="parent_child"</code>.</p>
+            <pre><code># Must pair chunker + retriever
+rag = RAGLibrary(chunker="parent_child", rag_method="parent_child")</code></pre>
+          </div>
+
+          <div class="retriever-card" id="multi-query">
+            <div class="retriever-header">
+              <span class="retriever-key">multi_query</span>
+              <span class="retriever-class">MultiQueryRetriever</span>
+              <span class="badge badge-optin">Opt-in</span>
+            </div>
+            <p class="retriever-desc">Generates N rephrased query variants using the LLM, runs vector retrieval for each, deduplicates results, and re-ranks. Significantly improves recall for ambiguous, multi-faceted, or poorly-worded questions. Slower due to multiple retrieval + LLM calls.</p>
+            <p class="retriever-desc">Config: <code>n_queries=3</code>, <code>dedup_threshold=0.95</code></p>
+          </div>
+
+          <div class="retriever-card" id="ms-graphrag">
+            <div class="retriever-header">
+              <span class="retriever-key">microsoft_graphrag</span>
+              <span class="retriever-class">MicrosoftGraphRAGRetriever</span>
+              <span class="badge badge-optin">Opt-in</span>
+            </div>
+            <p class="retriever-desc">Wraps the official <a href="https://github.com/microsoft/graphrag">microsoft/graphrag</a> library. Supports two search modes:</p>
+            <ul>
+              <li><strong>Local search</strong> — entity neighborhood traversal (factual, specific queries)</li>
+              <li><strong>Global search</strong> — community summary aggregation (broad, thematic queries)</li>
+            </ul>
+            <p class="retriever-desc">Requires <code>cognity-ai[microsoft-graphrag]</code> and the <code>MicrosoftGraphRAGStore</code> graph store.</p>
+          </div>
+
+          <div class="retriever-card" id="adaptive">
+            <div class="retriever-header">
+              <span class="retriever-key">adaptive</span>
+              <span class="retriever-class">AdaptiveRetriever</span>
+              <span class="badge badge-optin">Opt-in</span>
+            </div>
+            <p class="retriever-desc">Classifies the query type using the LLM and routes to the best retriever:</p>
+            <ul>
+              <li><strong>Factual / entity lookup</strong> → <code>hybrid_graph</code></li>
+              <li><strong>Broad / thematic</strong> → community search channel</li>
+              <li><strong>Simple semantic</strong> → <code>naive</code></li>
+              <li><strong>Ambiguous / complex</strong> → <code>multi_query</code></li>
+            </ul>
+            <p class="retriever-desc">Adds one LLM call per query for classification. Best for general-purpose assistants where query types are unpredictable.</p>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="fallback">
+        <h2>Auto-Fallback Logic</h2>
+        <p>raglib automatically degrades gracefully when required backends are unavailable:</p>
+        <div class="fallback-list">
+          <div class="fallback-item">
+            <strong>hybrid_graph requested</strong> but graph store unavailable
+            <span class="fallback-arrow"> → </span>
+            falls back to <code>naive</code> (warning logged)
+          </div>
+          <div class="fallback-item">
+            <strong>microsoft_graphrag requested</strong> but <code>graphrag</code> package not installed
+            <span class="fallback-arrow"> → </span>
+            falls back to <code>hybrid_graph</code> (warning logged)
+          </div>
+          <div class="fallback-item">
+            <strong>networkx graph store</strong> selected
+            <span class="fallback-arrow"> → </span>
+            community detection disabled; 2-channel retrieval only (vector + graph subgraph)
+          </div>
+          <div class="fallback-item">
+            <strong>faiss vector store</strong> selected
+            <span class="fallback-arrow"> → </span>
+            community channel skipped (FAISS has no metadata store)
+          </div>
+          <div class="fallback-item">
+            <strong>anthropic selected as embedder</strong>
+            <span class="fallback-arrow"> → </span>
+            auto-switches to <code>sentence_transformers</code> (Anthropic has no embeddings API)
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Tip:</strong> Check <code>rag.health_report()</code> after init to see which retrievers and channels are active given your current backend configuration.
+        </div>
+      </section>
+
+      <section id="override">
+        <h2>Per-Query Method Override</h2>
+        <p>The default <code>rag_method</code> can be overridden for any individual query without changing the pipeline configuration:</p>
+        <pre><code>from cognity_ai import RAGLibrary
+
+rag = RAGLibrary(rag_method="hybrid_graph")   # default
+
+# Override for a specific query
+answer = rag.query("List all companies mentioned", method="graph_only")
+summary = rag.query("Give a broad thematic overview", method="microsoft_graphrag")
+precise = rag.query("What is the boiling point of water?", method="naive")
+detailed = rag.query_with_sources("Who founded Anthropic?", method="hybrid_graph")
+
+# Retrieve without generating an answer
+chunks = rag.retrieve("transformer architecture", top_k=5, method="multi_query")
+for chunk in chunks:
+    print(f"[{chunk.score:.3f}] {chunk.text[:120]}...")</code></pre>
+      </section>
+
+      <section id="direct">
+        <h2>Direct Usage</h2>
+        <p>Instantiate and use a retriever directly without <code>RAGLibrary</code>:</p>
+        <pre><code>from cognity_ai.retrievers import HybridGraphRetriever, NaiveRetriever
+from cognity_ai.stores.vector import ChromaStore
+from cognity_ai.stores.graph import Neo4jStore
+from cognity_ai.embedders import GeminiEmbedder
+from cognity_ai.generators import GeminiGenerator
+
+embedder = GeminiEmbedder(api_key="AIza...")
+vector_store = ChromaStore(persist_directory=".chroma")
+graph_store = Neo4jStore(
+    uri="bolt://localhost:7687",
+    user="neo4j",
+    password="password",
+)
+
+# 4-channel hybrid retrieval
+retriever = HybridGraphRetriever(
+    vector_store=vector_store,
+    graph_store=graph_store,
+    embedder=embedder,
+    generator=GeminiGenerator(api_key="AIza..."),
+    top_k_per_channel=10,
+    rrf_k=60,
+    graph_hops=2,
+)
+
+# Retrieve only
+results = retriever.retrieve("Who founded the company?")
+for r in results:
+    print(f"[{r.retrieval_channel}] score={r.score:.3f}: {r.text[:80]}")
+
+# Retrieve + generate answer
+answer = retriever.query("What are the main products?")
+
+# Retrieve + answer + sources
+result = retriever.query_with_sources("Summarize the Q3 results")
+print(result["answer"])
+for src in result["sources"]:
+    print(f"  {src['doc_id']} p.{src['page']} (score={src['score']:.3f})")
+
+# Naive retriever (no graph needed)
+naive = NaiveRetriever(
+    vector_store=vector_store,
+    embedder=embedder,
+    generator=GeminiGenerator(api_key="AIza..."),
+)
+results = naive.retrieve("climate change impacts", top_k=5)</code></pre>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../getting-started.html">Get Started</a>
+      <a href="index.html">API Docs</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../changelog.html">Changelog</a>
+    </div>
+    <span class="footer-copy">cognity-ai v2.0.0 — MIT License</span>
+  </div>
+</footer>
+
+<script>
+  const tocLinks = document.querySelectorAll('.toc-links a');
+  const sections = Array.from(tocLinks).map(l => {
+    const id = l.getAttribute('href').replace('#', '');
+    return document.getElementById(id);
+  }).filter(Boolean);
+  window.addEventListener('scroll', () => {
+    let current = null;
+    for (const s of sections) {
+      if (window.scrollY >= s.offsetTop - 100) current = s;
+    }
+    tocLinks.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + (current && current.id));
+    });
+  }, { passive: true });
+</script>
+</body>
+</html>
