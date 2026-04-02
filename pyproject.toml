@@ -32,11 +32,11 @@ dependencies = [
 
 # ── LLM providers ────────────────────────────────────────────────────────────
 gemini = [
-    "google-generativeai>=0.5.0",
+    "google-genai>=1.0.0",
 ]
 vertex-ai = [
     "google-cloud-aiplatform>=1.50.0",
-    "google-generativeai>=0.5.0",
+    "google-genai>=1.0.0",
 ]
 openai = [
     "openai>=1.0.0",
@@ -228,7 +228,7 @@ full-loaders = [
     "pytesseract>=0.3.10",
 ]
 default = [
-    "google-generativeai>=0.5.0",
+    "google-genai>=1.0.0",
     "neo4j>=5.0.0",
     "chromadb>=0.4.0",
     "spacy>=3.7.0",
@@ -243,7 +243,7 @@ default = [
 ]
 all = [
     # LLM providers
-    "google-generativeai>=0.5.0",
+    "google-genai>=1.0.0",
     "google-cloud-aiplatform>=1.50.0",
     "openai>=1.0.0",
     "anthropic>=0.25.0",

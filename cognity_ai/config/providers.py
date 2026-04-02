@@ -13,13 +13,23 @@ class Neo4jConfig:
 
 @dataclass
 class GeminiConfig:
-    api_key: str = os.getenv("GEMINI_API_KEY", "")
+    # API key — checks GOOGLE_API_KEY first (new SDK default), then GEMINI_API_KEY for compat.
+    # Leave empty to rely entirely on env-var auto-loading inside the SDK.
+    api_key: str = field(
+        default_factory=lambda: os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY", "")
+    )
     model: str = "gemini-2.0-flash"
     embedding_model: str = "models/text-embedding-004"
     temperature: float = 0.1
     extraction_temperature: float = 0.0
     batch_embed_limit: int = 100
     rpm_limit: int = 15
+    # Vertex AI / project-based access
+    project_id: str = field(default_factory=lambda: os.getenv("GOOGLE_CLOUD_PROJECT", ""))
+    location: str = field(default_factory=lambda: os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"))
+    use_vertexai: bool = False
+    # HTTP timeout in seconds for API calls
+    timeout: int = 120
 
 
 @dataclass
