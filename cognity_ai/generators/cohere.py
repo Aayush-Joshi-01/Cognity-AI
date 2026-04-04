@@ -1,5 +1,12 @@
 """CohereGenerator — generator using the Cohere Chat API."""
+from __future__ import annotations
+
+import time
+
 from cognity_ai.generators.base import BaseGenerator
+from cognity_ai.observability.token_tracker import NativeTokenCounter
+
+_NATIVE = NativeTokenCounter()
 
 
 class CohereGenerator(BaseGenerator):
@@ -41,5 +48,17 @@ class CohereGenerator(BaseGenerator):
         if preamble:
             kwargs["preamble"] = preamble
 
+        from cognity_ai.observability.models import GenerationEvent
+        t0 = time.time()
         resp = client.chat(**kwargs)
-        return resp.text
+        latency_ms = (time.time() - t0) * 1000
+        answer = resp.text
+        self._emit_generation(GenerationEvent(
+            provider="cohere",
+            model=self._model,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(resp, "cohere"),
+            latency_ms=latency_ms,
+        ))
+        return answer

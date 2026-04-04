@@ -6,7 +6,7 @@ from cognity_ai.config.providers import (
     GraphRAGConfig, IngestionConfig, OpenAIConfig, AnthropicConfig,
     AzureOpenAIConfig, BedrockConfig, VertexAIConfig, QdrantConfig,
     PineconeConfig, MilvusConfig, WeaviateConfig, PgVectorConfig,
-    AzureSearchConfig, OllamaConfig, CohereConfig,
+    AzureSearchConfig, OllamaConfig, CohereConfig, ObservabilityConfig,
 )
 
 
@@ -62,6 +62,7 @@ class LibraryConfig:
     nlp: NLPConfig = field(default_factory=NLPConfig)
     graphrag: GraphRAGConfig = field(default_factory=GraphRAGConfig)
     ingestion: IngestionConfig = field(default_factory=IngestionConfig)
+    observability: ObservabilityConfig = field(default_factory=ObservabilityConfig)
 
 
 @dataclass

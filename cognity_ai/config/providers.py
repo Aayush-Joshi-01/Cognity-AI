@@ -185,3 +185,21 @@ class IngestionConfig:
     gemini_extraction_mode: str = "augment"  # "augment" | "full"
     max_llm_chunks_per_doc: int = 50
     cache_embeddings: bool = True
+
+
+@dataclass
+class ObservabilityConfig:
+    """Configuration for the AI observability layer.
+
+    Attributes:
+        enabled: Master switch — set to False to make all emit calls no-ops.
+        observer: Built-in observer name: ``"noop"`` or ``"logging"``.
+            Pass a custom :class:`BaseObserver` instance directly to
+            :class:`RAGLibrary` for third-party integrations.
+        log_level: Logging level used by ``LoggingObserver`` (default "INFO").
+        max_event_buffer: Maximum number of recent events kept in memory.
+    """
+    enabled: bool = True
+    observer: str = "noop"       # "noop" | "logging"
+    log_level: str = "INFO"
+    max_event_buffer: int = 1000

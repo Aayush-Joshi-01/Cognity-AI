@@ -1,7 +1,13 @@
 """BedrockGenerator — generator using Amazon Bedrock (Claude models via Messages API)."""
+from __future__ import annotations
+
 import json
+import time
 
 from cognity_ai.generators.base import BaseGenerator
+from cognity_ai.observability.token_tracker import NativeTokenCounter
+
+_NATIVE = NativeTokenCounter()
 
 
 class BedrockGenerator(BaseGenerator):
@@ -57,11 +63,31 @@ class BedrockGenerator(BaseGenerator):
                 "temperature": self._temperature,
             }
         )
+        from cognity_ai.observability.models import GenerationEvent
+        t0 = time.time()
         resp = client.invoke_model(
             modelId=self._model_id,
             body=body,
             contentType="application/json",
             accept="application/json",
         )
+        latency_ms = (time.time() - t0) * 1000
         result = json.loads(resp["body"].read())
-        return result["content"][0]["text"]
+        answer = result["content"][0]["text"]
+        usage_data = result.get("usage", {})
+        # Bedrock Claude wraps usage inside the decoded JSON body
+        self._emit_generation(GenerationEvent(
+            provider="bedrock",
+            model=self._model_id,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(
+                {
+                    "inputTokenCount": usage_data.get("input_tokens", 0),
+                    "outputTokenCount": usage_data.get("output_tokens", 0),
+                },
+                "bedrock",
+            ),
+            latency_ms=latency_ms,
+        ))
+        return answer

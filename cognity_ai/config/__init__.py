@@ -4,7 +4,7 @@ from cognity_ai.config.providers import (
     GraphRAGConfig, IngestionConfig, OpenAIConfig, AnthropicConfig,
     AzureOpenAIConfig, BedrockConfig, VertexAIConfig, QdrantConfig,
     PineconeConfig, MilvusConfig, WeaviateConfig, PgVectorConfig,
-    AzureSearchConfig, OllamaConfig, CohereConfig,
+    AzureSearchConfig, OllamaConfig, CohereConfig, ObservabilityConfig,
 )
 
 __all__ = [
@@ -13,5 +13,5 @@ __all__ = [
     "GraphRAGConfig", "IngestionConfig", "OpenAIConfig", "AnthropicConfig",
     "AzureOpenAIConfig", "BedrockConfig", "VertexAIConfig", "QdrantConfig",
     "PineconeConfig", "MilvusConfig", "WeaviateConfig", "PgVectorConfig",
-    "AzureSearchConfig", "OllamaConfig", "CohereConfig",
+    "AzureSearchConfig", "OllamaConfig", "CohereConfig", "ObservabilityConfig",
 ]

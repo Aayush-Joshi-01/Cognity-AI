@@ -1,5 +1,12 @@
 """Abstract base class for answer generators, plus the shared RAG prompt."""
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cognity_ai.observability.collector import ObservabilityCollector
+    from cognity_ai.observability.models import GenerationEvent
 
 
 GENERATION_PROMPT = """You are a knowledgeable assistant with access to a knowledge graph and document corpus.
@@ -27,6 +34,18 @@ Answer:"""
 
 
 class BaseGenerator(ABC):
+    # Collector is None by default — zero overhead when not configured
+    _collector: "ObservabilityCollector | None" = None
+
+    def set_collector(self, collector: "ObservabilityCollector") -> None:
+        """Attach an :class:`ObservabilityCollector` to this generator."""
+        self._collector = collector
+
+    def _emit_generation(self, event: "GenerationEvent") -> None:
+        """Emit a generation event if a collector is attached."""
+        if self._collector is not None:
+            self._collector.emit(event)
+
     @abstractmethod
     def generate(self, question: str, context: str) -> str:
         """Generate an answer given a question and a single context string."""

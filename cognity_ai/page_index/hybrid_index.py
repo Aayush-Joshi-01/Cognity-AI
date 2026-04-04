@@ -49,6 +49,7 @@ class HybridPageIndex(BasePageIndex):
     def store(self, doc_id: str, pages: list[PageInfo]):
         # Write to both so that whichever delegate is queried next finds the data
         self.structural.store(doc_id, pages)
+        self._build_heading_index(doc_id, pages)
 
     def get(self, doc_id: str) -> list[PageInfo]:
         # Both delegates share the same JsonPageStore path, so either works
@@ -56,6 +57,7 @@ class HybridPageIndex(BasePageIndex):
 
     def remove(self, doc_id: str):
         self.structural.remove(doc_id)
+        self._drop_heading_index(doc_id)
         # regex store shares the same file path, so the entry is already gone
 
     def persist(self):

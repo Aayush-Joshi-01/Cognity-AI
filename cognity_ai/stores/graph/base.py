@@ -55,3 +55,11 @@ class BaseGraphStore(ABC):
 
     @abstractmethod
     def health_report(self) -> dict: ...
+
+    def suggest_entities(self, prefix: str, max_results: int = 10) -> list[str]:
+        """Return entity names matching *prefix* (case-insensitive prefix search).
+
+        Default implementation returns an empty list; backends that maintain
+        an :class:`EntityTrie` (e.g. :class:`NetworkXStore`) override this.
+        """
+        return []

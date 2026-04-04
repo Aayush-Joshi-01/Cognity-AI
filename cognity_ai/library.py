@@ -31,7 +31,7 @@ from cognity_ai.config.providers import (
     IngestionConfig, OpenAIConfig, AnthropicConfig, AzureOpenAIConfig,
     BedrockConfig, VertexAIConfig, QdrantConfig, PineconeConfig,
     MilvusConfig, WeaviateConfig, PgVectorConfig, AzureSearchConfig,
-    OllamaConfig, CohereConfig,
+    OllamaConfig, CohereConfig, ObservabilityConfig,
 )
 from cognity_ai.models.document import Document
 from cognity_ai.models.retrieval import RetrievalResult, CommunityInfo
@@ -76,6 +76,9 @@ class RAGLibrary:
         chroma_persist_dir: str = "./chroma_store",
         # ── Full config override ────────────────────────────────────────
         config: LibraryConfig | None = None,
+        # ── Observability ───────────────────────────────────────────────
+        observer=None,  # BaseObserver instance or None
+        observability_config: ObservabilityConfig | None = None,
     ):
         # Build or use provided config
         if config is not None:
@@ -86,6 +89,12 @@ class RAGLibrary:
         # Build all components (lazy import, auto-fallback)
         from cognity_ai.factory import build_components, build_retriever
         self._components = build_components(self._cfg)
+
+        # Wire observability collector
+        self._collector = self._build_collector(observer, observability_config)
+        gen = self._components.get("generator")
+        if gen is not None and self._collector is not None:
+            gen.set_collector(self._collector)
 
         # Build the ingestion pipeline
         from cognity_ai.pipeline.ingestion import IngestionPipeline
@@ -372,6 +381,24 @@ class RAGLibrary:
         """The full library configuration."""
         return self._cfg
 
+    @property
+    def observability(self):
+        """The :class:`ObservabilityCollector` attached to this instance (may be None)."""
+        return self._collector
+
+    def token_summary(self) -> dict:
+        """Shortcut for ``rag.observability.get_summary()``."""
+        if self._collector is not None:
+            return self._collector.get_summary()
+        return {}
+
+    def suggest_entities(self, prefix: str, max_results: int = 10) -> list[str]:
+        """Return entity names matching *prefix* from the graph store."""
+        gs = self._components.get("graph_store")
+        if gs is None:
+            return []
+        return gs.suggest_entities(prefix, max_results=max_results)
+
     # ══════════════════════════════════════════════════════════════════════
     # INTERNAL HELPERS
     # ══════════════════════════════════════════════════════════════════════
@@ -389,6 +416,31 @@ class RAGLibrary:
         # Build a temporary retriever for this specific query
         from cognity_ai.factory import build_retriever
         return build_retriever(method, self._components, self._cfg)
+
+    @staticmethod
+    def _build_collector(observer, obs_cfg):
+        """Build an ObservabilityCollector from an observer and/or config."""
+        from cognity_ai.observability.collector import ObservabilityCollector
+        from cognity_ai.observability.noop_observer import NoopObserver
+        from cognity_ai.observability.logging_observer import LoggingObserver
+        import logging
+
+        if obs_cfg is not None and not obs_cfg.enabled:
+            return None
+
+        observers = []
+        if observer is not None:
+            observers.append(observer)
+        elif obs_cfg is not None and obs_cfg.observer == "logging":
+            level = getattr(logging, obs_cfg.log_level.upper(), logging.INFO)
+            observers.append(LoggingObserver(level=level))
+
+        max_buf = 1000 if obs_cfg is None else obs_cfg.max_event_buffer
+        return ObservabilityCollector(
+            observers=observers,
+            enabled=True,
+            max_event_buffer=max_buf,
+        )
 
     @staticmethod
     def _build_config(kwargs: dict) -> LibraryConfig:

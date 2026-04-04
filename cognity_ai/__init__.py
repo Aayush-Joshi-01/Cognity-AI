@@ -73,6 +73,21 @@ from cognity_ai.models.retrieval import (
 
 # Config
 from cognity_ai.config.base import LibraryConfig
+from cognity_ai.config.providers import ObservabilityConfig
+
+# Observability
+from cognity_ai.observability import (
+    ObservabilityCollector,
+    BaseObserver,
+    LoggingObserver,
+    TokenUsage,
+    GenerationEvent,
+    RetrievalEvent,
+    EmbedEvent,
+)
+
+# Trie utilities
+from cognity_ai.utils.trie import Trie, EntityTrie
 
 # Registry for custom plugins
 from cognity_ai.registry import PluginRegistry
@@ -106,7 +121,12 @@ __all__ = [
     "Document", "Entity", "Relation", "ExtractionResult",
     "RetrievalResult", "SemanticChunk", "CommunityInfo", "PageInfo", "DocumentMeta",
     # Config
-    "LibraryConfig",
+    "LibraryConfig", "ObservabilityConfig",
+    # Observability
+    "ObservabilityCollector", "BaseObserver", "LoggingObserver",
+    "TokenUsage", "GenerationEvent", "RetrievalEvent", "EmbedEvent",
+    # Trie
+    "Trie", "EntityTrie",
     # Plugin registry
     "PluginRegistry",
     # Multimodal (experimental)

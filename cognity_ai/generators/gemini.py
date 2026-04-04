@@ -4,10 +4,15 @@ Also exposes augment_extraction() and summarize_community() so that the
 same Gemini client can serve both generation and knowledge-graph extraction
 tasks without requiring a separate GeminiExtractor instance.
 """
+from __future__ import annotations
+
 import json
 import time
 
 from cognity_ai.generators.base import BaseGenerator, GENERATION_PROMPT
+from cognity_ai.observability.token_tracker import NativeTokenCounter
+
+_NATIVE = NativeTokenCounter()
 
 
 # ── Extraction prompts ───────────────────────────────────────────────────────
@@ -171,17 +176,29 @@ class GeminiGenerator(BaseGenerator):
 
     def generate(self, question: str, context: str) -> str:
         """Generate an answer for question using the provided context string."""
+        from cognity_ai.observability.models import GenerationEvent
         self._rate_limit()
         if question:
             prompt = f"Context:\n{context}\n\nQuestion: {question}\n\nAnswer:"
         else:
             prompt = context
+        t0 = time.time()
         resp = self._client.models.generate_content(
             model=self._model,
             contents=prompt,
             config=self._gen_config(self._temperature),
         )
-        return resp.text
+        latency_ms = (time.time() - t0) * 1000
+        answer = resp.text
+        self._emit_generation(GenerationEvent(
+            provider="gemini",
+            model=self._model,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(resp, "gemini"),
+            latency_ms=latency_ms,
+        ))
+        return answer
 
     def generate_rag(
         self,
@@ -191,14 +208,26 @@ class GeminiGenerator(BaseGenerator):
         vector_ctx: str = "",
     ) -> str:
         """Generate using the full three-channel RAG prompt."""
+        from cognity_ai.observability.models import GenerationEvent
         self._rate_limit()
         prompt = self.build_rag_prompt(question, graph_ctx, community_ctx, vector_ctx)
+        t0 = time.time()
         resp = self._client.models.generate_content(
             model=self._model,
             contents=prompt,
             config=self._gen_config(self._temperature),
         )
-        return resp.text
+        latency_ms = (time.time() - t0) * 1000
+        answer = resp.text
+        self._emit_generation(GenerationEvent(
+            provider="gemini",
+            model=self._model,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(resp, "gemini"),
+            latency_ms=latency_ms,
+        ))
+        return answer
 
     # ── Knowledge-graph helpers ──────────────────────────────────────────
 

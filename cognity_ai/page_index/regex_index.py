@@ -54,12 +54,14 @@ class RegexPageIndex(BasePageIndex):
 
     def store(self, doc_id: str, pages: list[PageInfo]):
         self._store.store(doc_id, pages)
+        self._build_heading_index(doc_id, pages)
 
     def get(self, doc_id: str) -> list[PageInfo]:
         return self._store.get(doc_id)
 
     def remove(self, doc_id: str):
         self._store.remove(doc_id)
+        self._drop_heading_index(doc_id)
 
     def persist(self):
         self._store.save()

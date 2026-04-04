@@ -1,5 +1,12 @@
 """OllamaGenerator — generator using a locally running Ollama server."""
+from __future__ import annotations
+
+import time
+
 from cognity_ai.generators.base import BaseGenerator
+from cognity_ai.observability.token_tracker import NativeTokenCounter
+
+_NATIVE = NativeTokenCounter()
 
 
 class OllamaGenerator(BaseGenerator):
@@ -35,6 +42,8 @@ class OllamaGenerator(BaseGenerator):
             messages.append({"role": "system", "content": system_content})
         messages.append({"role": "user", "content": user_content})
 
+        from cognity_ai.observability.models import GenerationEvent
+        t0 = time.time()
         resp = requests.post(
             f"{self._base_url}/api/chat",
             json={
@@ -45,4 +54,15 @@ class OllamaGenerator(BaseGenerator):
             },
         )
         resp.raise_for_status()
-        return resp.json()["message"]["content"]
+        latency_ms = (time.time() - t0) * 1000
+        data = resp.json()
+        answer = data["message"]["content"]
+        self._emit_generation(GenerationEvent(
+            provider="ollama",
+            model=self._model,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(data, "ollama"),
+            latency_ms=latency_ms,
+        ))
+        return answer

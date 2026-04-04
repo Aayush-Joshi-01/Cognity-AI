@@ -1,5 +1,12 @@
 """AnthropicGenerator — generator using the Anthropic Messages API."""
+from __future__ import annotations
+
+import time
+
 from cognity_ai.generators.base import BaseGenerator
+from cognity_ai.observability.token_tracker import NativeTokenCounter
+
+_NATIVE = NativeTokenCounter()
 
 
 class AnthropicGenerator(BaseGenerator):
@@ -23,6 +30,7 @@ class AnthropicGenerator(BaseGenerator):
 
     def generate(self, question: str, context: str) -> str:
         import anthropic
+        from cognity_ai.observability.models import GenerationEvent
 
         client = anthropic.Anthropic(api_key=self._api_key)
 
@@ -32,6 +40,7 @@ class AnthropicGenerator(BaseGenerator):
             # Pre-built prompt passed via generate_with_structured_context
             user_content = context
 
+        t0 = time.time()
         message = client.messages.create(
             model=self._model,
             max_tokens=self._max_tokens,
@@ -41,4 +50,14 @@ class AnthropicGenerator(BaseGenerator):
             ),
             messages=[{"role": "user", "content": user_content}],
         )
-        return message.content[0].text
+        latency_ms = (time.time() - t0) * 1000
+        answer = message.content[0].text
+        self._emit_generation(GenerationEvent(
+            provider="anthropic",
+            model=self._model,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(message, "anthropic"),
+            latency_ms=latency_ms,
+        ))
+        return answer

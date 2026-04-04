@@ -8,6 +8,7 @@ from __future__ import annotations
 from cognity_ai.stores.graph.base import BaseGraphStore
 from cognity_ai.models.knowledge import Entity, Relation
 from cognity_ai.models.retrieval import RetrievalResult, CommunityInfo
+from cognity_ai.utils.trie import EntityTrie
 
 
 class NetworkXStore(BaseGraphStore):
@@ -27,6 +28,7 @@ class NetworkXStore(BaseGraphStore):
         self._entity_chunks: dict[str, list[str]] = {}  # entity name → chunk ids
         self._doc_meta: dict[str, dict] = {}
         self._communities: dict[str, dict] = {}        # community_id → CommunityInfo
+        self._entity_trie = EntityTrie()               # O(k) prefix lookups
 
     # ── Entities ─────────────────────────────────────────────────────────
 
@@ -42,6 +44,7 @@ class NetworkXStore(BaseGraphStore):
         else:
             self._entities[key] = entity.model_dump()
         self._g.add_node(entity.name, **self._entities[key])
+        self._entity_trie.insert_entity(entity.name)
 
     def upsert_relation(self, relation: Relation):
         self._relations.append(relation.model_dump())
@@ -86,8 +89,8 @@ class NetworkXStore(BaseGraphStore):
         import networkx as nx
         visited_nodes = set()
         for name in entity_names:
-            # Find matching nodes (case-insensitive)
-            matching = [n for n in self._g.nodes if name.lower() in n.lower()]
+            # O(k) prefix lookup via EntityTrie (replaces O(n) linear scan)
+            matching = self._entity_trie.search_entities(name.lower())
             for start in matching[:2]:
                 # BFS up to `hops` levels
                 for depth in range(1, hops + 1):
@@ -119,7 +122,7 @@ class NetworkXStore(BaseGraphStore):
 
     def retrieve_entity_context(self, entity_name: str) -> list[RetrievalResult]:
         results = []
-        matching = [n for n in self._g.nodes if entity_name.lower() in n.lower()]
+        matching = self._entity_trie.search_entities(entity_name.lower())
         for node in matching[:1]:
             node_data = self._g.nodes.get(node, {})
             parts = [f"Entity: {node} ({node_data.get('entity_type', 'Unknown')})"]
@@ -205,6 +208,10 @@ class NetworkXStore(BaseGraphStore):
         for u, v, k in to_remove:
             self._g.remove_edge(u, v, key=k)
         return len(to_remove)
+
+    def suggest_entities(self, prefix: str, max_results: int = 10) -> list[str]:
+        """Return original-case entity names whose lowercased form starts with *prefix*."""
+        return self._entity_trie.search_entities(prefix.lower(), max_results=max_results)
 
     def health_report(self) -> dict:
         confirmed = sum(1 for m in self._doc_meta.values() if m.get("status") == "confirmed")

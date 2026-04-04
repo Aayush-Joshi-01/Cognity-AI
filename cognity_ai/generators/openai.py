@@ -1,5 +1,12 @@
 """OpenAIGenerator — generator using the OpenAI Chat Completions API."""
+from __future__ import annotations
+
+import time
+
 from cognity_ai.generators.base import BaseGenerator
+from cognity_ai.observability.token_tracker import NativeTokenCounter
+
+_NATIVE = NativeTokenCounter()
 
 
 class OpenAIGenerator(BaseGenerator):
@@ -23,6 +30,7 @@ class OpenAIGenerator(BaseGenerator):
 
     def generate(self, question: str, context: str) -> str:
         from openai import OpenAI
+        from cognity_ai.observability.models import GenerationEvent
 
         client = OpenAI(api_key=self._api_key)
 
@@ -32,6 +40,7 @@ class OpenAIGenerator(BaseGenerator):
             # Pre-built prompt passed via generate_with_structured_context
             user_content = context
 
+        t0 = time.time()
         resp = client.chat.completions.create(
             model=self._model,
             messages=[
@@ -47,4 +56,14 @@ class OpenAIGenerator(BaseGenerator):
             temperature=self._temperature,
             max_tokens=self._max_tokens,
         )
-        return resp.choices[0].message.content
+        latency_ms = (time.time() - t0) * 1000
+        answer = resp.choices[0].message.content
+        self._emit_generation(GenerationEvent(
+            provider="openai",
+            model=self._model,
+            question=question,
+            answer_length=len(answer),
+            token_usage=_NATIVE.extract_from_response(resp, "openai"),
+            latency_ms=latency_ms,
+        ))
+        return answer
