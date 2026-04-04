@@ -1,4 +1,4 @@
-"""GeminiGenerator — default generator using Google Gemini models.
+"""GeminiGenerator — default generator using Google Gemini models (google-genai SDK).
 
 Also exposes augment_extraction() and summarize_community() so that the
 same Gemini client can serve both generation and knowledge-graph extraction
@@ -10,7 +10,7 @@ import time
 from cognity_ai.generators.base import BaseGenerator, GENERATION_PROMPT
 
 
-# ── Extraction prompts (copied from hybrid_rag/gemini_extractor.py) ─────────
+# ── Extraction prompts ───────────────────────────────────────────────────────
 
 AUGMENT_EXTRACTION_PROMPT = """You are given text and pre-extracted entities/relations from NLP.
 Your job: find ADDITIONAL semantic relationships the NLP missed. Do NOT repeat what's already extracted.
@@ -49,46 +49,123 @@ Return a JSON object (no markdown):
 }}"""
 
 
-class GeminiGenerator(BaseGenerator):
-    """Generate answers using Google Gemini via the google-generativeai SDK.
+def _build_client(config_or_key=None, *, api_key=None, project_id=None,
+                  location="us-central1", use_vertexai=False, timeout=120):
+    """Build a google.genai Client from a GeminiConfig, an api_key string, or env vars."""
+    from google import genai
+    from google.genai import types as gentypes
 
-    Two model handles are maintained:
-      gen_model  — standard text generation (temperature-controlled)
-      json_model — JSON-mode model used for structured extraction tasks
+    http_opts = gentypes.HttpOptions(timeout=timeout)
+
+    if config_or_key is not None and not isinstance(config_or_key, str):
+        cfg = config_or_key
+        if getattr(cfg, "use_vertexai", False) and getattr(cfg, "project_id", ""):
+            return genai.Client(
+                vertexai=True,
+                project=cfg.project_id,
+                location=getattr(cfg, "location", "us-central1"),
+                http_options=http_opts,
+            )
+        key = getattr(cfg, "api_key", "") or None
+        if key:
+            return genai.Client(api_key=key, http_options=http_opts)
+        return genai.Client(http_options=http_opts)
+
+    if isinstance(config_or_key, str):
+        api_key = api_key or config_or_key
+
+    if use_vertexai and project_id:
+        return genai.Client(vertexai=True, project=project_id,
+                            location=location, http_options=http_opts)
+    if api_key:
+        return genai.Client(api_key=api_key, http_options=http_opts)
+    return genai.Client(http_options=http_opts)
+
+
+class GeminiGenerator(BaseGenerator):
+    """Generate answers using Google Gemini via the google-genai SDK.
+
+    Accepts a ``GeminiConfig`` object (as used by the factory), an explicit
+    ``api_key`` string, or no arguments at all — in which case the SDK
+    automatically reads ``GOOGLE_API_KEY`` (or ``GEMINI_API_KEY``) from the
+    environment.
+
+    Optionally provide ``project_id`` + ``use_vertexai=True`` for project-based
+    Vertex AI access instead of a plain API key.
+
+    Examples::
+
+        # Factory / config-object usage:
+        gen = GeminiGenerator(cfg.gemini)
+
+        # Explicit key:
+        gen = GeminiGenerator(api_key="AIza...")
+
+        # Vertex AI / project-based:
+        gen = GeminiGenerator(project_id="my-gcp-project", use_vertexai=True)
+
+        # Env-var auto-load (GOOGLE_API_KEY):
+        gen = GeminiGenerator()
     """
 
     def __init__(
         self,
-        api_key: str,
-        model: str = "gemini-2.0-flash",
-        temperature: float = 0.1,
-        extraction_temperature: float = 0.0,
-        rpm_limit: int = 15,
+        config=None,
+        *,
+        api_key: str | None = None,
+        model: str | None = None,
+        temperature: float | None = None,
+        extraction_temperature: float | None = None,
+        rpm_limit: int | None = None,
+        project_id: str | None = None,
+        location: str | None = None,
+        use_vertexai: bool = False,
     ):
-        import google.generativeai as genai
+        cfg_model = "gemini-2.0-flash"
+        cfg_temp = 0.1
+        cfg_ext_temp = 0.0
+        cfg_rpm = 15
+        cfg_timeout = 120
 
-        genai.configure(api_key=api_key)
-        self.gen_model = genai.GenerativeModel(
-            model,
-            generation_config=genai.GenerationConfig(temperature=temperature),
+        if config is not None and not isinstance(config, str):
+            cfg_model = getattr(config, "model", cfg_model)
+            cfg_temp = getattr(config, "temperature", cfg_temp)
+            cfg_ext_temp = getattr(config, "extraction_temperature", cfg_ext_temp)
+            cfg_rpm = getattr(config, "rpm_limit", cfg_rpm)
+            cfg_timeout = getattr(config, "timeout", cfg_timeout)
+        elif isinstance(config, str):
+            api_key = api_key or config
+            config = None
+
+        self._model = model or cfg_model
+        self._temperature = temperature if temperature is not None else cfg_temp
+        self._extraction_temperature = (
+            extraction_temperature if extraction_temperature is not None else cfg_ext_temp
         )
-        self.json_model = genai.GenerativeModel(
-            model,
-            generation_config=genai.GenerationConfig(
-                temperature=extraction_temperature,
-                response_mime_type="application/json",
-            ),
-        )
-        self._rpm_limit = rpm_limit
+        self._rpm_limit = rpm_limit if rpm_limit is not None else cfg_rpm
         self._last_call = 0.0
+        self._client = _build_client(
+            config,
+            api_key=api_key,
+            project_id=project_id,
+            location=location or "us-central1",
+            use_vertexai=use_vertexai,
+            timeout=cfg_timeout,
+        )
 
     def _rate_limit(self):
-        """Ensure minimum gap between API calls to honour rpm_limit."""
         gap = 60.0 / self._rpm_limit
         elapsed = time.time() - self._last_call
         if elapsed < gap:
             time.sleep(gap - elapsed)
         self._last_call = time.time()
+
+    def _gen_config(self, temperature: float, json_mode: bool = False):
+        from google.genai import types as gentypes
+        kwargs = {"temperature": temperature}
+        if json_mode:
+            kwargs["response_mime_type"] = "application/json"
+        return gentypes.GenerateContentConfig(**kwargs)
 
     # ── BaseGenerator interface ──────────────────────────────────────────
 
@@ -98,9 +175,12 @@ class GeminiGenerator(BaseGenerator):
         if question:
             prompt = f"Context:\n{context}\n\nQuestion: {question}\n\nAnswer:"
         else:
-            # generate_with_structured_context passes a pre-built prompt as context
             prompt = context
-        resp = self.gen_model.generate_content(prompt)
+        resp = self._client.models.generate_content(
+            model=self._model,
+            contents=prompt,
+            config=self._gen_config(self._temperature),
+        )
         return resp.text
 
     def generate_rag(
@@ -113,29 +193,17 @@ class GeminiGenerator(BaseGenerator):
         """Generate using the full three-channel RAG prompt."""
         self._rate_limit()
         prompt = self.build_rag_prompt(question, graph_ctx, community_ctx, vector_ctx)
-        resp = self.gen_model.generate_content(prompt)
+        resp = self._client.models.generate_content(
+            model=self._model,
+            contents=prompt,
+            config=self._gen_config(self._temperature),
+        )
         return resp.text
 
     # ── Knowledge-graph helpers ──────────────────────────────────────────
 
     def augment_extraction(self, text: str, existing, source_id: str = ""):
-        """Find entities/relations that NLP missed.
-
-        Parameters
-        ----------
-        text:
-            Source text to analyse (capped internally to 3000 chars).
-        existing:
-            An ExtractionResult (or any object with .entities/.relations lists)
-            containing already-extracted items that should not be repeated.
-        source_id:
-            Optional document identifier attached to returned objects.
-
-        Returns
-        -------
-        ExtractionResult
-            New entities and relations only.
-        """
+        """Find entities/relations that NLP missed."""
         from cognity_ai.models.knowledge import Entity, Relation, ExtractionResult
 
         self._rate_limit()
@@ -151,7 +219,11 @@ class GeminiGenerator(BaseGenerator):
             existing_relations=existing_rels or "None",
             text=text[:3000],
         )
-        resp = self.json_model.generate_content(prompt)
+        resp = self._client.models.generate_content(
+            model=self._model,
+            contents=prompt,
+            config=self._gen_config(self._extraction_temperature, json_mode=True),
+        )
         raw = json.loads(resp.text)
 
         entities = [
@@ -182,24 +254,15 @@ class GeminiGenerator(BaseGenerator):
     def summarize_community(
         self, entity_names: list[str], relation_descriptions: list[str]
     ) -> dict:
-        """Return a title/summary dict for a graph community.
-
-        Parameters
-        ----------
-        entity_names:
-            Names of entities that form the community.
-        relation_descriptions:
-            Human-readable descriptions of the key relations (up to 20 used).
-
-        Returns
-        -------
-        dict
-            {"title": str, "summary": str}
-        """
+        """Return a title/summary dict for a graph community."""
         self._rate_limit()
         prompt = COMMUNITY_SUMMARY_PROMPT.format(
             entities=", ".join(entity_names),
             relations="\n".join(f"- {r}" for r in relation_descriptions[:20]),
         )
-        resp = self.json_model.generate_content(prompt)
+        resp = self._client.models.generate_content(
+            model=self._model,
+            contents=prompt,
+            config=self._gen_config(self._extraction_temperature, json_mode=True),
+        )
         return json.loads(resp.text)

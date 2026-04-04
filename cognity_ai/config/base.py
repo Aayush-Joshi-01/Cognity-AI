@@ -62,3 +62,31 @@ class LibraryConfig:
     nlp: NLPConfig = field(default_factory=NLPConfig)
     graphrag: GraphRAGConfig = field(default_factory=GraphRAGConfig)
     ingestion: IngestionConfig = field(default_factory=IngestionConfig)
+
+
+@dataclass
+class MinimalLibraryConfig(LibraryConfig):
+    """Bare-minimum config using only local, dependency-light components.
+
+    Safe to instantiate without any API keys or running external services.
+    Components that require network access (embedders, generators) still need
+    credentials — those tests are automatically skipped when credentials are absent.
+
+    Defaults:
+      - vector_store: faiss    (in-memory, no server needed)
+      - graph_store:  networkx (in-memory, no server needed)
+      - chunker:      fixed    (no spaCy dependency)
+      - extraction:   llm_only (no spaCy dependency)
+      - rag_method:   vector_only (no graph store required)
+      - ocr:          tesseract   (local; skipped in tests if pytesseract missing)
+      - page_index:   regex       (pure Python)
+    """
+    rag_method: str = "vector_only"
+    chunker: str = "fixed"
+    embedder: str = "gemini"          # override per-test when key unavailable
+    vector_store: str = "faiss"
+    graph_store: str = "networkx"
+    llm: str = "gemini"               # override per-test when key unavailable
+    extraction: str = "llm_only"
+    ocr: str = "tesseract"
+    page_index: str = "regex"
