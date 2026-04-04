@@ -1,8 +1,100 @@
 # Changelog
 
-All notable changes to HybridGraphRAG will be documented in this file.
+All notable changes to cognity-ai will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## [2.1.0] - 2026-04-05
+
+### Added — Trie Data Structure (`cognity_ai/utils/trie.py`)
+
+- **`TrieNode`** — internal trie node with `children`, `is_end`, and `original` slots
+- **`Trie`** — full prefix tree with:
+  - `insert`, `search`, `starts_with`, `delete`
+  - `words_with_prefix(prefix, max_results)` — DFS autocomplete
+  - `autocomplete(prefix)` — alias for `words_with_prefix`
+  - `all_words()` — BFS traversal returning all stored words
+  - `count_words()`, `__len__`, `__contains__`, `__iter__`
+  - `longest_prefix_match(query)` — longest stored prefix of *query*
+  - `bfs_nodes()` / `dfs_nodes()` — structural traversal for inspection/debugging
+- **`EntityTrie(Trie)`** — case-insensitive entity lookup, preserves original casing:
+  - `insert_entity(name)` — lowercased key, original-case stored in terminal node
+  - `search_entities(prefix, max_results)` — returns original-case matches
+  - `delete_entity(name)`
+- **`NetworkXStore`** now maintains an `EntityTrie` alongside the NetworkX graph:
+  - `upsert_entity()` auto-inserts into the trie
+  - `retrieve_subgraph()` and `retrieve_entity_context()` replaced O(n) linear scans with O(k) trie lookups
+  - New `suggest_entities(prefix, max_results=10)` public method
+- **`BaseGraphStore`** — added default `suggest_entities()` method (no-op stub for backends without a trie)
+- **`BasePageIndex`** — trie-accelerated `get_section()`:
+  - `_build_heading_index(doc_id, pages)` builds a per-document `Trie` of lowercased headings
+  - `get_section()` uses `words_with_prefix` for O(k) lookup, falls back to linear scan if trie not yet built
+  - Hooked into `store()` / `remove()` of `RegexPageIndex`, `StructuralPageIndex`, `HybridPageIndex`
+- **`RAGLibrary.suggest_entities(prefix, max_results=10)`** — delegates to graph store
+
+### Added — AI Observability & Token Tracking (`cognity_ai/observability/`)
+
+- **`models.py`** — Pydantic event models:
+  - `TokenUsage` — prompt/completion/total tokens with `source` field (`"native"` | `"tiktoken"` | `"estimate"`) and `__add__` for aggregation
+  - `GenerationEvent`, `RetrievalEvent`, `EmbedEvent` — timestamped event records with latency
+- **`token_tracker.py`** — pluggable token counting chain:
+  - `BaseTokenCounter` ABC — extend to add custom counters (OpenTelemetry, Langfuse, etc.)
+  - `NativeTokenCounter` — extracts usage from raw API response objects; per-provider extractors for Gemini (`usage_metadata`), OpenAI (`usage`), Anthropic (`message.usage`), Cohere (`resp.meta.tokens`), Ollama (`eval_count` from JSON), Bedrock (decoded body `inputTokenCount`)
+  - `TiktokenCounter` — uses `tiktoken` when installed and model is known to it; returns -1 (falls through) for unknown models
+  - `EstimateCounter` — word-count heuristic; always available
+  - `TokenTracker` — priority chain: native → tiktoken → estimate; accepts `extra_counters` for injection
+- **`base_observer.py`** — `BaseObserver` ABC with `on_generation()`, `on_retrieval()`, `on_embed()` hooks; all no-ops by default so subclasses only override what they need. Extension point for OpenTelemetry, Prometheus, Langfuse, Datadog, etc.
+- **`noop_observer.py`** — `NoopObserver` — zero-overhead default
+- **`logging_observer.py`** — `LoggingObserver` — emits each event as JSON to `cognity_ai.observability` logger
+- **`collector.py`** — `ObservabilityCollector`:
+  - Fan-out to all registered observers; observer errors are silently caught (never crash the pipeline)
+  - In-memory ring buffer (`deque(maxlen=max_event_buffer)`) for recent event inspection
+  - Aggregate stats: `get_summary()` → total calls, total tokens, buffered event count
+  - `add_observer()`, `remove_observer()`, `reset()`, `recent_events(n)`
+  - `enabled=False` makes all emits no-ops
+- **`ObservabilityConfig`** dataclass in `cognity_ai/config/providers.py`:
+  - `enabled: bool = True`, `observer: str = "noop"`, `log_level: str = "INFO"`, `max_event_buffer: int = 1000`
+- **`LibraryConfig`** and **`MinimalLibraryConfig`** now include `observability: ObservabilityConfig` field
+- **All generators instrumented** — `BaseGenerator` gains `_collector` slot and `set_collector()` / `_emit_generation()`:
+  - `GeminiGenerator.generate()` and `generate_rag()` — extracts `resp.usage_metadata`
+  - `OpenAIGenerator.generate()` — extracts `resp.usage`
+  - `AnthropicGenerator.generate()` — extracts `message.usage`
+  - `CohereGenerator.generate()` — extracts `resp.meta.tokens`
+  - `OllamaGenerator.generate()` — extracts `prompt_eval_count`/`eval_count` from JSON
+  - `BedrockGenerator.generate()` — extracts `inputTokenCount`/`outputTokenCount` from decoded body
+- **`RAGLibrary`** wires observability on construction:
+  - Accepts `observer=` (any `BaseObserver` instance) and `observability_config=`
+  - Attaches collector to generator via `set_collector()`
+  - `rag.observability` property — returns the `ObservabilityCollector`
+  - `rag.token_summary()` — shortcut for `collector.get_summary()`
+
+### Added — Test Suite
+
+- **`pytest.ini`** — `testpaths = tests`, `pythonpath = .`, verbose output
+- **`tests/conftest.py`** — credential flags, availability flags, shared fixtures (`tmp_dir`, `make_embedding`, etc.)
+- **`MinimalLibraryConfig`** — bare-minimum preset (FAISS + NetworkX + fixed chunker + llm_only extraction); safe to instantiate without any external services
+- New test files:
+  - `tests/test_trie.py` — 41 tests covering all Trie and EntityTrie operations
+  - `tests/test_observability.py` — 39 tests for token tracking, observers, collector, generator integration
+  - `tests/test_config.py`, `tests/test_models.py`, `tests/test_utils.py` — data model and config tests
+  - `tests/test_loaders.py`, `tests/test_chunkers.py` — content processing tests
+  - `tests/test_vector_stores.py`, `tests/test_graph_stores.py` — store backend tests
+  - `tests/test_embedders.py`, `tests/test_generators.py` — provider tests (skip without credentials)
+  - `tests/test_factory.py` — structural wiring tests using `unittest.mock.patch`
+- **Full suite result: 316 passed, 49 skipped** (skips are intentional — cloud providers without credentials)
+
+### Changed
+
+- All generators now time API calls (wall-clock ms) and emit `GenerationEvent` to the attached collector
+- `NetworkXStore` entity lookups are now O(k) via `EntityTrie` instead of O(n) linear scan
+- `BasePageIndex.get_section()` uses per-document heading trie when available
+- License changed from **MIT** to **Apache 2.0** — see [LICENSE](LICENSE)
+- `pyproject.toml` version bumped from `2.0.1` → `2.1.0`
+- New exports in `cognity_ai/__init__.py`: `ObservabilityCollector`, `BaseObserver`, `LoggingObserver`, `TokenUsage`, `GenerationEvent`, `RetrievalEvent`, `EmbedEvent`, `ObservabilityConfig`, `Trie`, `EntityTrie`
+
+---
 
 ## [2.0.0] - 2026-03-19
 

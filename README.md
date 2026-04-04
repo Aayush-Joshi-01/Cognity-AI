@@ -4,8 +4,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white" alt="Python 3.11+"/>
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT"/>
-  <img src="https://img.shields.io/badge/Version-1.0.0-blue" alt="Version: 1.0.0"/>
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue" alt="License: Apache 2.0"/>
+  <img src="https://img.shields.io/badge/Version-2.1.0-blue" alt="Version: 2.1.0"/>
   <img src="https://img.shields.io/badge/Neo4j-supported-blue?logo=neo4j&logoColor=white" alt="Neo4j"/>
   <img src="https://img.shields.io/badge/ChromaDB-supported-orange" alt="ChromaDB"/>
   <img src="https://img.shields.io/badge/Gemini-supported-4285F4?logo=google&logoColor=white" alt="Gemini"/>
@@ -380,6 +380,87 @@ result = rag.query_with_sources("Who founded Anthropic?", method="hybrid_graph")
 
 ---
 
+## AI Observability & Token Tracking
+
+Every generator call is automatically timed and its token usage extracted from the native API response — no additional configuration required.
+
+```python
+from cognity_ai import RAGLibrary, LoggingObserver
+
+# Attach the built-in logging observer
+rag = RAGLibrary(
+    gemini_api_key="...",
+    observer=LoggingObserver(),  # emits JSON to cognity_ai.observability logger
+)
+
+answer = rag.query("What are the findings?")
+
+# Inspect aggregated usage
+print(rag.token_summary())
+# {
+#   "total_generation_calls": 1,
+#   "total_prompt_tokens": 312,
+#   "total_completion_tokens": 87,
+#   "total_tokens": 399,
+#   "token_count_source": "native",
+#   ...
+# }
+
+# Inspect the last N events
+for event in rag.observability.recent_events(10):
+    print(event.model_dump())
+```
+
+### Token counting priority chain
+
+1. **Native** — extracted directly from the API response object (Gemini `usage_metadata`, OpenAI `usage`, Anthropic `message.usage`, Cohere `meta.tokens`, Ollama `eval_count`, Bedrock body)
+2. **tiktoken** — used as fallback only when `tiktoken` is installed *and* the model is known to it
+3. **Estimate** — word-count heuristic; always available, never fails
+
+### Custom observers
+
+Extend `BaseObserver` to integrate with any observability backend:
+
+```python
+from cognity_ai import BaseObserver, GenerationEvent
+
+class MyPrometheusObserver(BaseObserver):
+    def on_generation(self, event: GenerationEvent) -> None:
+        generation_counter.inc()
+        token_gauge.set(event.token_usage.total_tokens)
+
+rag = RAGLibrary(..., observer=MyPrometheusObserver())
+```
+
+The same pattern works for OpenTelemetry spans, Langfuse traces, Datadog metrics, etc.
+
+---
+
+## Entity Autocomplete (Trie)
+
+```python
+# After ingesting documents, suggest entity names by prefix
+suggestions = rag.suggest_entities("anth")
+# → ["Anthropic", "Anthony Hopkins", ...]
+
+# Or use the Trie directly
+from cognity_ai import Trie, EntityTrie
+
+t = Trie()
+for w in ["apple", "application", "apply", "apt"]:
+    t.insert(w)
+
+t.words_with_prefix("app")       # ["apple", "application", "apply"]
+t.longest_prefix_match("applet") # "apple"
+t.autocomplete("ap", max_results=3)
+
+et = EntityTrie()
+et.insert_entity("OpenAI")
+et.search_entities("open")  # ["OpenAI"]  — original casing preserved
+```
+
+---
+
 ## Knowledge Lifecycle Management
 
 `cognity-ai` tracks confidence scores for every extracted knowledge triple. Use the lifecycle API to manage knowledge quality over time.
@@ -520,42 +601,26 @@ D:\Graph-RAG\
 │   │   ├── multi_query.py
 │   │   ├── microsoft_graphrag.py
 │   │   └── adaptive.py
-│   └── pipeline/                  # Orchestration
-│       ├── ingestion.py           # IngestionPipeline
-│       └── knowledge_updater.py   # KnowledgeUpdater (lifecycle ops)
-├── hybrid_rag/                    # DEPRECATED legacy package (see Migration section)
-├── pyproject.toml                 # Packaging + optional dependency groups
-├── requirements.txt               # Default install dependencies
-└── docs/                          # GitHub Pages documentation site
+│   ├── pipeline/                      # Orchestration
+│   │   ├── ingestion.py
+│   │   └── knowledge_updater.py
+│   ├── observability/                 # NEW: AI observability & token tracking
+│   │   ├── models.py                  # TokenUsage, GenerationEvent, etc.
+│   │   ├── token_tracker.py           # tiktoken / Estimate chain
+│   │   ├── base_observer.py           # ABC for OTEL, Langfuse, etc.
+│   │   ├── noop_observer.py           # Zero-overhead default
+│   │   ├── logging_observer.py        # JSON log emitter
+│   │   └── collector.py               # Fan-out + ring buffer
+│   └── utils/                         # NEW: Shared utilities
+│       ├── trie.py                    # O(k) prefix lookup
+│       ├── hash.py                    # SHA-256 change detection
+│       └── token_counter.py           # estimate_tokens() heuristic
+├── tests/                             # NEW: Full pytest suite (316 pass, 49 skip)
+├── hybrid_rag/                        # DEPRECATED legacy package
+├── pyproject.toml                     # Packaging + optional dependency groups
+├── requirements.txt                   # Default install dependencies
+└── docs/                              # GitHub Pages documentation site
 ```
-
----
-
-## Migration from `hybrid_rag`
-
-The original `hybrid_rag` package is **deprecated** but still functional. It emits a `DeprecationWarning` on import. It will be removed in a future major version.
-
-**Before (deprecated):**
-
-```python
-from hybrid_rag.main import build_pipeline
-
-c = build_pipeline()
-c["pipeline"].ingest(doc_id="d1", text="...", source_name="report")
-answer = c["retriever"].query("What is X?")
-```
-
-**After (cognity-ai):**
-
-```python
-from cognity_ai import RAGLibrary
-
-rag = RAGLibrary(gemini_api_key="...", neo4j_password="...")
-rag.ingest_text("...", doc_id="d1", source_name="report")
-answer = rag.query("What is X?")
-```
-
-The new API is a strict superset of the old one in terms of capability, with cleaner configuration and no internal coupling between components.
 
 ---
 
@@ -574,8 +639,23 @@ The `LibraryConfig` dataclass (and the `RAGLibrary` constructor kwargs) accept t
 | `extraction` | `str` | `"hybrid"` | Knowledge extraction strategy (`nlp`, `llm`, `hybrid`) |
 | `ocr` | `str` | `"gemini_vision"` | OCR provider for images |
 | `page_index` | `str` | `"hybrid"` | Page boundary detection strategy |
+| `observer` | `BaseObserver` | `None` | Observability observer instance |
+| `observability_config` | `ObservabilityConfig` | `None` | Observability settings |
+| `config` | `LibraryConfig` | `None` | Full config override (bypasses all other kwargs) |
 
 Provider-specific settings (API keys, URIs, model names) are passed as additional kwargs and are forwarded to the relevant provider config automatically.
+
+### `MinimalLibraryConfig` — local-only preset
+
+Use `MinimalLibraryConfig` in tests, CI, or offline environments. It uses only components that need zero external services (FAISS, NetworkX, fixed chunker):
+
+```python
+from cognity_ai.config.base import MinimalLibraryConfig
+from cognity_ai import RAGLibrary
+
+cfg = MinimalLibraryConfig(vector_store="faiss", graph_store="networkx")
+rag = RAGLibrary(config=cfg)  # no API keys required for structural use
+```
 
 ---
 
@@ -596,4 +676,9 @@ Please open an issue before starting large changes to align on design direction.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for full terms.
+**Apache 2.0** — see [LICENSE](LICENSE) for full terms.
+
+You may freely use this library as a dependency (`pip install cognity-ai`) in any project, commercial or otherwise. If you incorporate the source code directly into your own project, Apache 2.0 requires that you retain the copyright notice, state what you changed, and include a copy of the license.
+
+> **Why Apache 2.0 and not MIT?**
+> Apache 2.0 adds an explicit patent grant (MIT does not), requires attribution notices when source code is copied, and mandates that modified files carry a change notice. For a library of this scope it provides stronger author protection while remaining fully enterprise-friendly — it is the license used by Kubernetes, TensorFlow, FastAPI, and most modern ML tooling.

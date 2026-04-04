@@ -92,7 +92,7 @@ from cognity_ai.utils.trie import Trie, EntityTrie
 # Registry for custom plugins
 from cognity_ai.registry import PluginRegistry
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 # ── Multimodal extension (experimental) ─────────────────────────────────────
 # Expose base classes + key types so users can do:
