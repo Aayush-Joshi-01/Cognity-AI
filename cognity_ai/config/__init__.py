@@ -1,4 +1,4 @@
-from cognity_ai.config.base import LibraryConfig
+from cognity_ai.config.base import LibraryConfig, MinimalLibraryConfig
 from cognity_ai.config.providers import (
     Neo4jConfig, GeminiConfig, ChromaConfig, NLPConfig,
     GraphRAGConfig, IngestionConfig, OpenAIConfig, AnthropicConfig,
@@ -8,7 +8,7 @@ from cognity_ai.config.providers import (
 )
 
 __all__ = [
-    "LibraryConfig",
+    "LibraryConfig", "MinimalLibraryConfig",
     "Neo4jConfig", "GeminiConfig", "ChromaConfig", "NLPConfig",
     "GraphRAGConfig", "IngestionConfig", "OpenAIConfig", "AnthropicConfig",
     "AzureOpenAIConfig", "BedrockConfig", "VertexAIConfig", "QdrantConfig",

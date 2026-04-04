@@ -247,3 +247,14 @@ en_core_web_*/
 
 # Logs
 *.log
+
+# AI Agent configuration and state files
+
+.cursorrules
+.mcp.json
+.opencode.json
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursor/mcp.json
